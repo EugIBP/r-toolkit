@@ -1,0 +1,43 @@
+# --- СБОРКА И ПАКЕТЫ (Главные пожиратели контекста) ---
+node_modules/
+target/
+src-tauri/target/
+dist/
+build/
+.vite/
+package-lock.json
+pnpm-lock.yaml
+
+# --- REACT & FRONTEND СПЕЦИФИКА ---
+.eslintcache
+.prettiercache
+.tsbuildinfo
+coverage/
+stats.html
+public/             # Статика (картинки, шрифты) не нужна для логики
+
+# --- TAURI СПЕЦИФИКА ---
+src-tauri/icons/    # Бинарные файлы
+src-tauri/gen/      # Автогенерация
+src-tauri/bin/
+src-tauri/bundle/
+
+# --- СИСТЕМНОЕ И КЭШ ---
+.git/
+.vscode/
+.idea/
+.DS_Store
+.cache/
+*.log
+.env*               # Безопасность + экономия
+
+# --- МЕДИА (Нейросеть их не "видит", но токены тратит) ---
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.pdf
+*.wasm
+*.mp4

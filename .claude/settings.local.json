@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head:*)",
+      "Bash(cd /w/Rust/gtk-studio && bun run tsc 2>&1)",
+      "Bash(grep:*)",
+      "Bash(findstr:*)",
+      "Bash(python3:*)",
+      "Bash(powershell:*)",
+      "Bash(node:*)"
+    ]
+  }
+}
