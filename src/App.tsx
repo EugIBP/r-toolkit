@@ -6,7 +6,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { UpdateDialog } from "@/components/ui/UpdateDialog";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
-import { getScheduledUpdate, clearScheduledUpdate } from "@/lib/updater";
+import { getScheduledUpdate, clearScheduledUpdate, checkForUpdates, getSkippedUpdate } from "@/lib/updater";
 
 // Lazy load views for code splitting
 const DashboardView = lazy(() => import("@/views/DashboardView").then(m => ({ default: m.DashboardView })));
@@ -33,7 +33,7 @@ function PageLoader() {
 }
 
 export default function App() {
-  const { currentView, loadRecent, pendingUpdate, setPendingUpdate } = useAppStore();
+  const { currentView, loadRecent, pendingUpdate, setPendingUpdate, setAvailableUpdate } = useAppStore();
 
   useEffect(() => {
     loadRecent();
@@ -45,6 +45,21 @@ export default function App() {
       setPendingUpdate(scheduled);
       clearScheduledUpdate();
     }
+
+    const checkUpdates = async () => {
+      const skipped = getSkippedUpdate();
+      const update = await checkForUpdates();
+      
+      if (update) {
+        if (skipped && skipped.version === update.version) {
+          return;
+        }
+        setAvailableUpdate(update.version);
+        setPendingUpdate(update);
+      }
+    };
+    
+    checkUpdates();
   }, []);
 
   return (

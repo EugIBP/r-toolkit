@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
 import { RecentProjects } from "@/components/dashboard/RecentProjects";
 import { ToolsSection } from "@/components/dashboard/ToolsSection";
-import { Plus, FolderOpen, FilePlus, LayoutGrid, List, Search } from "lucide-react";
+import { Plus, FolderOpen, FilePlus, LayoutGrid, List, Search, ArrowUp } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
@@ -24,7 +24,7 @@ import {
 export function DashboardView() {
   const { setProject } = useProjectStore();
   const { resetCanvas, loadWorkspace } = useCanvasStore();
-  const { addRecent, setEditingWorkspaceId, workspaceTab, setWorkspaceTab, viewMode, setViewMode, setPendingUpdate } = useAppStore();
+  const { addRecent, setEditingWorkspaceId, workspaceTab, setWorkspaceTab, viewMode, setViewMode, setPendingUpdate, availableUpdate, setAvailableUpdate } = useAppStore();
   const [search, setSearch] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [appVersion, setAppVersion] = useState("");
@@ -36,6 +36,7 @@ export function DashboardView() {
   const handleVersionClick = async () => {
     const update = await checkForUpdates();
     if (update) {
+      setAvailableUpdate(update.version);
       setPendingUpdate(update);
     } else {
       toast.info("You are using the latest version");
@@ -88,12 +89,20 @@ export function DashboardView() {
             <h1 className="text-2xl font-semibold tracking-tight text-white flex items-center gap-3">
               Resource Toolkit
               {appVersion && (
-                <button
-                  onClick={handleVersionClick}
-                  className="text-[10px] font-medium text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  v{appVersion}
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handleVersionClick}
+                    className="text-[10px] font-medium text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1"
+                  >
+                    v{appVersion}
+                    {availableUpdate && (
+                      <>
+                        <ArrowUp className="w-2.5 h-2.5 text-green-400" />
+                        <span className="text-green-400">{availableUpdate}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </h1>
             <p className="text-xs text-muted-foreground">

@@ -20,6 +20,7 @@ interface AppStore {
   isSettingsOpen: boolean;
   editingWorkspaceId: string | null;
   pendingUpdate: UpdateInfo | null;
+  availableUpdate: string | null;
 
   // Global confirmation dialog state
   confirmDialog: {
@@ -35,6 +36,7 @@ interface AppStore {
   setSettingsOpen: (isOpen: boolean) => void;
   setEditingWorkspaceId: (id: string | null) => void;
   setPendingUpdate: (update: UpdateInfo | null) => void;
+  setAvailableUpdate: (version: string | null) => void;
 
   loadRecent: () => Promise<void>;
   addRecent: (path: string, name: string) => Promise<void>;
@@ -59,6 +61,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   isSettingsOpen: false,
   editingWorkspaceId: null,
   pendingUpdate: null,
+  availableUpdate: null,
   confirmDialog: null,
 
   setCurrentView: (view) => set({ currentView: view }),
@@ -67,6 +70,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
   setEditingWorkspaceId: (id) => set({ editingWorkspaceId: id }),
   setPendingUpdate: (update) => set({ pendingUpdate: update }),
+  setAvailableUpdate: (version) => set({ availableUpdate: version }),
 
   loadRecent: async () => {
     try {
