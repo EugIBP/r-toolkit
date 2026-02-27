@@ -55,9 +55,21 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Test Release v0.2.2
+            ## 🚀 What's New
 
-            Testing auto-update functionality.
+            ### Auto-Update System
+            - **Auto-check for updates on startup** - App now checks for new versions automatically when launched
+            - **Update notification dialog** - Beautiful dialog shows new version info with release notes
+            - **Flexible update options** - Choose to update now, on exit, or skip (reminded in 24h)
+            - **Update badge** - New version indicator shown next to current version
+
+            ### UI Improvements  
+            - **New application icon** - Custom icon instead of default
+            - **Version click interaction** - Click on version number to check for updates
+            - **Streamlined builds** - Removed macOS builds (Windows & Linux only)
+
+            ### Bug Fixes
+            - Various improvements and fixes
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
