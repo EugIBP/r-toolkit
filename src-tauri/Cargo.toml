@@ -1,6 +1,6 @@
 [package]
 name = "ResourceToolkit"
-version = "0.2.1"
+version = "0.2.2"
 description = "Resource toolkit"
 authors = ["Eugene Bobrov"]
 edition = "2021"

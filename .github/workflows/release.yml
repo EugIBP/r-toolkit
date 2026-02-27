@@ -61,20 +61,9 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## What's New
+            ## Test Release v0.2.2
 
-            - Added auto-update functionality
-              Users are now notified when a new version is available with release notes
-              and can choose to update now, on exit, or skip the update
-
-            - Added application icon
-              The app now has a custom icon instead of the default one
-
-            - Click on version now checks for updates
-              Clicking the version number in the Dashboard will check for available updates
-
-            - Auto-check for updates on startup
-              When app launches, it checks if there's a scheduled update from previous session
+            Testing auto-update functionality.
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
