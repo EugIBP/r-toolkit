@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { RecentProjects } from "@/components/dashboard/RecentProjects";
 import { ToolsSection } from "@/components/dashboard/ToolsSection";
 import { Plus, FolderOpen, FilePlus, LayoutGrid, List, Search } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
+import { checkForUpdates } from "@/lib/updater";
+import { toast } from "sonner";
 import { WorkspaceMetaModal } from "@/components/dashboard/WorkspaceMetaModal";
 import { CreateProjectModal } from "@/components/dashboard/CreateProjectModal";
 import { Button } from "@/components/ui/button";
@@ -21,9 +24,23 @@ import {
 export function DashboardView() {
   const { setProject } = useProjectStore();
   const { resetCanvas, loadWorkspace } = useCanvasStore();
-  const { addRecent, setEditingWorkspaceId, workspaceTab, setWorkspaceTab, viewMode, setViewMode } = useAppStore();
+  const { addRecent, setEditingWorkspaceId, workspaceTab, setWorkspaceTab, viewMode, setViewMode, setPendingUpdate } = useAppStore();
   const [search, setSearch] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [appVersion, setAppVersion] = useState("");
+
+  useEffect(() => {
+    getVersion().then(setAppVersion).catch(() => setAppVersion("0.0.0"));
+  }, []);
+
+  const handleVersionClick = async () => {
+    const update = await checkForUpdates();
+    if (update) {
+      setPendingUpdate(update);
+    } else {
+      toast.info("You are using the latest version");
+    }
+  };
 
   const setupAndShowModal = async (filePath: string, data: any) => {
     if (!filePath || typeof filePath !== "string") return;
@@ -68,8 +85,16 @@ export function DashboardView() {
       <div className="flex-1 w-full max-w-7xl px-10 flex flex-col pt-[12vh] pb-20 animate-in fade-in duration-1000">
         <div className="flex items-end justify-between mb-16">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-white">
+            <h1 className="text-2xl font-semibold tracking-tight text-white flex items-center gap-3">
               Resource Toolkit
+              {appVersion && (
+                <button
+                  onClick={handleVersionClick}
+                  className="text-[10px] font-medium text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  v{appVersion}
+                </button>
+              )}
             </h1>
             <p className="text-xs text-muted-foreground">
               {workspaceTab === "workspace" ? "Open a workspace to get started" : "Select a tool to begin"}

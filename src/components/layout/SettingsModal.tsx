@@ -1,11 +1,22 @@
 import { useAppStore } from "@/store/useAppStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
-import { X, Grid3X3, Check } from "lucide-react";
+import { X, Grid3X3, Check, RefreshCw } from "lucide-react";
+import { checkForUpdates } from "@/lib/updater";
+import { toast } from "sonner";
 
 export function SettingsModal() {
-  const { isSettingsOpen, setSettingsOpen } = useAppStore();
+  const { isSettingsOpen, setSettingsOpen, setPendingUpdate } = useAppStore();
 
   const { snapToGrid, setSnapToGrid, gridSize, setGridSize } = useCanvasStore();
+
+  const handleCheckUpdates = async () => {
+    const update = await checkForUpdates();
+    if (update) {
+      setPendingUpdate(update);
+    } else {
+      toast.info("У вас последняя версия");
+    }
+  };
 
   if (!isSettingsOpen) return null;
 
@@ -71,6 +82,19 @@ export function SettingsModal() {
                 ))}
               </div>
             </div>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              About
+            </h3>
+            <button
+              onClick={handleCheckUpdates}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <span className="text-sm font-medium text-white/90">Проверить обновления</span>
+              <RefreshCw className="w-4 h-4 text-muted-foreground" />
+            </button>
           </div>
         </div>
       </div>

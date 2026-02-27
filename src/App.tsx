@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SettingsModal } from "@/components/layout/SettingsModal";
 import { useAppStore } from "@/store/useAppStore";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { UpdateDialog } from "@/components/ui/UpdateDialog";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
+import { getScheduledUpdate, clearScheduledUpdate } from "@/lib/updater";
 
 // Lazy load views for code splitting
 const DashboardView = lazy(() => import("@/views/DashboardView").then(m => ({ default: m.DashboardView })));
@@ -31,10 +33,18 @@ function PageLoader() {
 }
 
 export default function App() {
-  const { currentView, loadRecent } = useAppStore();
+  const { currentView, loadRecent, pendingUpdate, setPendingUpdate } = useAppStore();
 
   useEffect(() => {
     loadRecent();
+  }, []);
+
+  useEffect(() => {
+    const scheduled = getScheduledUpdate();
+    if (scheduled) {
+      setPendingUpdate(scheduled);
+      clearScheduledUpdate();
+    }
   }, []);
 
   return (
@@ -91,6 +101,7 @@ export default function App() {
 
       <SettingsModal />
       <ConfirmModal />
+      {pendingUpdate && <UpdateDialog updateInfo={pendingUpdate} />}
 
       <Toaster
         theme="dark"

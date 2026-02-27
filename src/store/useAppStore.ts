@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { UpdateInfo } from "@/lib/updater";
 
 const persistentStore = new LazyStore("settings.json");
 
@@ -18,6 +19,7 @@ interface AppStore {
   recentProjects: RecentProject[];
   isSettingsOpen: boolean;
   editingWorkspaceId: string | null;
+  pendingUpdate: UpdateInfo | null;
 
   // Global confirmation dialog state
   confirmDialog: {
@@ -32,6 +34,7 @@ interface AppStore {
   setWorkspaceTab: (tab: "workspace" | "tools") => void;
   setSettingsOpen: (isOpen: boolean) => void;
   setEditingWorkspaceId: (id: string | null) => void;
+  setPendingUpdate: (update: UpdateInfo | null) => void;
 
   loadRecent: () => Promise<void>;
   addRecent: (path: string, name: string) => Promise<void>;
@@ -55,6 +58,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   recentProjects: [],
   isSettingsOpen: false,
   editingWorkspaceId: null,
+  pendingUpdate: null,
   confirmDialog: null,
 
   setCurrentView: (view) => set({ currentView: view }),
@@ -62,6 +66,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setWorkspaceTab: (tab: "workspace" | "tools") => set({ workspaceTab: tab }),
   setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
   setEditingWorkspaceId: (id) => set({ editingWorkspaceId: id }),
+  setPendingUpdate: (update) => set({ pendingUpdate: update }),
 
   loadRecent: async () => {
     try {
