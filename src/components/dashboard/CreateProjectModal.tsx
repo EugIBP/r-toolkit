@@ -37,17 +37,22 @@ const DEFAULT_FOLDERS = [
   { name: "icons", enabled: true },
 ];
 
-export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps) {
+export function CreateProjectModal({
+  isOpen,
+  onClose,
+}: CreateProjectModalProps) {
   const { setProject } = useProjectStore();
   const { resetCanvas, loadWorkspace } = useCanvasStore();
   const { addRecent, setCurrentView } = useAppStore();
 
   const [selectedFolder, setSelectedFolder] = useState<string>("");
   const [resolution, setResolution] = useState<string>("1024x600");
-  const [customRes, setCustomRes] = useState<{ width: string; height: string }>({
-    width: "",
-    height: "",
-  });
+  const [customRes, setCustomRes] = useState<{ width: string; height: string }>(
+    {
+      width: "",
+      height: "",
+    },
+  );
   const [useCustomRes, setUseCustomRes] = useState(false);
   const [folders, setFolders] = useState(DEFAULT_FOLDERS);
   const [customFolders, setCustomFolders] = useState<string[]>([]);
@@ -129,12 +134,17 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
 
   const toggleFolder = (folderName: string) => {
     setFolders((prev) =>
-      prev.map((f) => (f.name === folderName ? { ...f, enabled: !f.enabled } : f))
+      prev.map((f) =>
+        f.name === folderName ? { ...f, enabled: !f.enabled } : f,
+      ),
     );
   };
 
   const addCustomFolder = () => {
-    if (newCustomFolder.trim() && !customFolders.includes(newCustomFolder.trim())) {
+    if (
+      newCustomFolder.trim() &&
+      !customFolders.includes(newCustomFolder.trim())
+    ) {
       setCustomFolders((prev) => [...prev, newCustomFolder.trim()]);
       setNewCustomFolder("");
     }
@@ -151,7 +161,9 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
       return { width: w, height: h };
     }
     const found = RESOLUTIONS.find((r) => r.value === resolution);
-    return found ? { width: found.width, height: found.height } : { width: 1024, height: 600 };
+    return found
+      ? { width: found.width, height: found.height }
+      : { width: 1024, height: 600 };
   };
 
   const handleSaveSettings = async () => {
@@ -189,7 +201,11 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
 
       await invoke("save_text_file", {
         path: `${rtoolkitPath}/settings.json`,
-        content: JSON.stringify({ displayName: name, description: desc }, null, 2),
+        content: JSON.stringify(
+          { displayName: name, description: desc },
+          null,
+          2,
+        ),
       });
 
       const projectPath = `${projectDir}/description.json`;
@@ -239,10 +255,16 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
 
       await invoke("save_text_file", {
         path: `${rtoolkitPath}/settings.json`,
-        content: JSON.stringify({ displayName: name, description: desc }, null, 2),
+        content: JSON.stringify(
+          { displayName: name, description: desc },
+          null,
+          2,
+        ),
       });
 
-      const content = await invoke<string>("load_project", { filePath: projectPath });
+      const content = await invoke<string>("load_project", {
+        filePath: projectPath,
+      });
 
       const data = JSON.parse(content);
       setProject(data, projectPath);
@@ -275,7 +297,7 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
           </button>
         </div>
 
-        <ScrollArea className="max-h-[70vh]">
+        <ScrollArea className="max-h-[90vh]">
           <div className="p-6 space-y-6">
             {/* Cover Image */}
             <div className="space-y-2">
@@ -336,7 +358,11 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
                     }}
                   >
                     {RESOLUTIONS.map((res) => (
-                      <option key={res.value} value={res.value} className="bg-[#181818]">
+                      <option
+                        key={res.value}
+                        value={res.value}
+                        className="bg-[#181818]"
+                      >
                         {res.label}
                       </option>
                     ))}
@@ -358,7 +384,12 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
                     type="number"
                     placeholder="Width"
                     value={customRes.width}
-                    onChange={(e) => setCustomRes((prev) => ({ ...prev, width: e.target.value }))}
+                    onChange={(e) =>
+                      setCustomRes((prev) => ({
+                        ...prev,
+                        width: e.target.value,
+                      }))
+                    }
                     className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
                   />
                   <span className="text-muted-foreground">x</span>
@@ -366,7 +397,12 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
                     type="number"
                     placeholder="Height"
                     value={customRes.height}
-                    onChange={(e) => setCustomRes((prev) => ({ ...prev, height: e.target.value }))}
+                    onChange={(e) =>
+                      setCustomRes((prev) => ({
+                        ...prev,
+                        height: e.target.value,
+                      }))
+                    }
                     className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
                   />
                 </div>
@@ -390,8 +426,18 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
                     }`}
                   >
                     {folder.enabled && (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     )}
                     {folder.name}/
@@ -459,7 +505,9 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
                 <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
                 <span className="text-xs font-mono text-muted-foreground select-all">
                   {selectedFolder
-                    ? selectedFolder.length > 72 ? `${selectedFolder.slice(0, 72)}...` : selectedFolder
+                    ? selectedFolder.length > 72
+                      ? `${selectedFolder.slice(0, 72)}...`
+                      : selectedFolder
                     : "Click to select location"}
                 </span>
               </div>
@@ -479,33 +527,35 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
               />
             </div>
           </div>
-        </ScrollArea>
 
-        <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
-          <button
-            onClick={handleClose}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white/50 hover:text-white hover:bg-white/5 transition-colors"
-          >
-            Cancel
-          </button>
+          {/* Buttons - moved inside ScrollArea */}
+          <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between shrink-0">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              Cancel
+            </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSaveSettings}
-              disabled={!selectedFolder || isCreating}
-              className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isCreating ? "Saving..." : "Save Settings"}
-            </button>
-            <button
-              onClick={handleOpenProject}
-              disabled={!selectedFolder || isCreating}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(255,165,0,0.2)]"
-            >
-              {isCreating ? "Creating..." : "Open Project"} <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSaveSettings}
+                disabled={!selectedFolder || isCreating}
+                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCreating ? "Saving..." : "Save Settings"}
+              </button>
+              <button
+                onClick={handleOpenProject}
+                disabled={!selectedFolder || isCreating}
+                className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(255,165,0,0.2)]"
+              >
+                {isCreating ? "Creating..." : "Open Project"}{" "}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        </ScrollArea>
       </div>
     </div>
   );
