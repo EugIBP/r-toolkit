@@ -55,7 +55,6 @@ export default function App() {
           return;
         }
         setAvailableUpdate(update.version);
-        setPendingUpdate(update);
       }
     };
     
