@@ -3,14 +3,12 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import {
   X,
   FolderOpen,
   Image as ImageIcon,
   ArrowRight,
   Trash2,
-  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProjectStore } from "@/store/useProjectStore";
@@ -56,7 +54,6 @@ export function CreateProjectModal({
   const [useCustomRes, setUseCustomRes] = useState(false);
   const [folders, setFolders] = useState(DEFAULT_FOLDERS);
   const [customFolders, setCustomFolders] = useState<string[]>([]);
-  const [newCustomFolder, setNewCustomFolder] = useState("");
 
   const [name, setName] = useState("Resources");
   const [desc, setDesc] = useState("");
@@ -80,7 +77,6 @@ export function CreateProjectModal({
     setUseCustomRes(false);
     setFolders(DEFAULT_FOLDERS);
     setCustomFolders([]);
-    setNewCustomFolder("");
     setName("Resources");
     setDesc("");
     setThumbPath(null);
@@ -130,28 +126,6 @@ export function CreateProjectModal({
     setThumbPath(null);
     setThumbUrl(null);
     setRefreshKey((k) => k + 1);
-  };
-
-  const toggleFolder = (folderName: string) => {
-    setFolders((prev) =>
-      prev.map((f) =>
-        f.name === folderName ? { ...f, enabled: !f.enabled } : f,
-      ),
-    );
-  };
-
-  const addCustomFolder = () => {
-    if (
-      newCustomFolder.trim() &&
-      !customFolders.includes(newCustomFolder.trim())
-    ) {
-      setCustomFolders((prev) => [...prev, newCustomFolder.trim()]);
-      setNewCustomFolder("");
-    }
-  };
-
-  const removeCustomFolder = (folderName: string) => {
-    setCustomFolders((prev) => prev.filter((f) => f !== folderName));
   };
 
   const getResolution = () => {
@@ -285,9 +259,10 @@ export function CreateProjectModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#121212] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col w-[33vw] min-w-[400px] max-w-[600px]">
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 p-4">
+      <div className="bg-[#121212] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col w-full sm:w-[500px] max-w-2xl max-h-[90vh]">
+        {/* HEADER */}
+        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
           <h2 className="text-sm font-semibold text-white">Create Workspace</h2>
           <button
             onClick={handleClose}
@@ -297,265 +272,193 @@ export function CreateProjectModal({
           </button>
         </div>
 
-        <ScrollArea className="max-h-[90vh]">
-          <div className="p-6 space-y-6">
-            {/* Cover Image */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Cover Image
-                </span>
-                {thumbUrl && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveThumb();
-                    }}
-                    className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                    title="Remove cover image"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-              <div
-                onClick={handleSelectThumb}
-                className="relative aspect-video w-full rounded-xl bg-white/5 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group"
-              >
-                <ImageIcon className="absolute w-8 h-8 text-white/20 group-hover:scale-110 transition-transform z-0" />
-
-                {thumbUrl && (
-                  <img
-                    src={thumbUrl}
-                    alt=""
-                    onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:opacity-30 opacity-0"
-                  />
-                )}
-
-                <span className="text-xs font-medium text-white/60 z-20 bg-black/40 px-3 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-                  {thumbUrl ? "Change image" : "Click to browse image"}
-                </span>
-              </div>
-            </div>
-
-            {/* Resolution */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                Resolution
-              </span>
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <select
-                    value={resolution}
-                    onChange={(e) => setResolution(e.target.value)}
-                    disabled={useCustomRes}
-                    className="w-full bg-[#181818] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none appearance-none cursor-pointer"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 12px center",
-                    }}
-                  >
-                    {RESOLUTIONS.map((res) => (
-                      <option
-                        key={res.value}
-                        value={res.value}
-                        className="bg-[#181818]"
-                      >
-                        {res.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={useCustomRes}
-                    onChange={(e) => setUseCustomRes(e.target.checked)}
-                    className="accent-primary"
-                  />
-                  Custom
-                </label>
-              </div>
-              {useCustomRes && (
-                <div className="flex items-center gap-2 mt-2">
-                  <input
-                    type="number"
-                    placeholder="Width"
-                    value={customRes.width}
-                    onChange={(e) =>
-                      setCustomRes((prev) => ({
-                        ...prev,
-                        width: e.target.value,
-                      }))
-                    }
-                    className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
-                  />
-                  <span className="text-muted-foreground">x</span>
-                  <input
-                    type="number"
-                    placeholder="Height"
-                    value={customRes.height}
-                    onChange={(e) =>
-                      setCustomRes((prev) => ({
-                        ...prev,
-                        height: e.target.value,
-                      }))
-                    }
-                    className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Folders */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                Folders
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {folders.map((folder) => (
-                  <button
-                    key={folder.name}
-                    onClick={() => toggleFolder(folder.name)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
-                      folder.enabled
-                        ? "bg-primary/10 border-primary/30 text-white"
-                        : "bg-white/5 border-white/10 text-muted-foreground"
-                    }`}
-                  >
-                    {folder.enabled && (
-                      <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    )}
-                    {folder.name}/
-                  </button>
-                ))}
-              </div>
-
-              {customFolders.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {customFolders.map((folder) => (
+        {/* ОБЕРТКА ДЛЯ ЖЕСТКОЙ ФИКСАЦИИ ВЫСОТЫ */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {/* SCROLL AREA */}
+          <ScrollArea className="h-full w-full">
+            <div className="p-6 space-y-6">
+              {/* Cover Image */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                    Cover Image
+                  </span>
+                  {thumbUrl && (
                     <button
-                      key={folder}
-                      onClick={() => removeCustomFolder(folder)}
-                      className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-muted-foreground hover:text-red-400 hover:border-red-400/30 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveThumb();
+                      }}
+                      className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                      title="Remove cover image"
                     >
-                      {folder}/
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                  ))}
+                  )}
                 </div>
-              )}
-
-              <div className="flex items-center gap-2 mt-2">
-                <input
-                  type="text"
-                  placeholder="Add custom folder..."
-                  value={newCustomFolder}
-                  onChange={(e) => setNewCustomFolder(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addCustomFolder()}
-                  className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white flex-1 focus:ring-1 focus:ring-primary outline-none"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addCustomFolder}
-                  disabled={!newCustomFolder.trim()}
-                  className="bg-white/5 border-white/10 hover:bg-white/10"
+                <div
+                  onClick={handleSelectThumb}
+                  className="relative aspect-video w-full rounded-xl bg-white/5 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group"
                 >
-                  <Plus className="w-4 h-4" />
-                </Button>
+                  <ImageIcon className="absolute w-8 h-8 text-white/20 group-hover:scale-110 transition-transform z-0" />
+
+                  {thumbUrl && (
+                    <img
+                      src={thumbUrl}
+                      alt=""
+                      onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
+                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:opacity-30 opacity-0"
+                    />
+                  )}
+
+                  <span className="text-xs font-medium text-white/60 z-20 bg-black/40 px-3 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                    {thumbUrl ? "Change image" : "Click to browse image"}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Alias */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                Alias (Display Name)
-              </span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm font-semibold text-white focus:ring-1 focus:ring-primary outline-none"
-              />
-            </div>
-
-            {/* Project Path */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                Project Location
-              </span>
-              <div
-                onClick={handleSelectFolder}
-                className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 cursor-pointer hover:border-white/10 transition-colors min-w-0"
-              >
-                <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
-                <span className="text-xs font-mono text-muted-foreground select-all">
-                  {selectedFolder
-                    ? selectedFolder.length > 72
-                      ? `${selectedFolder.slice(0, 72)}...`
-                      : selectedFolder
-                    : "Click to select location"}
+              {/* Resolution */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Resolution
                 </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <select
+                      value={resolution}
+                      onChange={(e) => setResolution(e.target.value)}
+                      disabled={useCustomRes}
+                      className="w-full bg-[#181818] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none appearance-none cursor-pointer disabled:opacity-50"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "right 12px center",
+                      }}
+                    >
+                      {RESOLUTIONS.map((res) => (
+                        <option
+                          key={res.value}
+                          value={res.value}
+                          className="bg-[#181818]"
+                        >
+                          {res.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={useCustomRes}
+                      onChange={(e) => setUseCustomRes(e.target.checked)}
+                      className="accent-primary"
+                    />
+                    Custom
+                  </label>
+                </div>
+                {useCustomRes && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="number"
+                      placeholder="Width"
+                      value={customRes.width}
+                      onChange={(e) =>
+                        setCustomRes((prev) => ({
+                          ...prev,
+                          width: e.target.value,
+                        }))
+                      }
+                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
+                    />
+                    <span className="text-muted-foreground">x</span>
+                    <input
+                      type="number"
+                      placeholder="Height"
+                      value={customRes.height}
+                      onChange={(e) =>
+                        setCustomRes((prev) => ({
+                          ...prev,
+                          height: e.target.value,
+                        }))
+                      }
+                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Alias */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Alias (Display Name)
+                </span>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm font-semibold text-white focus:ring-1 focus:ring-primary outline-none"
+                />
+              </div>
+
+              {/* Project Path */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Project Location
+                </span>
+                <div
+                  onClick={handleSelectFolder}
+                  className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 cursor-pointer hover:border-white/10 transition-colors min-w-0"
+                >
+                  <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
+                  <span className="text-xs font-mono text-muted-foreground truncate flex-1">
+                    {selectedFolder || "Click to select location"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Description / Notes
+                </span>
+                <textarea
+                  value={desc}
+                  onChange={(e) => setDesc(e.target.value)}
+                  rows={3}
+                  placeholder="Write some notes..."
+                  className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-primary outline-none resize-none"
+                />
               </div>
             </div>
+          </ScrollArea>
+        </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                Description / Notes
-              </span>
-              <textarea
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
-                rows={3}
-                placeholder="Write some notes..."
-                className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-primary outline-none resize-none"
-              />
-            </div>
-          </div>
+        {/* FOOTER */}
+        <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between shrink-0 rounded-b-2xl">
+          <button
+            onClick={handleClose}
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            Cancel
+          </button>
 
-          {/* Buttons - moved inside ScrollArea */}
-          <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
             <button
-              onClick={handleClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+              onClick={handleSaveSettings}
+              disabled={!selectedFolder || isCreating}
+              className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {isCreating ? "Saving..." : "Save Settings"}
             </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleSaveSettings}
-                disabled={!selectedFolder || isCreating}
-                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isCreating ? "Saving..." : "Save Settings"}
-              </button>
-              <button
-                onClick={handleOpenProject}
-                disabled={!selectedFolder || isCreating}
-                className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(255,165,0,0.2)]"
-              >
-                {isCreating ? "Creating..." : "Open Project"}{" "}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              onClick={handleOpenProject}
+              disabled={!selectedFolder || isCreating}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(255,165,0,0.2)]"
+            >
+              {isCreating ? "Creating..." : "Open Project"}
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );
