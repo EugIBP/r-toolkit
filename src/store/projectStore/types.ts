@@ -1,8 +1,14 @@
+export interface ScannedFile {
+  path: string;
+  dir: string;
+  asset_type: "bin" | "ico" | "pal";
+}
+
 export interface ProjectStore {
   projectData: any | null;
   projectPath: string | null;
   baseDir: string | null;
-  scannedFiles: string[];
+  scannedFiles: ScannedFile[];
 
   // projectSlice
   setProject: (arg1: any, arg2: any) => void;

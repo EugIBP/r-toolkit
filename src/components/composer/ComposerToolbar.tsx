@@ -11,6 +11,9 @@ import {
   Film,
   Move,
   SquareStack,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from "lucide-react";
 
 const AssetsToolbarSearchInput = forwardRef<HTMLInputElement>((props, ref) => {
@@ -40,6 +43,8 @@ export function AssetsToolbar({ searchInputRef }: { searchInputRef?: React.RefOb
     assetFilter,
     setAssetFilter,
     setActiveTab,
+    stackThreshold,
+    setStackThreshold,
   } = useCanvasStore();
 
   return (
@@ -108,12 +113,31 @@ export function AssetsToolbar({ searchInputRef }: { searchInputRef?: React.RefOb
           title="Stacked"
         />
       </div>
+
+      <div className="w-px h-6 bg-white/10" />
+
+      {/* STACK THRESHOLD */}
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-muted-foreground font-medium">Stack threshold (px)</span>
+        <input
+          type="number"
+          min={1}
+          max={100}
+          value={stackThreshold}
+          onChange={(e) => setStackThreshold(parseInt(e.target.value) || 5)}
+          className="w-12 h-7 bg-white/5 border border-white/10 rounded-lg px-2 text-xs font-medium text-white text-center outline-none focus:border-primary/50 [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+      </div>
     </div>
   );
 }
 
 export function ModeToolbar() {
-  const { canvasMode, setCanvasMode, allowDnd, setAllowDnd } = useCanvasStore();
+  const { canvasMode, setCanvasMode, allowDnd, setAllowDnd, zoom, setZoom } = useCanvasStore();
+
+  const handleZoomIn = () => setZoom(Math.min(zoom + 0.1, 5));
+  const handleZoomOut = () => setZoom(Math.max(zoom - 0.1, 0.1));
+  const handleZoomReset = () => setZoom(0.85);
 
   return (
     <>
@@ -142,6 +166,38 @@ export function ModeToolbar() {
           label="Drag & Drop"
           activeClass="bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
         />
+
+        <div className="w-px h-6 bg-white/10 mx-0.5" />
+
+        {/* ZOOM CONTROLS */}
+        <button
+          onClick={handleZoomOut}
+          title="Zoom Out"
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <ZoomOut className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={handleZoomReset}
+          title="Reset Zoom"
+          className="px-2 py-1 rounded-lg text-xs font-mono text-white hover:bg-white/10 transition-colors min-w-[50px]"
+        >
+          {Math.round(zoom * 100)}%
+        </button>
+        <button
+          onClick={handleZoomIn}
+          title="Zoom In"
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <ZoomIn className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={handleZoomReset}
+          title="Reset View"
+          className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
 
       </div>
     </>

@@ -49,7 +49,7 @@ export function ProjectRow({ project }: { project: RecentProject }) {
       </div>
       <div className="flex items-center gap-6 pr-2 shrink-0">
         <div className="flex flex-col items-end opacity-40 group-hover:opacity-100 transition-opacity">
-          <span className="text-[9px] font-medium uppercase tracking-tighter">
+          <span className="text-xs font-medium uppercase tracking-tighter">
             Modified
           </span>
           <span className="text-[11px] font-medium">

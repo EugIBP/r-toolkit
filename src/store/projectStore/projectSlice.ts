@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
-import type { ProjectStore } from "./types";
+import type { ProjectStore, ScannedFile } from "./types";
 import type { StateCreator } from "zustand";
 
 export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<ProjectStore,
@@ -63,7 +63,7 @@ export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<Project
     const { baseDir } = get();
     if (!baseDir) return;
     try {
-      const files = await invoke<string[]>("scan_project_assets", { baseDir });
+      const files = await invoke<ScannedFile[]>("scan_project_assets", { baseDir });
       set({ scannedFiles: files || [] });
     } catch (e) {
       console.error("Failed to scan directory:", e);

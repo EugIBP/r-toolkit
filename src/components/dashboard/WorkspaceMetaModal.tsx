@@ -149,7 +149,7 @@ export function WorkspaceMetaModal() {
           <div className="p-6 space-y-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   Cover Image
                 </span>
 
@@ -192,7 +192,7 @@ export function WorkspaceMetaModal() {
 
             <div className="space-y-4">
               <div className="flex flex-col">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
                   Alias (Display Name)
                 </span>
                 <input
@@ -203,7 +203,7 @@ export function WorkspaceMetaModal() {
               </div>
 
               <div className="flex flex-col">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
                   Project Path
                 </span>
                 <div className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 min-w-0">
@@ -215,7 +215,7 @@ export function WorkspaceMetaModal() {
               </div>
 
               <div className="flex flex-col">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
                   Description / Notes
                 </span>
                 <textarea

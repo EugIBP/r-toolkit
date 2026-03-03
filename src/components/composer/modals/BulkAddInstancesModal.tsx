@@ -25,18 +25,18 @@ export function BulkAddInstancesModal({ isOpen, onClose }: BulkAddInstancesModal
       );
       
       // Filter to only NEW files (not yet registered)
-      const newFiles = scannedFiles.filter(path => !existingPaths.has(path));
+      const newFiles = scannedFiles.filter(file => !existingPaths.has(file.path));
       
       // Parse new scanned files to get asset info
-      const parsed = newFiles.map((path) => {
-        const pathLower = path.toLowerCase();
-        const name = path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || path;
+      const parsed = newFiles.map((file) => {
+        const pathLower = file.path.toLowerCase();
+        const name = file.path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || file.path;
         
         let type: "icon" | "sprite" | "bg" = "icon";
-        if (pathLower.includes("backgrounds")) type = "bg";
+        if (file.asset_type === "bin" || pathLower.includes("backgrounds")) type = "bg";
         else if (pathLower.includes("sprites")) type = "sprite";
         
-        return { name, path, type };
+        return { name, path: file.path, type };
       });
       setAssets(parsed);
     }
@@ -131,40 +131,40 @@ export function BulkAddInstancesModal({ isOpen, onClose }: BulkAddInstancesModal
           <div className="space-y-2">
             {bgAssets.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[9px] text-muted-foreground uppercase">Backgrounds:</span>
+                <span className="text-xs text-muted-foreground uppercase">Backgrounds:</span>
                 {bgAssets.slice(0, 5).map(a => (
-                  <span key={a.path} className="text-[10px] px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">
+                  <span key={a.path} className="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">
                     {a.name}
                   </span>
                 ))}
                 {bgAssets.length > 5 && (
-                  <span className="text-[10px] text-muted-foreground">+{bgAssets.length - 5} more</span>
+                  <span className="text-xs text-muted-foreground">+{bgAssets.length - 5} more</span>
                 )}
               </div>
             )}
             {iconAssets.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[9px] text-muted-foreground uppercase">Icons:</span>
+                <span className="text-xs text-muted-foreground uppercase">Icons:</span>
                 {iconAssets.slice(0, 5).map(a => (
-                  <span key={a.path} className="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                  <span key={a.path} className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
                     {a.name}
                   </span>
                 ))}
                 {iconAssets.length > 5 && (
-                  <span className="text-[10px] text-muted-foreground">+{iconAssets.length - 5} more</span>
+                  <span className="text-xs text-muted-foreground">+{iconAssets.length - 5} more</span>
                 )}
               </div>
             )}
             {spriteAssets.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[9px] text-muted-foreground uppercase">Sprites:</span>
+                <span className="text-xs text-muted-foreground uppercase">Sprites:</span>
                 {spriteAssets.slice(0, 5).map(a => (
-                  <span key={a.path} className="text-[10px] px-2 py-1 bg-orange-500/20 text-orange-400 rounded">
+                  <span key={a.path} className="text-xs px-2 py-1 bg-orange-500/20 text-orange-400 rounded">
                     {a.name}
                   </span>
                 ))}
                 {spriteAssets.length > 5 && (
-                  <span className="text-[10px] text-muted-foreground">+{spriteAssets.length - 5} more</span>
+                  <span className="text-xs text-muted-foreground">+{spriteAssets.length - 5} more</span>
                 )}
               </div>
             )}
@@ -185,7 +185,7 @@ export function BulkAddInstancesModal({ isOpen, onClose }: BulkAddInstancesModal
               </div>
               <div className="text-left">
                 <div className="text-xs font-semibold text-white">Add instances to screen</div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   Register assets and create instances on current screen
                 </div>
               </div>
@@ -204,7 +204,7 @@ export function BulkAddInstancesModal({ isOpen, onClose }: BulkAddInstancesModal
               </div>
               <div className="text-left">
                 <div className="text-xs font-semibold text-white">Register only</div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   Add to Objects, add instances manually later
                 </div>
               </div>

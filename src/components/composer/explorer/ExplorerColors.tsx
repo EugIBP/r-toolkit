@@ -19,7 +19,7 @@ export function ExplorerColors() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 ml-1">
             <Palette className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Colors
             </span>
           </div>
@@ -41,7 +41,7 @@ export function ExplorerColors() {
       <ScrollArea className="flex-1 h-full">
         <div className="p-3 space-y-2 pb-20">
           {Object.entries(projectData.Colors).length === 0 ? (
-            <div className="py-10 text-center opacity-30 text-[10px] uppercase tracking-widest font-medium">
+            <div className="py-10 text-center opacity-30 text-xs uppercase tracking-widest font-medium">
               No colors defined
             </div>
           ) : (

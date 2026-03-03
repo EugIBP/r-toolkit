@@ -99,10 +99,10 @@ export function InspectorAsset() {
           ) : (
             <FileCode className="w-3 h-3 text-blue-400 shrink-0" />
           )}
-          <span className="text-[10px] font-mono text-muted-foreground truncate select-all">
+          <span className="text-xs font-mono text-muted-foreground truncate select-all">
             {asset.Name}
           </span>
-          <span className="text-[9px] text-muted-foreground/50 ml-auto">
+          <span className="text-xs text-muted-foreground/50 ml-auto">
             {isBackground ? "Background" : isSprite ? "Sprite" : "Icon"}
           </span>
         </div>
@@ -113,7 +113,7 @@ export function InspectorAsset() {
         {/* Name — editable for icons/sprites, read-only for backgrounds (edit via modal) */}
         {!isBackground && (
           <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
               Registry Name
             </label>
             <div className="relative group">
@@ -132,12 +132,12 @@ export function InspectorAsset() {
 
         {/* Path Info */}
         <div className="space-y-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
             Internal Path
           </label>
           <div className="flex items-start gap-2 bg-black/20 border border-white/5 rounded-lg p-3">
             <HardDrive className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-            <span className="text-[10px] font-mono text-muted-foreground leading-relaxed break-all select-all">
+            <span className="text-xs font-mono text-muted-foreground leading-relaxed break-all select-all">
               {asset.Path}
             </span>
           </div>
@@ -147,7 +147,7 @@ export function InspectorAsset() {
         {isBackground && (
           <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex gap-3">
             <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-emerald-300/70 leading-relaxed">
+            <p className="text-xs text-emerald-300/80 leading-relaxed">
               Click a background in the <b>Objects</b> panel to preview it on canvas. Press <b>Esc</b> or click empty canvas to dismiss. In edit mode use <b>⋮</b> to set, edit or remove.
             </p>
           </div>
@@ -156,27 +156,27 @@ export function InspectorAsset() {
         {/* Asset Type Conversion */}
         {isEditMode && !isBackground && (
           <div className="pt-4 border-t border-white/5 space-y-3">
-            <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
               Asset Type
             </label>
             <div className="flex gap-2">
               {isSprite ? (
                 <button
                   onClick={() => handleConvert("icon")}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                 >
                   <RefreshCcw className="w-3.5 h-3.5" /> To Icon
                 </button>
               ) : (
                 <button
                   onClick={() => handleConvert("sprite")}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                 >
                   <Film className="w-3.5 h-3.5" /> To Sprite
                 </button>
               )}
             </div>
-            <p className="text-[9px] text-muted-foreground/60 text-center">
+            <p className="text-xs text-muted-foreground/60 text-center">
               {isSprite ? "Move to icons/ folder" : "Move to sprites/ folder"}
             </p>
           </div>
@@ -185,7 +185,7 @@ export function InspectorAsset() {
         {/* Add Instance - только для icons/sprites в Edit режиме */}
         {isEditMode && !isBackground && (
           <div className="pt-4 border-t border-white/5 space-y-3">
-            <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
               Actions
             </label>
             <Button
@@ -201,7 +201,7 @@ export function InspectorAsset() {
         {/* Danger Zone — только для не-background ассетов в Edit Mode */}
         {isEditMode && !isBackground && (
           <div className="pt-4 border-t border-white/5 space-y-3">
-            <label className="text-[9px] font-black uppercase tracking-widest text-red-500/50 ml-1">
+            <label className="text-xs font-black uppercase tracking-widest text-red-500/50 ml-1">
               Danger Zone
             </label>
             <Button
@@ -213,15 +213,6 @@ export function InspectorAsset() {
             </Button>
           </div>
         )}
-
-        {/* Info Box */}
-        <div className="p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl flex gap-3">
-          <Info className="w-4 h-4 text-blue-400 shrink-0" />
-          <p className="text-[10px] text-blue-300/70 leading-relaxed">
-            Changing the name here will update all references in the project,
-            but might require a manual save of the <b>description.json</b> file.
-          </p>
-        </div>
       </div>
 
       {/* Add Instance Modal */}

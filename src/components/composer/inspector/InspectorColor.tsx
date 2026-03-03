@@ -68,10 +68,10 @@ export function InspectorColor() {
         />
         <div className="px-5 py-3 bg-white/[0.02] border-t border-white/5 flex items-center gap-2">
           <Palette className="w-3 h-3 text-primary shrink-0" />
-          <span className="text-[10px] font-bold text-white truncate uppercase tracking-wide">
+          <span className="text-xs font-bold text-white truncate uppercase tracking-wide">
             {selectedColorKey}
           </span>
-          <span className="text-[10px] text-muted-foreground ml-auto font-mono">
+          <span className="text-xs text-muted-foreground ml-auto font-mono">
             {hex}
           </span>
         </div>
@@ -80,7 +80,7 @@ export function InspectorColor() {
       <div className="p-5 space-y-6">
         {/* EDIT NAME */}
         <div className="space-y-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
             Variable Name
           </label>
           <div className="relative group">
@@ -96,7 +96,7 @@ export function InspectorColor() {
 
         {/* EDIT HEX */}
         <div className="space-y-2">
-          <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
             HEX Color Value
           </label>
           <div className="flex gap-2">
@@ -137,12 +137,12 @@ export function InspectorColor() {
         {/* DANGER ZONE - только в Edit Mode */}
         {isEditMode && (
           <div className="pt-4 border-t border-white/5 space-y-3">
-            <span className="text-[9px] font-black uppercase tracking-widest text-red-500/50 ml-1">
+            <span className="text-xs font-black uppercase tracking-widest text-red-500/50 ml-1">
               Danger Zone
             </span>
             <button
               onClick={handleDelete}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/5 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-500/5 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" /> Delete Color Asset
             </button>
@@ -150,7 +150,7 @@ export function InspectorColor() {
         )}
 
         <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl">
-          <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+          <p className="text-xs text-muted-foreground leading-relaxed italic">
             <span className="text-primary font-bold">Note:</span> Changing the
             HEX value will update all icons using this color key across all
             screens instantly.

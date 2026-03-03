@@ -259,10 +259,9 @@ export function CreateProjectModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 p-4">
-      <div className="bg-[#121212] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col w-full sm:w-[500px] max-w-2xl max-h-[90vh]">
-        {/* HEADER */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-[#121212] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col w-[33vw] min-w-[400px] max-w-[600px]">
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
           <h2 className="text-sm font-semibold text-white">Create Workspace</h2>
           <button
             onClick={handleClose}
@@ -272,15 +271,12 @@ export function CreateProjectModal({
           </button>
         </div>
 
-        {/* ОБЕРТКА ДЛЯ ЖЕСТКОЙ ФИКСАЦИИ ВЫСОТЫ */}
-        <div className="flex-1 min-h-0 overflow-hidden">
-          {/* SCROLL AREA */}
-          <ScrollArea className="h-full w-full">
-            <div className="p-6 space-y-6">
+        <ScrollArea className="max-h-[85vh]">
+          <div className="p-6 space-y-6">
               {/* Cover Image */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                     Cover Image
                   </span>
                   {thumbUrl && (
@@ -319,7 +315,7 @@ export function CreateProjectModal({
 
               {/* Resolution */}
               <div className="space-y-2">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   Resolution
                 </span>
                 <div className="flex items-center gap-3">
@@ -368,7 +364,7 @@ export function CreateProjectModal({
                           width: e.target.value,
                         }))
                       }
-                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
+                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <span className="text-muted-foreground">x</span>
                     <input
@@ -381,7 +377,7 @@ export function CreateProjectModal({
                           height: e.target.value,
                         }))
                       }
-                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none"
+                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
                 )}
@@ -389,7 +385,7 @@ export function CreateProjectModal({
 
               {/* Alias */}
               <div className="space-y-2">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   Alias (Display Name)
                 </span>
                 <input
@@ -401,23 +397,27 @@ export function CreateProjectModal({
 
               {/* Project Path */}
               <div className="space-y-2">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   Project Location
                 </span>
                 <div
                   onClick={handleSelectFolder}
-                  className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 cursor-pointer hover:border-white/10 transition-colors min-w-0"
+                  className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 min-w-0 cursor-pointer hover:border-white/10 transition-colors"
                 >
                   <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
-                  <span className="text-xs font-mono text-muted-foreground truncate flex-1">
-                    {selectedFolder || "Click to select location"}
+                  <span className="text-xs font-mono text-muted-foreground select-all">
+                    {selectedFolder
+                      ? selectedFolder.length > 72
+                        ? `${selectedFolder.slice(0, 72)}...`
+                        : selectedFolder
+                      : "Click to select location"}
                   </span>
                 </div>
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   Description / Notes
                 </span>
                 <textarea
@@ -430,10 +430,9 @@ export function CreateProjectModal({
               </div>
             </div>
           </ScrollArea>
-        </div>
 
         {/* FOOTER */}
-        <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between shrink-0 rounded-b-2xl">
+        <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
           <button
             onClick={handleClose}
             className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white/50 hover:text-white hover:bg-white/5 transition-colors"

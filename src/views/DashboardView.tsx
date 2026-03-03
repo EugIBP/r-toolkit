@@ -92,7 +92,7 @@ export function DashboardView() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={handleVersionClick}
-                    className="text-[10px] font-medium text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1"
+                    className="text-xs font-medium text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1"
                   >
                     v{appVersion}
                     {availableUpdate && (
@@ -129,7 +129,7 @@ export function DashboardView() {
                   <FilePlus className="w-4 h-4 text-primary" />
                   <div className="flex flex-col">
                     <span className="text-xs">Create New</span>
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       Create new workspace
                     </span>
                   </div>
@@ -144,7 +144,7 @@ export function DashboardView() {
                   <FolderOpen className="w-4 h-4 opacity-70" />
                   <div className="flex flex-col">
                     <span className="text-xs">Open Existing</span>
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       Select description.json
                     </span>
                   </div>

@@ -59,14 +59,14 @@ export function InspectorIcon() {
             <ImageIcon className="w-3 h-3 text-blue-400 shrink-0" />
           )}
           {isViewMode ? (
-            <span className="text-[10px] font-mono text-muted-foreground truncate select-all">
+            <span className="text-xs font-mono text-muted-foreground truncate select-all">
               {icon.Name}
             </span>
           ) : (
             <input
               value={icon.Name}
               onChange={(e) => renameInstance(activeScreenIdx, selectedIconIndex, e.target.value)}
-              className="flex-1 bg-transparent text-[10px] font-mono text-muted-foreground outline-none focus:text-white transition-colors"
+              className="flex-1 bg-transparent text-xs font-mono text-muted-foreground outline-none focus:text-white transition-colors"
             />
           )}
         </div>
@@ -105,7 +105,7 @@ export function InspectorIcon() {
                   setSelectedIcon(screen.Icons?.length ? screen.Icons.length - 1 : 0);
                 }
               }}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-white transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest text-white transition-all active:scale-95"
             >
               <Copy className="w-3.5 h-3.5" /> Duplicate
             </button>
@@ -116,7 +116,7 @@ export function InspectorIcon() {
                   setSelectedIcon(null);
                 }
               }}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest text-red-400 transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-xs font-bold uppercase tracking-widest text-red-400 transition-all active:scale-95"
             >
               <Trash2 className="w-3.5 h-3.5" /> Remove
             </button>

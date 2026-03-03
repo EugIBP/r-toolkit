@@ -19,6 +19,7 @@ interface CanvasStore {
   activeTab: string;
   activeScreenIdx: number;
   assetFilter: "all" | "bg" | "icons" | "sprites" | "stacked";
+  stackThreshold: number;
   // New structure: { screenIdx: { assetName: value } }
   iconFrames: Record<number, Record<string, number>>;
   iconFrameCounts: Record<number, Record<string, number>>;
@@ -56,6 +57,7 @@ interface CanvasStore {
   setSearchQuery: (val: string) => void;
   setActiveTab: (tab: string) => void;
   setAssetFilter: (filter: "all" | "bg" | "icons" | "sprites" | "stacked") => void;
+  setStackThreshold: (value: number) => void;
   setIconFrame: (screenIdx: number, assetName: string, frame: number) => void;
   setIconFrameCount: (screenIdx: number, assetName: string, count: number) => void;
   setIconOrientation: (
@@ -89,6 +91,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   activeTab: "screens",
   activeScreenIdx: 0,
   assetFilter: "all",
+  stackThreshold: 5,
   iconFrames: {},
   iconFrameCounts: {},
   iconOrientations: {},
@@ -161,6 +164,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   setSearchQuery: (val) => set({ searchQuery: val }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   setAssetFilter: (filter) => set({ assetFilter: filter }),
+  setStackThreshold: (value) => set({ stackThreshold: Math.max(1, Math.min(100, value)), hasUnsavedChanges: true }),
   setHasUnsavedChanges: (val) => set({ hasUnsavedChanges: val }),
   setExpandedStackIndices: (indices: number[] | null) => 
     set({ expandedStackIndices: indices }),
@@ -237,7 +241,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     if (!baseDir) return;
     const base = baseDir.replace(/[\\/]$/, "");
 
-    const { iconFrames, iconFrameCounts, iconOrientations, selectedStates, snapToGrid, gridSize, allowDnd, autoSaveEnabled, autoSaveInterval } = get();
+    const { iconFrames, iconFrameCounts, iconOrientations, selectedStates, snapToGrid, gridSize, allowDnd, autoSaveEnabled, autoSaveInterval, stackThreshold } = get();
     const historyMaxSteps = useHistoryStore.getState().maxSteps;
 
     // Build spriteAssets map from current projectData
@@ -262,7 +266,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         invoke("save_text_file", {
           path: `${base}/.rtoolkit/settings.json`,
           content: JSON.stringify(
-            { snapToGrid, gridSize, allowDnd, autoSaveEnabled, autoSaveInterval, historyMaxSteps, lastModified: Date.now() },
+            { snapToGrid, gridSize, allowDnd, autoSaveEnabled, autoSaveInterval, stackThreshold, historyMaxSteps, lastModified: Date.now() },
             null, 2,
           ),
         }),
@@ -299,6 +303,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     let projectAllowDnd = true;
     let projectAutoSaveEnabled = true;
     let projectAutoSaveInterval = 10000;
+    let projectStackThreshold = 5;
 
     try {
       const settingsContent = await invoke<string>("load_project", { filePath: `${base}/.rtoolkit/settings.json` });
@@ -309,6 +314,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       projectAllowDnd = settings.allowDnd ?? true;
       projectAutoSaveEnabled = settings.autoSaveEnabled ?? true;
       projectAutoSaveInterval = settings.autoSaveInterval ?? 10000;
+      projectStackThreshold = settings.stackThreshold ?? 5;
       console.log("Loaded settings from project:", settings);
     } catch {
       // No settings.json in project folder, use global Tauri store as fallback
@@ -333,6 +339,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       allowDnd: projectAllowDnd,
       autoSaveEnabled: finalAutoSaveEnabled,
       autoSaveInterval: finalAutoSaveInterval,
+      stackThreshold: projectStackThreshold,
     });
 
     set({ hasUnsavedChanges: false });

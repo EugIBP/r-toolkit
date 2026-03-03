@@ -77,7 +77,7 @@ export function HistoryPanel() {
         >
           <Clock className="w-4 h-4" />
           {entries.length > 0 && (
-            <span className="text-[10px] font-mono">
+            <span className="text-xs font-mono">
               {currentIndex + 1}/{entries.length}
             </span>
           )}
@@ -132,7 +132,7 @@ export function HistoryPanel() {
                 onChange={(e) => setMaxSteps(parseInt(e.target.value) || 50)}
                 min={1}
                 max={100}
-                className="w-12 h-6 text-center text-xs bg-white/5 border border-white/10 rounded focus:outline-none focus:border-primary/50"
+                className="w-12 h-6 text-center text-xs bg-white/5 border border-white/10 rounded focus:outline-none focus:border-primary/50 [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <button
                 onClick={() => setMaxSteps(maxSteps + 1)}
@@ -150,16 +150,19 @@ export function HistoryPanel() {
                 No history yet. Start making changes!
               </div>
             ) : (
-              entries.map((entry, idx) => (
-                <HistoryItem
-                  key={entry.id}
-                  entry={entry}
-                  index={idx}
-                  isActive={idx === currentIndex}
-                  onClick={() => jumpTo(idx)}
-                  formatTime={formatTime}
-                />
-              ))
+              [...entries].reverse().map((entry, reversedIdx) => {
+                const originalIdx = entries.length - 1 - reversedIdx;
+                return (
+                  <HistoryItem
+                    key={entry.id}
+                    entry={entry}
+                    index={originalIdx}
+                    isActive={originalIdx === currentIndex}
+                    onClick={() => jumpTo(originalIdx)}
+                    formatTime={formatTime}
+                  />
+                );
+              })
             )}
           </ScrollArea>
 
@@ -204,7 +207,7 @@ function HistoryItem({
       }`}
     >
       <div
-        className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${
+        className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
           isActive ? "bg-primary text-white" : "bg-white/10 text-muted-foreground"
         }`}
       >
@@ -212,7 +215,7 @@ function HistoryItem({
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-xs font-medium truncate">{entry.description}</div>
-        <div className="text-[10px] text-muted-foreground mt-0.5">
+        <div className="text-xs text-muted-foreground mt-0.5">
           {formatTime(entry.timestamp)}
         </div>
       </div>

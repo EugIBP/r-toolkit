@@ -39,7 +39,7 @@ export function SettingsModal() {
         {/* Контент */}
         <div className="p-6 space-y-6">
           <div className="space-y-4">
-            <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               Grid & Snapping
             </h3>
 
@@ -85,7 +85,7 @@ export function SettingsModal() {
           </div>
 
           <div className="space-y-4 pt-2">
-            <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               About
             </h3>
             <button

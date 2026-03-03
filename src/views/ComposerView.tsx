@@ -8,13 +8,11 @@ import { SmartIcon } from "@/components/canvas/entities/SmartIcon";
 import { Explorer } from "@/components/composer/Explorer";
 import { Inspector } from "@/components/composer/Inspector";
 import { AssetsToolbar, ModeToolbar } from "@/components/composer/ComposerToolbar";
-import { ZoomToolbar } from "@/components/composer/ZoomToolbar";
+import { HotkeysPanel } from "@/components/composer/HotkeysPanel";
 import { HistoryPanel } from "@/components/composer/HistoryPanel";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { ArrowLeft } from "lucide-react";
 import { useCanvasInteraction } from "./hooks/useCanvasInteraction";
-
-const STACK_THRESHOLD = 5;
 
 export function ComposerView() {
   const { projectData, projectPath, saveProject } = useProjectStore();
@@ -38,6 +36,7 @@ export function ComposerView() {
     iconFrameCounts,
     previewBgPath,
     setPreviewBgPath,
+    stackThreshold,
   } = useCanvasStore();
 
   const { containerRef, offset, isMiddlePanning, handleMouseDown } =
@@ -102,14 +101,14 @@ export function ComposerView() {
     const icons = projectData.Screens[activeScreenIdx].Icons;
     const stackMap = new Map<string, number[]>();
     icons.forEach((icon: any, idx: number) => {
-      const key = `${Math.round(icon.X / STACK_THRESHOLD)}_${Math.round(icon.Y / STACK_THRESHOLD)}`;
+      const key = `${Math.round(icon.X / stackThreshold)}_${Math.round(icon.Y / stackThreshold)}`;
       if (!stackMap.has(key)) stackMap.set(key, []);
       stackMap.get(key)!.push(idx);
     });
     const result = new Map<string, number[]>();
     stackMap.forEach((indices, key) => { if (indices.length > 1) result.set(key, indices); });
     return result;
-  }, [projectData, activeScreenIdx]);
+  }, [projectData, activeScreenIdx, stackThreshold]);
 
   // Батчинг рендера иконок: показываем по BATCH_SIZE штук за раз,
   // чтобы не блокировать UI при открытии экрана с большим количеством ассетов.
@@ -136,7 +135,7 @@ export function ComposerView() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-[#050505] text-white/20 gap-4">
         <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Initialising Canvas...</span>
+        <span className="text-xs uppercase tracking-[0.2em] font-bold">Initialising Canvas...</span>
       </div>
     );
   }
@@ -359,7 +358,7 @@ export function ComposerView() {
           </div>
         </div>
 
-        <ZoomToolbar />
+        <HotkeysPanel />
       </div>
 
       <Inspector />

@@ -66,7 +66,7 @@ export function ToolsSection({ searchQuery }: ToolsSectionProps) {
                     <h3 className="text-sm font-medium text-white truncate">
                       {tool.name}
                     </h3>
-                    <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                       {tool.description}
                     </p>
                   </div>
@@ -95,7 +95,7 @@ export function ToolsSection({ searchQuery }: ToolsSectionProps) {
                     <h3 className="text-sm font-medium text-white truncate">
                       {tool.name}
                     </h3>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {tool.description}
                     </p>
                   </div>

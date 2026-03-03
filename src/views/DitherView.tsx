@@ -91,7 +91,7 @@ export function DitherView() {
               </h2>
               <div className="flex items-center gap-2 mt-1 opacity-50">
                 <Sparkles className="w-3 h-3 text-primary" />
-                <p className="text-[10px] font-medium uppercase tracking-[0.3em]">
+                <p className="text-xs font-medium uppercase tracking-[0.3em]">
                   Batch Processing Engine
                 </p>
               </div>
@@ -103,7 +103,7 @@ export function DitherView() {
         <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
           {/* Card Header */}
           <div className="border-b border-white/10 p-6 bg-white/[0.02]">
-            <h3 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Conversion Parameters
             </h3>
           </div>
@@ -114,7 +114,7 @@ export function DitherView() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Input Directory */}
               <div className="space-y-3">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground ml-1">
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">
                   Input Directory
                 </label>
                 <div className="flex gap-2 pt-3">
@@ -138,7 +138,7 @@ export function DitherView() {
 
               {/* Output Directory */}
               <div className="space-y-3">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground ml-1">
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">
                   Output Directory
                 </label>
                 <div className="flex gap-2 pt-3">
@@ -165,7 +165,7 @@ export function DitherView() {
             <div className="flex flex-col md:flex-row items-end justify-between gap-6">
               {/* Mode Selection */}
               <div className="space-y-3 w-full max-w-xs">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground ml-1">
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">
                   Dithering Mode
                 </label>
                 <div className="flex bg-black/40 border border-white/10 rounded-xl p-1">
@@ -178,7 +178,7 @@ export function DitherView() {
                       key={mode.value}
                       onClick={() => !isProcessing && setDitherMode(mode.value)}
                       disabled={isProcessing}
-                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         ditherMode === mode.value
                           ? "bg-primary/20 text-primary ring-1 ring-primary/30"
                           : "text-muted-foreground hover:text-white hover:bg-white/5"
@@ -209,7 +209,7 @@ export function DitherView() {
             {isProcessing && (
               <div className="pt-6 border-t border-white/5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Progress
                   </span>
                   <span className="text-xs font-semibold text-white">
@@ -222,7 +222,7 @@ export function DitherView() {
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground italic">
+                <p className="text-xs text-muted-foreground italic">
                   {statusMsg}
                 </p>
               </div>

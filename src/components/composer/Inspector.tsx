@@ -35,7 +35,7 @@ export function Inspector() {
     <div className="w-80 border-l border-white/10 bg-[#0a0a0a] flex flex-col h-full z-30 shrink-0 shadow-xl overflow-hidden animate-in slide-in-from-right duration-300">
       <div className="h-12 border-b border-white/10 flex items-center px-5 bg-white/[0.02] shrink-0">
         <Icon className="w-4 h-4 text-primary mr-2 opacity-80" />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-white/90">
+        <span className="text-xs font-bold uppercase tracking-widest text-white/90">
           {title}
         </span>
       </div>

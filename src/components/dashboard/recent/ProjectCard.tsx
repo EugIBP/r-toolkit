@@ -78,7 +78,7 @@ export function ProjectCard({ project }: { project: any }) {
         <h3 className="font-bold text-white text-sm truncate">
           {project.displayName || project.name}
         </h3>
-        <p className="text-[10px] text-muted-foreground font-mono truncate opacity-50">
+        <p className="text-xs text-muted-foreground font-mono truncate opacity-50">
           {project.path}
         </p>
       </div>

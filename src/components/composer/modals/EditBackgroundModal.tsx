@@ -95,7 +95,7 @@ export function EditBackgroundModal({ isOpen, onClose, assetName }: EditBackgrou
 
             {/* Registry Name */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                 Registry Name
               </span>
               <div className="relative">
@@ -111,7 +111,7 @@ export function EditBackgroundModal({ isOpen, onClose, assetName }: EditBackgrou
 
             {/* Internal Path */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                 Internal Path
               </span>
               <div className="relative">

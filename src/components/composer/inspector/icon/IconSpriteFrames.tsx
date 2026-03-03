@@ -28,12 +28,12 @@ export function IconSpriteFrames({ screenIdx, assetName, isViewMode }: Props) {
         : "bg-amber-500/5 border border-amber-500/10"
     }`}>
       <div className="flex items-center justify-between">
-        <h4 className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${
+        <h4 className={`text-xs font-black uppercase tracking-widest flex items-center gap-2 ${
           isViewMode ? "text-emerald-400/80" : "text-amber-400/80"
         }`}>
           <LayoutGrid className="w-3 h-3" /> Frame Preview
         </h4>
-        <span className={`text-[10px] font-mono ${isViewMode ? "text-emerald-400" : "text-amber-400"}`}>
+        <span className={`text-xs font-mono ${isViewMode ? "text-emerald-400" : "text-amber-400"}`}>
           {currentFrame + 1} / {frames}
         </span>
       </div>
@@ -64,7 +64,7 @@ export function IconSpriteFrames({ screenIdx, assetName, isViewMode }: Props) {
                 onChange={(e) =>
                   setIconFrameCount(screenIdx, assetName, Math.max(1, parseInt(e.target.value) || 1))
                 }
-                className="w-full bg-black/40 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-amber-500/30 transition-all"
+                className="w-full bg-black/40 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-amber-500/30 transition-all [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
             <div className="space-y-1">

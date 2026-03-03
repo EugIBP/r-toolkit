@@ -116,7 +116,7 @@ export function AddInstanceModal({ isOpen, onClose, assetName, screenIdx }: AddI
         <div className="p-5 space-y-4">
           {/* Instance Name */}
           <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
               Instance Name *
             </label>
             <input
@@ -129,14 +129,14 @@ export function AddInstanceModal({ isOpen, onClose, assetName, screenIdx }: AddI
               className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-bold text-white outline-none focus:border-primary/40 transition-all"
             />
             {error && (
-              <p className="text-[10px] text-red-400 ml-1">{error}</p>
+              <p className="text-xs text-red-400 ml-1">{error}</p>
             )}
           </div>
           
           {/* Coordinates */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
                 X
               </label>
               <input
@@ -144,11 +144,11 @@ export function AddInstanceModal({ isOpen, onClose, assetName, screenIdx }: AddI
                 value={x}
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => setX(parseInt(e.target.value) || 0)}
-                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all"
+                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
                 Y
               </label>
               <input
@@ -156,7 +156,7 @@ export function AddInstanceModal({ isOpen, onClose, assetName, screenIdx }: AddI
                 value={y}
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => setY(parseInt(e.target.value) || 0)}
-                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all"
+                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export function AddInstanceModal({ isOpen, onClose, assetName, screenIdx }: AddI
           {/* States */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
                 States
               </label>
               <Button
@@ -183,12 +183,12 @@ export function AddInstanceModal({ isOpen, onClose, assetName, screenIdx }: AddI
                     value={state.Name}
                     onChange={(e) => handleStateChange(idx, "Name", e.target.value.toUpperCase())}
                     placeholder="STATE"
-                    className="flex-1 bg-transparent border-none outline-none text-[10px] font-bold text-white uppercase"
+                    className="flex-1 bg-transparent border-none outline-none text-xs font-bold text-white uppercase"
                   />
                   <select
                     value={state.Color}
                     onChange={(e) => handleStateChange(idx, "Color", e.target.value)}
-                    className="bg-black/40 border border-white/5 rounded px-2 py-1 text-[10px] text-white outline-none cursor-pointer"
+                    className="bg-black/40 border border-white/5 rounded px-2 py-1 text-xs text-white outline-none cursor-pointer"
                   >
                     {colors.map((c) => (
                       <option key={c} value={c} className="bg-[#121212]">{c}</option>

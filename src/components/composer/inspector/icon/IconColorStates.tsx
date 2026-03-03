@@ -38,7 +38,7 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
   return (
     <div className="space-y-4 pt-4 border-t border-white/5">
       <div className="flex items-center justify-between px-1">
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-white/80 flex items-center gap-2">
+        <h4 className="text-xs font-black uppercase tracking-widest text-white/80 flex items-center gap-2">
           <PaintBucket className="w-3 h-3 text-blue-400" /> Color States
         </h4>
         {!isViewMode && (
@@ -78,7 +78,7 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
                       onChange={(e) =>
                         updateIconState(screenIdx, iconIdx, idx, { Name: e.target.value.toUpperCase() })
                       }
-                      className={`w-full rounded-md py-1.5 px-2 text-[10px] font-bold outline-none transition-colors ${
+                      className={`w-full rounded-md py-1.5 px-2 text-xs font-bold outline-none transition-colors ${
                         isViewMode
                           ? "bg-transparent border-none text-white cursor-pointer pointer-events-none"
                           : "bg-black/40 border border-white/5 text-white focus:border-primary/40 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -99,7 +99,7 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
                             updateIconState(screenIdx, iconIdx, idx, { Color: e.target.value });
                             setSelectedState(screenIdx, assetName, idx);
                           }}
-                          className="flex-1 bg-black/40 hover:bg-black/60 border border-white/5 rounded-md py-1.5 px-2 text-[9px] font-bold text-muted-foreground hover:text-white outline-none cursor-pointer appearance-none transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="flex-1 bg-black/40 hover:bg-black/60 border border-white/5 rounded-md py-1.5 px-2 text-xs font-bold text-muted-foreground hover:text-white outline-none cursor-pointer appearance-none transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           {Object.keys(projectData.Colors).map((c) => (
                             <option key={c} value={c} className="bg-[#121212]">

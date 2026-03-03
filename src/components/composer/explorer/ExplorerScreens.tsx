@@ -126,7 +126,7 @@ export function ExplorerScreens({
             </span>
           </div>
           <div className="flex items-center justify-between pl-1">
-            <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-medium">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
               {instances.length} instance{instances.length !== 1 ? "s" : ""}
             </span>
           </div>
@@ -139,7 +139,7 @@ export function ExplorerScreens({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="py-10 text-center opacity-30 text-[10px] uppercase tracking-widest font-medium"
+                className="py-10 text-center opacity-30 text-xs uppercase tracking-widest font-medium"
               >
                 No instances on screen
               </motion.div>
@@ -174,7 +174,7 @@ export function ExplorerScreens({
                     ) : (
                       <Box className="w-4 h-4 opacity-60 text-blue-400 shrink-0" />
                     )}
-                    <span className="text-[10px] font-semibold text-white truncate">
+                    <span className="text-xs font-semibold text-white truncate">
                       {icon.Name}
                     </span>
                     {isBgInstance ? (
@@ -182,7 +182,7 @@ export function ExplorerScreens({
                         BG
                       </span>
                     ) : (
-                      <span className="text-[9px] text-muted-foreground ml-auto font-mono shrink-0">
+                      <span className="text-xs text-muted-foreground ml-auto font-mono shrink-0">
                         {icon.X}, {icon.Y}
                       </span>
                     )}
@@ -204,7 +204,7 @@ export function ExplorerScreens({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 ml-1">
             <Monitor className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Screens
             </span>
           </div>
@@ -231,7 +231,7 @@ export function ExplorerScreens({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="py-10 text-center opacity-30 text-[10px] uppercase tracking-widest font-medium"
+              className="py-10 text-center opacity-30 text-xs uppercase tracking-widest font-medium"
             >
               No screens defined
             </motion.div>
@@ -256,7 +256,7 @@ export function ExplorerScreens({
                 >
                   <Layout className="w-5 h-5 shrink-0 opacity-60" />
                   <span className="truncate text-xs font-semibold">{s.Name}</span>
-                  <span className="text-[9px] text-muted-foreground ml-auto font-mono shrink-0">
+                  <span className="text-xs text-muted-foreground ml-auto font-mono shrink-0">
                     {s.Icons?.length ?? 0}
                   </span>
                 </motion.button>

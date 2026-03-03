@@ -51,11 +51,14 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
       const existingPaths = new Set(state.projectData.Objects.map((o: any) => o.Path));
       const newObjects = [...state.projectData.Objects];
 
-      state.scannedFiles.forEach((path) => {
-        if (!existingPaths.has(path)) {
-          const name = path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || path;
-          const isBackground = path.toLowerCase().includes("backgrounds");
-          newObjects.push({ Name: name, Path: path, Type: isBackground ? "Bin" : "Ico" });
+      console.log("[registerAllAssets] scannedFiles:", state.scannedFiles);
+
+      state.scannedFiles.forEach((file) => {
+        if (!existingPaths.has(file.path)) {
+          const name = file.path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || file.path;
+          const type = file.asset_type === "bin" ? "Bin" : file.asset_type === "pal" ? "Pal" : "Ico";
+          console.log("[registerAllAssets] file:", file.path, "assetType:", file.asset_type, "-> Type:", type);
+          newObjects.push({ Name: name, Path: file.path, Type: type });
         }
       });
 
@@ -71,20 +74,20 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
     const newObjects = [...projectData.Objects];
     const existingPaths = new Set(projectData.Objects.map((o: any) => o.Path));
 
-    scannedFiles.forEach((path) => {
-      if (!existingPaths.has(path)) {
-        const name = path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || path;
-        const pathLower = path.toLowerCase();
-        const isBackground = pathLower.includes("backgrounds");
+    scannedFiles.forEach((file) => {
+      if (!existingPaths.has(file.path)) {
+        const name = file.path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || file.path;
+        const isBackground = file.asset_type === "bin";
+        const type = isBackground ? "Bin" : file.asset_type === "pal" ? "Pal" : "Ico";
 
         newObjects.push({
           Name: name,
-          Path: path,
-          Type: isBackground ? "Bin" : "Ico",
+          Path: file.path,
+          Type: type,
         });
 
         if (!isBackground) {
-          newInstances.push({ name, path });
+          newInstances.push({ name, path: file.path });
         }
       }
     });
