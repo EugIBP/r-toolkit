@@ -55,17 +55,24 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Release v0.3.1
+            ## Release v0.3.5
 
-            ### Auto-Update System
-            - Update badge next to version number
+            ### New Features
+            - Hotkeys Panel moved to main interface for quicker access
+            - Zoom controls in Mode Toolbar
+            - Asset Explorer: directory grouping with expand/collapse (accordion)
+            - Smart Stacking: stackThreshold input with persistent saving
 
-            ### UI/UX
-            - Fixed CreateProjectModal - responsive layout, scrollable content, always visible buttons
+            ### UI/UX Improvements
+            - Unified font sizes (min 12px)
+            - Removed number input spinners
+            - History reversed (most recent first)
+            - Inspector: cleaned up info boxes, enhanced hint visibility
 
-            ### Fixes
-            - Removed auto-show update dialog on startup (now only badge)
-            - Various improvements
+            ### Fixes & Stability
+            - Fixed data sync: Rust snake_case mapping to TypeScript
+            - Fixed useMemo dependencies for asset stacks/icons
+            - Updated Rust backend to scan all directories and return consistent metadata
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
