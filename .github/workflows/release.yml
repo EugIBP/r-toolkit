@@ -55,20 +55,15 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Release v0.3.7
+            ## Release v0.3.8
 
-            ### New Features
-            - **Pal Asset Support**: Added native support for palette (Pal) type assets. Projects with existing Pal assets now preserve their type when saved. New Pal button added to Icon Asset Inspector for converting between Icon/Sprite/Pal types.
-            - **Smart Recent Projects**: Projects now automatically sort by last modified date. When you open and work on a project, it moves to the top of the recent projects list after 3 seconds.
-            - **Relative Time Display**: Recent projects now show "now", "1 minute ago", "2 hours ago", etc. instead of full dates and paths.
+            🎨 **UI/UX Improvements**
+            - Unified design system with consistent components across all views
+            - Improved stacked icons: all icons in expanded stack now highlight at 100%
+            - Better contrast: dimmed icons reduced to 5% opacity
 
-            ### UI/UX Improvements
-            - **Project Cards**: Replaced full file path with relative timestamp for cleaner appearance
-            - **Update Dialog**: Release notes now display without auto-generated icons - shows plain text as written
-
-            ### Fixes & Stability
-            - Fixed Pal assets being incorrectly converted to Icon type when saving projects
-            - Fixed recent projects not updating position after opening
+            🔧 **Fixes & Stability**
+            - Fixed stacked icons highlighting - now all icons in stack show at full brightness when expanded
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

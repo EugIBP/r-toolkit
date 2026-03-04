@@ -30,7 +30,7 @@ export function IconTransform({ screenIdx, iconIdx, isViewMode }: Props) {
               onChange={(e) =>
                 updateIcon(screenIdx, iconIdx, { [axis]: parseInt(e.target.value) || 0 })
               }
-              className="w-full bg-[#181818] border border-white/5 rounded-lg py-2 pl-7 pr-2 text-xs text-white focus:border-primary/40 outline-none transition-all font-mono [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full bg-bg-surface border border-white/5 rounded-lg py-2 pl-7 pr-2 text-xs text-white focus:border-primary/40 outline-none transition-all font-mono [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         ))}

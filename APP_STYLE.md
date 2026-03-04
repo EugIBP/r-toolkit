@@ -10,6 +10,26 @@ Dark, professional interface with high contrast and modern aesthetics. Inspired 
 
 ## Color Palette
 
+### CSS Variables
+
+The project uses CSS custom properties for consistent theming. All colors are defined in `src/index.css`.
+
+**Background Colors:**
+| Variable | Hex | Class | Usage |
+|----------|-----|-------|-------|
+| `--bg-canvas` | `#050505` | `bg-bg-canvas` | Main workspace background |
+| `--bg-sidebar` | `#030303` | `bg-bg-sidebar` | Left sidebar (Explorer) |
+| `--bg-panel` | `#0a0a0a` | `bg-bg-panel` | Right panel, Cards |
+| `--bg-elevated` | `#121212` | `bg-bg-elevated` | Modals, Dropdowns, Toolbars |
+| `--bg-surface` | `#181818` | `bg-bg-surface` | Input fields |
+
+**Border Colors:**
+| Variable | Value | Class | Usage |
+|----------|-------|-------|-------|
+| `--border-subtle` | `white/5%` | `border-border-subtle` | Subtle separators |
+| `--border-default` | `white/10%` | `border-border-default` | Panels, cards |
+| `--border-active` | `white/20%` | `border-border-active` | Active states |
+
 ### Background Colors
 
 | Token | Hex | Usage |
@@ -560,18 +580,192 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 ---
 
+## Unified UI Components
+
+After the UI unification effort (v0.3.8), the project now uses a consistent set of reusable components.
+
+### Typography
+
+```tsx
+import { PageTitle, SectionLabel, BodyText, ItemName, MonoText, EmptyState, Badge } from "@/components/ui/typography";
+```
+
+**Usage:**
+```tsx
+<PageTitle>Resource Toolkit</PageTitle>
+<SectionLabel>Section Title</SectionLabel>
+<BodyText>Description text</BodyText>
+<ItemName>Item Name</ItemName>
+<MonoText>/path/to/file.png</MonoText>
+<EmptyState>No items found</EmptyState>
+<Badge color="emerald">Active</Badge>
+```
+
+**Badge colors:** `emerald`, `amber`, `blue`, `red`
+
+### BackButton
+
+```tsx
+import { BackButton } from "@/components/ui/back-button";
+```
+
+**Usage:**
+```tsx
+<BackButton label="Back to Workspace" onClick={handleBack} />
+```
+
+### FloatingToolbar
+
+```tsx
+import { FloatingToolbar, ToolbarDivider } from "@/components/ui/floating-toolbar";
+```
+
+**Usage:**
+```tsx
+<FloatingToolbar position="top-left">
+  <Button variant="ghost-dark" size="icon-xs">
+    <Search className="w-3.5 h-3.5" />
+  </Button>
+  <ToolbarDivider />
+  <Button variant="ghost-dark" size="icon-xs">
+    <Settings className="w-3.5 h-3.5" />
+  </Button>
+</FloatingToolbar>
+```
+
+**Positions:** `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-right`
+
+### Panel
+
+```tsx
+import { Panel, PanelHeader, PanelContent, PanelFooter } from "@/components/ui/panel";
+```
+
+**Usage:**
+```tsx
+<Panel side="right" width="w-80">
+  <PanelHeader title="Inspector" icon={<SettingsIcon />} />
+  <PanelContent>
+    {/* Content */}
+  </PanelContent>
+  <PanelFooter>
+    {/* Footer actions */}
+  </PanelFooter>
+</Panel>
+```
+
+### Card
+
+```tsx
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+```
+
+**Usage:**
+```tsx
+<Card>
+  <CardHeader>
+    <h3 className="text-sm font-bold text-white">Title</h3>
+  </CardHeader>
+  <CardContent>
+    {/* Content */}
+  </CardContent>
+  <CardFooter>
+    {/* Actions */}
+  </CardFooter>
+</Card>
+```
+
+### ModeButton
+
+```tsx
+import { ModeButton } from "@/components/ui/mode-button";
+```
+
+**Usage:**
+```tsx
+<ModeButton active={mode === "view"} onClick={() => setMode("view")}>
+  View
+</ModeButton>
+```
+
+---
+
+## Extended shadcn Components
+
+### Button
+
+Additional variants added for APP_STYLE.md patterns:
+
+```tsx
+import { Button } from "@/components/ui/button";
+```
+
+**Variants:**
+- `default` - Standard shadcn button
+- `primary` - `bg-primary/20 text-primary` (accent actions)
+- `danger` - Red danger button with uppercase text
+- `ghost-dark` - Dark ghost button for toolbars
+- `destructive`, `outline`, `secondary`, `ghost`, `link` - Standard shadcn
+
+**Usage:**
+```tsx
+<Button variant="primary">Add Item</Button>
+<Button variant="danger">Delete</Button>
+<Button variant="ghost-dark" size="icon-xs">
+  <Search className="w-3.5 h-3.5" />
+</Button>
+```
+
+### Input
+
+Extended with `icon` prop and `variant="dark"`:
+
+```tsx
+import { Input } from "@/components/ui/input";
+```
+
+**Usage:**
+```tsx
+<Input placeholder="Search..." />
+<Input variant="dark" icon={<Search />} placeholder="Find asset..." />
+<Input type="number" className="[&::-webkit-outer-spin-button]:appearance-none" />
+```
+
+### Tabs
+
+Extended with `variant="pill"` for Explorer:
+
+```tsx
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+```
+
+**Usage:**
+```tsx
+<Tabs value={activeTab} onValueChange={setActiveTab}>
+  <TabsList variant="pill" className="w-full grid grid-cols-3 h-11">
+    <TabsTrigger>Screens</TabsTrigger>
+    <TabsTrigger>Objects</TabsTrigger>
+    <TabsTrigger>Colors</TabsTrigger>
+  </TabsList>
+</Tabs>
+```
+
+---
+
 ## Usage Rules
 
-1. **Use shadcn components**: Prefer Button, Input, Tabs over custom implementations
-2. **Use semantic colors**: Use `primary`, `emerald`, `amber`, `blue`, `red` for accent colors
-3. **Consistent sizing**: Use `text-xs` as the main body size throughout
-4. **Text hierarchy**: 
+1. **Use unified components**: Prefer Typography, BackButton, FloatingToolbar, Panel, Card, ModeButton
+2. **Use shadcn components**: Prefer Button, Input, Tabs over custom implementations
+3. **Use CSS variables**: Use `bg-bg-canvas`, `bg-bg-panel`, etc. instead of hardcoded colors
+4. **Use semantic colors**: Use `primary`, `emerald`, `amber`, `blue`, `red` for accent colors
+5. **Consistent sizing**: Use `text-xs` as the main body size throughout
+6. **Text hierarchy**:
    - `font-bold` for card titles
    - `font-semibold` for buttons and labels
    - `font-medium` for body text
-5. **Uppercase tracking**: Use `uppercase tracking-widest` for section labels
-6. **Icons**: Use `opacity-60` for default state, full opacity for active
-7. **Borders**: Use `white/5` for inputs, `white/10` for panels
-8. **Hover states**: Always provide hover feedback on interactive elements
-9. **Mode buttons**: Use `rounded-xl` + `ring-1` active state pattern
-10. **Floating toolbar**: Use consistent positioning (`top-6`, `left-8`/`right-8`)
+7. **Uppercase tracking**: Use `uppercase tracking-widest` for section labels (or use `<SectionLabel>`)
+8. **Icons**: Use `opacity-60` for default state, full opacity for active
+9. **Borders**: Use `white/5` for inputs, `white/10` for panels
+10. **Hover states**: Always provide hover feedback on interactive elements
+11. **Mode buttons**: Use `rounded-xl` + `ring-1` active state pattern (or use `<ModeButton>`)
+12. **Floating toolbar**: Use consistent positioning (`top-6`, `left-8`/`right-8`) (or use `<FloatingToolbar>`)

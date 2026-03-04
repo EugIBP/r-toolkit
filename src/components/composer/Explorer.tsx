@@ -5,6 +5,7 @@ import { useCanvasStore } from "@/store/useCanvasStore";
 import { ExplorerScreens } from "./explorer/ExplorerScreens";
 import { ExplorerAssets } from "./explorer/ExplorerAssets";
 import { ExplorerColors } from "./explorer/ExplorerColors";
+import { SectionLabel } from "@/components/ui/typography";
 
 export function Explorer({
   onScreenChange,
@@ -35,32 +36,18 @@ export function Explorer({
   }, [selectedIconName, activeTab]);
 
   return (
-    <div className="w-80 border-r border-white/10 flex flex-col bg-[#0a0a0a] z-30 h-full overflow-hidden font-sans">
+    <div className="w-80 border-r border-white/10 flex flex-col bg-bg-panel z-30 h-full overflow-hidden font-sans">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="flex-1 flex flex-col min-h-0 overflow-hidden"
       >
         <div className="p-4 border-b border-white/10 bg-white/[0.02] shrink-0">
-          <TabsList className="w-full grid grid-cols-3 h-11 bg-black/40 border border-white/10">
-            <TabsTrigger
-              value="screens"
-              className="text-xs font-semibold data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:ring-1 data-[state=active]:ring-primary/30"
-            >
-              Screens
-            </TabsTrigger>
-            <TabsTrigger
-              value="objects"
-              className="text-xs font-semibold data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:ring-1 data-[state=active]:ring-primary/30"
-            >
-              Objects
-            </TabsTrigger>
-            <TabsTrigger
-              value="colors"
-              className="text-xs font-semibold data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:ring-1 data-[state=active]:ring-primary/30"
-            >
-              Colors
-            </TabsTrigger>
+          <SectionLabel className="mb-3 block">Explorer</SectionLabel>
+          <TabsList variant="pill" className="w-full grid grid-cols-3 h-11">
+            <TabsTrigger value="screens">Screens</TabsTrigger>
+            <TabsTrigger value="objects">Objects</TabsTrigger>
+            <TabsTrigger value="colors">Colors</TabsTrigger>
           </TabsList>
         </div>
 
@@ -80,7 +67,7 @@ export function Explorer({
 
         <TabsContent
           value="colors"
-          className="flex-1 m-0 data-[state=active]:flex flex-col min-h-0 overflow-hidden outline-none bg-[#0a0a0a]"
+          className="flex-1 m-0 data-[state=active]:flex flex-col min-h-0 overflow-hidden outline-none bg-bg-panel"
         >
           <ExplorerColors />
         </TabsContent>

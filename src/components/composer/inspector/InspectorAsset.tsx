@@ -70,7 +70,7 @@ export function InspectorAsset() {
     <div className="flex flex-col w-full pb-10">
       {/* 1. PREVIEW */}
       <div className="w-full border-b border-white/5 bg-white/[0.01]">
-        <div className="aspect-square w-full bg-[#121212] flex items-center justify-center relative overflow-hidden shadow-inner">
+        <div className="aspect-square w-full bg-bg-elevated flex items-center justify-center relative overflow-hidden shadow-inner">
           <div
             className="absolute inset-0 opacity-10"
             style={{
@@ -124,7 +124,7 @@ export function InspectorAsset() {
                 onChange={(e) =>
                   updateProjectObject(asset.Name, { Name: e.target.value })
                 }
-                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 pl-9 pr-3 text-xs font-bold text-white focus:border-primary/40 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-bg-surface border border-white/5 rounded-lg py-2.5 pl-9 pr-3 text-xs font-bold text-white focus:border-primary/40 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>

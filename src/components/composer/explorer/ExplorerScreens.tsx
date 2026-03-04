@@ -280,7 +280,7 @@ export function ExplorerScreens({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="bg-[#121212] border-white/10 text-white min-w-[160px]"
+                      className="bg-bg-elevated border-white/10 text-white min-w-[160px]"
                     >
                       <DropdownMenuItem
                         onClick={() => duplicateScreen(i)}

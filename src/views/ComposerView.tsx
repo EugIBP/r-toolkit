@@ -11,7 +11,7 @@ import { AssetsToolbar, ModeToolbar } from "@/components/composer/ComposerToolba
 import { HotkeysPanel } from "@/components/composer/HotkeysPanel";
 import { HistoryPanel } from "@/components/composer/HistoryPanel";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { ArrowLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/back-button";
 import { useCanvasInteraction } from "./hooks/useCanvasInteraction";
 
 export function ComposerView() {
@@ -133,7 +133,7 @@ export function ComposerView() {
 
   if (!projectData || !activeScreen) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#050505] text-white/20 gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center bg-bg-canvas text-white/20 gap-4">
         <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
         <span className="text-xs uppercase tracking-[0.2em] font-bold">Initialising Canvas...</span>
       </div>
@@ -159,18 +159,18 @@ export function ComposerView() {
 
   return (
     <div className="flex h-full w-full overflow-hidden">
-      <div className="shrink-0 flex flex-col border-r border-white/10 bg-[#030303]">
-        <button
-          onClick={() => setCurrentView("dashboard")}
-          className="flex items-center gap-2 px-4 py-3 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/5 transition-colors border-b border-white/10"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Workspace
-        </button>
+      <div className="shrink-0 flex flex-col border-r border-white/10 bg-bg-sidebar">
+        <div className="pt-6 px-4 pb-4 border-b border-white/10">
+          <BackButton
+            label="Back to Workspace"
+            onClick={() => setCurrentView("dashboard")}
+            className="w-full justify-start"
+          />
+        </div>
         <Explorer onScreenChange={setActiveScreenIdx} />
       </div>
 
-      <div className="flex-1 relative flex flex-col min-w-0 bg-[#050505]">
+      <div className="flex-1 relative flex flex-col min-w-0 bg-bg-canvas">
         <AssetsToolbar searchInputRef={searchInputRef} />
         <ModeToolbar />
         <div className="absolute top-6 right-8 z-50">
@@ -194,7 +194,7 @@ export function ComposerView() {
           }}
         >
           <div
-            className="absolute shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5 bg-[#0a0a0a]"
+            className="absolute shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5 bg-bg-panel"
             style={{
               left: `calc(50% + ${offset.x}px)`,
               top: `calc(50% + ${offset.y}px)`,
@@ -273,11 +273,12 @@ export function ComposerView() {
                     const selectedAsset = projectData.Objects.find(
                       (o: any) => o.Path === selectedAssetPath,
                     );
-                    const matchesSelectedAsset =
-                      !selectedAssetPath ||
-                      (asset && asset.Path === selectedAsset?.Path);
-
+                    
+                    // Проверяем, выбрана ли эта иконка ИЛИ стек раскрыт и эта иконка в нём
+                    const isSelectedAsset = asset && asset.Path === selectedAsset?.Path;
                     const isInExpandedStack = expandedStackIndices?.includes(idx) ?? false;
+                    const matchesSelectedAsset = !selectedAssetPath || isSelectedAsset || isInExpandedStack;
+
                     const isStackExpanded = expandedStackIndices !== null;
                     const stackIndex = isStackExpanded ? expandedStackIndices.indexOf(idx) : -1;
                     const centerIndex = isStackExpanded
@@ -328,8 +329,8 @@ export function ComposerView() {
                         animate={{
                           opacity:
                             matchesSearch && matchesSelectedAsset
-                              ? isDimmed ? 0.1 : 1
-                              : 0.15,
+                              ? isDimmed ? 0.05 : 1
+                              : 0.05,
                           x: expandedOffset,
                           scale: isInExpandedStack ? 1.2 : 1,
                         }}

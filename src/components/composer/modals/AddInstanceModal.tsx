@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { SectionLabel } from "@/components/ui/typography";
 
 interface AddInstanceModalProps {
   isOpen: boolean;
@@ -98,133 +101,124 @@ export function AddInstanceModal({ isOpen, onClose, assetName, screenIdx }: AddI
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[#121212] border border-white/10 w-[400px] max-h-[80vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        className="w-[400px] max-h-[80vh]"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
-          <h3 className="text-sm font-semibold text-white">Add Instance</h3>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-white transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        
-        {/* Content */}
-        <ScrollArea className="flex-1">
-        <div className="p-5 space-y-4">
-          {/* Instance Name */}
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-              Instance Name *
-            </label>
-            <input
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setError("");
-              }}
-              placeholder="Enter unique name"
-              className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-bold text-white outline-none focus:border-primary/40 transition-all"
-            />
-            {error && (
-              <p className="text-xs text-red-400 ml-1">{error}</p>
-            )}
-          </div>
-          
-          {/* Coordinates */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-                X
-              </label>
-              <input
-                type="number"
-                value={x}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setX(parseInt(e.target.value) || 0)}
-                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-                Y
-              </label>
-              <input
-                type="number"
-                value={y}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setY(parseInt(e.target.value) || 0)}
-                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
-          </div>
-          
-          {/* States */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-                States
-              </label>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleAddState}
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-            
-            <div className="space-y-2">
-              {states.map((state, idx) => (
-                <div key={idx} className="flex items-center gap-2 p-2 bg-black/20 rounded-lg">
-                  <input
-                    value={state.Name}
-                    onChange={(e) => handleStateChange(idx, "Name", e.target.value.toUpperCase())}
-                    placeholder="STATE"
-                    className="flex-1 bg-transparent border-none outline-none text-xs font-bold text-white uppercase"
-                  />
-                  <select
-                    value={state.Color}
-                    onChange={(e) => handleStateChange(idx, "Color", e.target.value)}
-                    className="bg-black/40 border border-white/5 rounded px-2 py-1 text-xs text-white outline-none cursor-pointer"
-                  >
-                    {colors.map((c) => (
-                      <option key={c} value={c} className="bg-[#121212]">{c}</option>
-                    ))}
-                  </select>
-                  {states.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => handleRemoveState(idx)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        </ScrollArea>
+        <Card className="animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <CardHeader className="flex flex-row items-center justify-between p-5 border-b border-white/10 bg-white/[0.02]">
+            <h3 className="text-sm font-semibold text-white">Add Instance</h3>
+            <button
+              onClick={onClose}
+              className="text-muted-foreground hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </CardHeader>
 
-        {/* Footer */}
-        <div className="p-5 border-t border-white/5 bg-white/[0.02] flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="default"
-            onClick={handleSubmit}
-          >
-            Create Instance
-          </Button>
-        </div>
+          <ScrollArea className="flex-1">
+            <CardContent className="p-5 space-y-4">
+              {/* Instance Name */}
+              <div className="space-y-2">
+                <SectionLabel>Instance Name *</SectionLabel>
+                <Input
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="Enter unique name"
+                />
+                {error && (
+                  <p className="text-xs text-red-400 ml-1">{error}</p>
+                )}
+              </div>
+
+              {/* Coordinates */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <SectionLabel>X</SectionLabel>
+                  <Input
+                    type="number"
+                    value={x}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => setX(parseInt(e.target.value) || 0)}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <SectionLabel>Y</SectionLabel>
+                  <Input
+                    type="number"
+                    value={y}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => setY(parseInt(e.target.value) || 0)}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                  />
+                </div>
+              </div>
+
+              {/* States */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <SectionLabel>States</SectionLabel>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={handleAddState}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  {states.map((state, idx) => (
+                    <div key={idx} className="flex items-center gap-2 p-2 bg-black/20 rounded-lg">
+                      <input
+                        value={state.Name}
+                        onChange={(e) => handleStateChange(idx, "Name", e.target.value.toUpperCase())}
+                        placeholder="STATE"
+                        className="flex-1 bg-transparent border-none outline-none text-xs font-bold text-white uppercase"
+                      />
+                      <select
+                        value={state.Color}
+                        onChange={(e) => handleStateChange(idx, "Color", e.target.value)}
+                        className="bg-black/40 border border-white/5 rounded px-2 py-1 text-xs text-white outline-none cursor-pointer"
+                      >
+                        {colors.map((c) => (
+                          <option key={c} value={c} className="bg-bg-elevated">{c}</option>
+                        ))}
+                      </select>
+                      {states.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleRemoveState(idx)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </ScrollArea>
+
+          <div className="p-5 border-t border-white/5 bg-white/[0.02] flex items-center justify-end gap-2">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleSubmit}
+            >
+              Create Instance
+            </Button>
+          </div>
+        </Card>
       </motion.div>
     </motion.div>
   );

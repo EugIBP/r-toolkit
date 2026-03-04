@@ -172,7 +172,7 @@ export const AssetRow = memo(function AssetRow({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="bg-[#121212] border-white/10 text-white min-w-[180px]"
+              className="bg-bg-elevated border-white/10 text-white min-w-[180px]"
             >
               <DropdownMenuItem
                 onClick={(e) => {
@@ -234,7 +234,7 @@ export const AssetRow = memo(function AssetRow({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="bg-[#121212] border-white/10 text-white min-w-[180px]"
+              className="bg-bg-elevated border-white/10 text-white min-w-[180px]"
             >
               <DropdownMenuItem
                 onClick={(e) => {

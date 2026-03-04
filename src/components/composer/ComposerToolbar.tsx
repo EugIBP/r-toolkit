@@ -1,10 +1,8 @@
 import { useCanvasStore } from "@/store/useCanvasStore";
-import { forwardRef } from "react";
 import {
   Hand,
   MousePointer2,
   Search,
-  X,
   Layers,
   Box,
   Image as BgIcon,
@@ -15,26 +13,9 @@ import {
   ZoomOut,
   RotateCcw,
 } from "lucide-react";
-
-const AssetsToolbarSearchInput = forwardRef<HTMLInputElement>((props, ref) => {
-  const { searchQuery, setSearchQuery, setActiveTab } = useCanvasStore();
-  return (
-    <input
-      ref={ref}
-      value={searchQuery}
-      onChange={(e) => {
-        setSearchQuery(e.target.value);
-        if (e.target.value) setActiveTab("objects");
-      }}
-      placeholder="Find asset..."
-      className="bg-transparent border-none outline-none text-xs font-medium text-white w-full placeholder:text-white/20"
-      {...props}
-    />
-  );
-});
-AssetsToolbarSearchInput.displayName = "AssetsToolbarSearchInput";
-
-export { AssetsToolbarSearchInput };
+import { ToolbarDivider, FloatingToolbar } from "@/components/ui/floating-toolbar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export function AssetsToolbar({ searchInputRef }: { searchInputRef?: React.RefObject<HTMLInputElement | null> }) {
   const {
@@ -48,85 +29,82 @@ export function AssetsToolbar({ searchInputRef }: { searchInputRef?: React.RefOb
   } = useCanvasStore();
 
   return (
-    <div className="absolute top-6 left-8 z-50 flex items-center p-1.5 bg-[#121212]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl gap-2">
+    <div className="absolute top-6 left-8 z-50 flex flex-col items-start p-3 bg-bg-elevated/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl gap-2 w-80">
       {/* ПОИСК */}
-      <div className="relative flex items-center bg-white/5 rounded-xl h-9 px-3 w-44 border border-white/5 focus-within:border-primary/50 transition-colors">
-        <Search className="w-3.5 h-3.5 text-muted-foreground mr-2 shrink-0" />
-        <AssetsToolbarSearchInput ref={searchInputRef} />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-2 text-muted-foreground hover:text-white"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
+      <Input
+        variant="dark"
+        icon={<Search className="w-3.5 h-3.5" />}
+        value={searchQuery}
+        onChange={(e) => {
+          setSearchQuery(e.target.value);
+          if (e.target.value) setActiveTab("objects");
+        }}
+        placeholder="Find asset..."
+        className="w-full"
+        ref={searchInputRef}
+      />
 
-      <div className="w-px h-6 bg-white/10" />
-
-      {/* ФИЛЬТРЫ */}
-      <div className="flex items-center gap-0.5">
-        <FilterBtn
-          active={assetFilter === "all"}
-          onClick={() => {
-            setAssetFilter("all");
-            setActiveTab("objects");
-          }}
-          icon={<Layers className="w-4 h-4" />}
-          title="All"
-        />
-        <FilterBtn
-          active={assetFilter === "bg"}
-          onClick={() => {
-            setAssetFilter("bg");
-            setActiveTab("objects");
-          }}
-          icon={<BgIcon className="w-4 h-4" />}
-          title="Background"
-        />
-        <FilterBtn
-          active={assetFilter === "icons"}
-          onClick={() => {
-            setAssetFilter("icons");
-            setActiveTab("objects");
-          }}
-          icon={<Box className="w-4 h-4" />}
-          title="Icons"
-        />
-        <FilterBtn
-          active={assetFilter === "sprites"}
-          onClick={() => {
-            setAssetFilter("sprites");
-            setActiveTab("objects");
-          }}
-          icon={<Film className="w-4 h-4" />}
-          title="Sprites"
-        />
-        <FilterBtn
-          active={assetFilter === "stacked"}
-          onClick={() => {
-            setAssetFilter("stacked");
-            setActiveTab("objects");
-          }}
-          icon={<SquareStack className="w-4 h-4" />}
-          title="Stacked"
-        />
-      </div>
-
-      <div className="w-px h-6 bg-white/10" />
-
-      {/* STACK THRESHOLD */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-muted-foreground font-medium">Stack threshold (px)</span>
-        <input
-          type="number"
-          min={1}
-          max={100}
-          value={stackThreshold}
-          onChange={(e) => setStackThreshold(parseInt(e.target.value) || 5)}
-          className="w-12 h-7 bg-white/5 border border-white/10 rounded-lg px-2 text-xs font-medium text-white text-center outline-none focus:border-primary/50 [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        />
+      {/* ФИЛЬТРЫ + THRESHOLD */}
+      <div className="flex items-center gap-1 w-full">
+        <div className="flex items-center gap-0.5 flex-1 flex-wrap">
+          <FilterBtn
+            active={assetFilter === "all"}
+            onClick={() => {
+              setAssetFilter("all");
+              setActiveTab("objects");
+            }}
+            icon={<Layers className="w-4 h-4" />}
+            title="All"
+          />
+          <FilterBtn
+            active={assetFilter === "bg"}
+            onClick={() => {
+              setAssetFilter("bg");
+              setActiveTab("objects");
+            }}
+            icon={<BgIcon className="w-4 h-4" />}
+            title="Background"
+          />
+          <FilterBtn
+            active={assetFilter === "icons"}
+            onClick={() => {
+              setAssetFilter("icons");
+              setActiveTab("objects");
+            }}
+            icon={<Box className="w-4 h-4" />}
+            title="Icons"
+          />
+          <FilterBtn
+            active={assetFilter === "sprites"}
+            onClick={() => {
+              setAssetFilter("sprites");
+              setActiveTab("objects");
+            }}
+            icon={<Film className="w-4 h-4" />}
+            title="Sprites"
+          />
+          <FilterBtn
+            active={assetFilter === "stacked"}
+            onClick={() => {
+              setAssetFilter("stacked");
+              setActiveTab("objects");
+            }}
+            icon={<SquareStack className="w-4 h-4" />}
+            title="Stacked"
+          />
+        </div>
+        <ToolbarDivider />
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">Threshold</span>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={stackThreshold}
+            onChange={(e) => setStackThreshold(parseInt(e.target.value) || 5)}
+            className="w-14 h-6 bg-white/5 border border-white/10 rounded px-1.5 text-xs font-medium text-white text-center outline-none focus:border-primary/50 [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
       </div>
     </div>
   );
@@ -140,67 +118,65 @@ export function ModeToolbar() {
   const handleZoomReset = () => setZoom(0.85);
 
   return (
-    <>
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center p-1.5 bg-[#121212]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl gap-1">
-        <ModeBtn
-          active={canvasMode === "view"}
-          onClick={() => setCanvasMode("view")}
-          icon={<Hand className="w-3.5 h-3.5" />}
-          label="View"
-          activeClass="bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-        />
-        <ModeBtn
-          active={canvasMode === "edit"}
-          onClick={() => setCanvasMode("edit")}
-          icon={<MousePointer2 className="w-3.5 h-3.5" />}
-          label="Edit"
-          activeClass="bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/30"
-        />
+    <FloatingToolbar position="top-center">
+      <ModeBtn
+        active={canvasMode === "view"}
+        onClick={() => setCanvasMode("view")}
+        icon={<Hand className="w-3.5 h-3.5" />}
+        label="View"
+        activeClass="bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+      />
+      <ModeBtn
+        active={canvasMode === "edit"}
+        onClick={() => setCanvasMode("edit")}
+        icon={<MousePointer2 className="w-3.5 h-3.5" />}
+        label="Edit"
+        activeClass="bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/30"
+      />
 
-        <div className="w-px h-6 bg-white/10 mx-0.5" />
+      <ToolbarDivider />
 
-        <ModeBtn
-          active={allowDnd}
-          onClick={() => setAllowDnd(!allowDnd)}
-          icon={<Move className="w-3.5 h-3.5" />}
-          label="Drag & Drop"
-          activeClass="bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
-        />
+      <ModeBtn
+        active={allowDnd}
+        onClick={() => setAllowDnd(!allowDnd)}
+        icon={<Move className="w-3.5 h-3.5" />}
+        label="D&D"
+        activeClass="bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
+      />
 
-        <div className="w-px h-6 bg-white/10 mx-0.5" />
+      <ToolbarDivider />
 
-        {/* ZOOM CONTROLS */}
-        <button
+      {/* ZOOM CONTROLS */}
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost-dark"
+          size="icon-xs"
           onClick={handleZoomOut}
           title="Zoom Out"
-          className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
         >
           <ZoomOut className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={handleZoomReset}
-          title="Reset Zoom"
-          className="px-2 py-1 rounded-lg text-xs font-mono text-white hover:bg-white/10 transition-colors min-w-[50px]"
-        >
+        </Button>
+        <span className="px-2 py-1 text-xs font-mono text-white min-w-[50px] text-center whitespace-nowrap">
           {Math.round(zoom * 100)}%
-        </button>
-        <button
+        </span>
+        <Button
+          variant="ghost-dark"
+          size="icon-xs"
           onClick={handleZoomIn}
           title="Zoom In"
-          className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
         >
           <ZoomIn className="w-3.5 h-3.5" />
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost-dark"
+          size="icon-xs"
           onClick={handleZoomReset}
           title="Reset View"
-          className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-        </button>
-
+        </Button>
       </div>
-    </>
+    </FloatingToolbar>
   );
 }
 

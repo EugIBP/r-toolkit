@@ -176,7 +176,19 @@
     display: none;
 }
 
-/* Custom Utility Classes - use as regular classes, not @apply */
+/* Custom Utility Classes */
+
+/* Background Colors */
+.bg-bg-canvas { background-color: var(--bg-canvas); }
+.bg-bg-sidebar { background-color: var(--bg-sidebar); }
+.bg-bg-panel { background-color: var(--bg-panel); }
+.bg-bg-elevated { background-color: var(--bg-elevated); }
+.bg-bg-surface { background-color: var(--bg-surface); }
+
+/* Border Colors */
+.border-border-subtle { border-color: var(--border-subtle); }
+.border-border-default { border-color: var(--border-default); }
+.border-border-active { border-color: var(--border-active); }
 
 /* Toolbar */
 .toolbar-floating {
@@ -185,164 +197,4 @@
     border: 1px solid rgb(255 255 255 / 0.1);
     border-radius: 16px;
     box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
-}
-
-/* Panel */
-.panel {
-    background-color: #0a0a0a;
-    border-color: rgb(255 255 255 / 0.1);
-    display: flex;
-    flex-direction: column;
-}
-.panel-header {
-    border-bottom: 1px solid rgb(255 255 255 / 0.1);
-    background-color: rgb(255 255 255 / 0.02);
-}
-
-/* Card */
-.card {
-    background-color: #0a0a0a;
-    border: 1px solid rgb(255 255 255 / 0.1);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
-}
-.card-header {
-    border-bottom: 1px solid rgb(255 255 255 / 0.1);
-    padding: 24px;
-    background-color: rgb(255 255 255 / 0.02);
-}
-.card-content {
-    padding: 24px;
-}
-
-/* Input */
-.input-dark {
-    background-color: #181818;
-    border: 1px solid rgb(255 255 255 / 0.05);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 12px;
-    color: white;
-    transition: all 0.15s;
-}
-.input-dark::placeholder {
-    color: rgb(255 255 255 / 0.2);
-}
-.input-dark:focus {
-    outline: none;
-    border-color: rgb(var(--primary) / 0.4);
-}
-.input-dark:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.input-with-icon {
-    padding-left: 36px;
-}
-
-/* Button variants */
-.btn-ghost {
-    color: rgb(255 255 255 / 0.6);
-    border-radius: 8px;
-    transition: all 0.15s;
-}
-.btn-ghost:hover {
-    color: white;
-    background-color: rgb(255 255 255 / 0.1);
-}
-
-.btn-primary {
-    background-color: rgb(var(--primary) / 0.2);
-    color: rgb(var(--primary));
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.15s;
-}
-.btn-primary:hover {
-    background-color: rgb(var(--primary) / 0.3);
-}
-
-.btn-danger {
-    background-color: rgb(239 68 68 / 0.2);
-    color: rgb(239 68 68);
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.15s;
-}
-.btn-danger:hover {
-    background-color: rgb(239 68 68 / 0.3);
-}
-
-/* Mode button active states */
-.mode-active {
-    box-shadow: 0 0 0 1px;
-}
-.mode-primary {
-    background-color: rgb(var(--primary) / 0.2);
-    color: rgb(var(--primary));
-    box-shadow: 0 0 0 1px rgb(var(--primary) / 0.3);
-}
-.mode-emerald {
-    background-color: rgb(16 185 129 / 0.2);
-    color: rgb(16 185 129);
-    box-shadow: 0 0 0 1px rgb(16 185 129 / 0.3);
-}
-.mode-amber {
-    background-color: rgb(245 158 11 / 0.2);
-    color: rgb(245 158 11);
-    box-shadow: 0 0 0 1px rgb(245 158 11 / 0.3);
-}
-.mode-blue {
-    background-color: rgb(59 130 246 / 0.2);
-    color: rgb(59 130 246);
-    box-shadow: 0 0 0 1px rgb(59 130 246 / 0.3);
-}
-
-/* Section label */
-.section-label {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgb(255 255 255 / 0.6);
-}
-
-/* Empty state */
-.empty-state {
-    padding: 40px 0;
-    text-align: center;
-    opacity: 0.3;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 500;
-}
-
-/* Status badge */
-.badge {
-    font-size: 8px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-.badge-emerald {
-    background-color: rgb(16 185 129 / 0.2);
-    color: rgb(16 185 129);
-}
-.badge-amber {
-    background-color: rgb(245 158 11 / 0.2);
-    color: rgb(245 158 11);
-}
-.badge-blue {
-    background-color: rgb(59 130 246 / 0.2);
-    color: rgb(59 130 246);
-}
-.badge-red {
-    background-color: rgb(239 68 68 / 0.2);
-    color: rgb(239 68 68);
 }

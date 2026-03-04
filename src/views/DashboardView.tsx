@@ -28,6 +28,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { PageTitle, SectionLabel } from "@/components/ui/typography";
+import { ModeButton } from "@/components/ui/mode-button";
 
 export function DashboardView() {
   const { setProject } = useProjectStore();
@@ -103,19 +106,21 @@ export function DashboardView() {
   };
 
   return (
-    <div className="h-full w-full bg-[#050505] flex flex-col items-center relative overflow-hidden">
+    <div className="h-full w-full bg-bg-canvas flex flex-col items-center relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-primary/5 blur-[120px] pointer-events-none" />
 
       <div className="flex-1 w-full max-w-7xl px-10 flex flex-col pt-[12vh] pb-20 animate-in fade-in duration-1000">
         <div className="flex items-end justify-between mb-16">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-white flex items-center gap-3">
+          <div className="space-y-2">
+            <PageTitle className="flex items-center gap-3">
               Resource Toolkit
               {appVersion && (
                 <div className="flex items-center gap-1">
-                  <button
+                  <Button
+                    variant="ghost-dark"
+                    size="xs"
                     onClick={handleVersionClick}
-                    className="text-xs font-medium text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1"
+                    className="bg-white/5 px-2 py-0.5"
                   >
                     v{appVersion}
                     {availableUpdate && (
@@ -126,15 +131,15 @@ export function DashboardView() {
                         </span>
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               )}
-            </h1>
-            <p className="text-xs text-muted-foreground">
+            </PageTitle>
+            <SectionLabel className="text-xs font-medium normal-case tracking-normal text-white/60">
               {workspaceTab === "workspace"
                 ? "Open a workspace to get started"
                 : "Select a tool to begin"}
-            </p>
+            </SectionLabel>
           </div>
 
           {workspaceTab === "workspace" && (
@@ -183,8 +188,9 @@ export function DashboardView() {
 
         <div className="flex items-center justify-between mb-8 shrink-0">
           <div className="relative group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-            <input
+            <Input
+              variant="dark"
+              icon={<Search className="w-4 h-4" />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={
@@ -192,31 +198,23 @@ export function DashboardView() {
                   ? "Search workspaces..."
                   : "Search tools..."
               }
-              className="w-80 bg-white/5 border border-white/10 rounded-xl px-11 py-2.5 text-xs outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium"
+              className="w-80"
             />
           </div>
 
           <div className="flex bg-black/40 border border-white/10 rounded-xl p-1">
-            <button
+            <ModeButton
               onClick={() => setWorkspaceTab("workspace")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                workspaceTab === "workspace"
-                  ? "bg-primary/20 text-primary shadow-sm ring-1 ring-primary/30"
-                  : "text-muted-foreground hover:text-white hover:bg-white/5"
-              }`}
+              active={workspaceTab === "workspace"}
             >
               Workspace
-            </button>
-            <button
+            </ModeButton>
+            <ModeButton
               onClick={() => setWorkspaceTab("tools")}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                workspaceTab === "tools"
-                  ? "bg-primary/20 text-primary shadow-sm ring-1 ring-primary/30"
-                  : "text-muted-foreground hover:text-white hover:bg-white/5"
-              }`}
+              active={workspaceTab === "tools"}
             >
               Tools
-            </button>
+            </ModeButton>
           </div>
 
           <div className="flex bg-black/40 border border-white/10 rounded-xl p-1 shadow-inner gap-1">

@@ -185,7 +185,7 @@ export function InspectorScreen() {
       </ScrollArea>
 
       {/* FOOTER PANELS - Fixed at bottom */}
-      <div className="border-t border-white/5 bg-[#0a0a0a]">
+      <div className="border-t border-white/5 bg-bg-panel">
         {/* Divider */}
         <div className="h-px bg-white/5 mx-5" />
 

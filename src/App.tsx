@@ -79,7 +79,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="flex h-screen w-full bg-[#050505] text-white overflow-hidden selection:bg-primary/30 font-sans">
+    <div className="flex h-screen w-full bg-bg-canvas text-white overflow-hidden selection:bg-primary/30 font-sans">
       <main className="flex-1 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {currentView === "dashboard" && (

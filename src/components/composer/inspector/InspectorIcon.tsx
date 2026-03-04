@@ -45,7 +45,7 @@ export function InspectorIcon() {
     <div className="flex flex-col flex-1 min-h-0">
       {/* Preview header */}
       <div className="shrink-0 border-b border-white/5 bg-white/[0.01]">
-        <div className="h-40 bg-[#121212] flex items-center justify-center relative overflow-hidden shadow-inner">
+        <div className="h-40 bg-bg-elevated flex items-center justify-center relative overflow-hidden shadow-inner">
           <div
             className="absolute inset-0 opacity-10"
             style={{
@@ -119,7 +119,7 @@ export function InspectorIcon() {
 
       {/* Action buttons - fixed at bottom */}
       {!isViewMode && (
-        <div className="shrink-0 border-t border-white/5 bg-[#0a0a0a]">
+        <div className="shrink-0 border-t border-white/5 bg-bg-panel">
           <div className="p-5 py-6 space-y-3">
             <button
               onClick={() => {

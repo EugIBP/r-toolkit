@@ -63,7 +63,7 @@ export function ProjectCard({ project }: { project: any }) {
   return (
     <div
       onClick={handleOpen}
-      className="group relative bg-[#121212] border border-white/5 hover:border-primary/30 rounded-2xl overflow-hidden transition-all cursor-pointer flex flex-col"
+      className="group relative bg-bg-elevated border border-white/5 hover:border-primary/30 rounded-2xl overflow-hidden transition-all cursor-pointer flex flex-col"
     >
       {/* ПРЕВЬЮ ПРОЕКТА */}
       <div className="aspect-video w-full bg-black/40 relative flex items-center justify-center overflow-hidden">

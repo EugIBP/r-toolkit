@@ -25,7 +25,7 @@ export function ProjectActions({ project }: { project: RecentProject }) {
     <DropdownMenuContent
       onClick={(e) => e.stopPropagation()}
       align="end"
-      className="bg-[#121212] border-white/10 text-white min-w-[180px] p-1.5 rounded-xl shadow-2xl z-50"
+      className="bg-bg-elevated border-white/10 text-white min-w-[180px] p-1.5 rounded-xl shadow-2xl z-50"
     >
       <DropdownMenuItem
         onClick={(e) => {

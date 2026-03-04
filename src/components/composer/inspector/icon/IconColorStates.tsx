@@ -124,7 +124,7 @@ export function IconColorStates({
                           className="flex-1 bg-black/40 hover:bg-black/60 border border-white/5 rounded-md py-1.5 px-2 text-xs font-bold text-muted-foreground hover:text-white outline-none cursor-pointer appearance-none transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           {Object.keys(projectData.Colors).map((c) => (
-                            <option key={c} value={c} className="bg-[#121212]">
+                            <option key={c} value={c} className="bg-bg-elevated">
                               {c}
                             </option>
                           ))}
@@ -145,7 +145,7 @@ export function IconColorStates({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="end"
-                        className="bg-[#121212] border-white/10 text-white min-w-[140px] z-50"
+                        className="bg-bg-elevated border-white/10 text-white min-w-[140px] z-50"
                       >
                         <DropdownMenuItem
                           onClick={async () => {

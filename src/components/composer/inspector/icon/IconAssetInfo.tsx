@@ -23,7 +23,7 @@ export function IconAssetInfo({ assetName, isViewMode }: Props) {
       <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 flex items-center gap-2">
         <FolderOpen className="w-3 h-3" /> Asset Info
       </span>
-      <div className="bg-[#181818] border border-white/5 rounded-xl p-3 space-y-3">
+      <div className="bg-bg-surface border border-white/5 rounded-xl p-3 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Path</span>
           <span className="text-xs font-mono text-white/80 truncate max-w-[60%]">

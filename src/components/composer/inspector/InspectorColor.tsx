@@ -90,7 +90,7 @@ export function InspectorColor() {
                 value={selectedColorKey}
                 disabled={!isEditMode}
                 onChange={(e) => handleNameChange(e.target.value)}
-                className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 pl-9 pr-3 text-xs font-bold text-white outline-none focus:border-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-bg-surface border border-white/5 rounded-lg py-2.5 pl-9 pr-3 text-xs font-bold text-white outline-none focus:border-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -107,7 +107,7 @@ export function InspectorColor() {
                   value={hex}
                   disabled={!isEditMode}
                   onChange={(e) => handleHexChange(e.target.value)}
-                  className="w-full bg-[#181818] border border-white/5 rounded-lg py-2.5 pl-9 pr-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-bg-surface border border-white/5 rounded-lg py-2.5 pl-9 pr-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
