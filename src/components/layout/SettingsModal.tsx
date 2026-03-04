@@ -14,7 +14,7 @@ export function SettingsModal() {
     if (update) {
       setPendingUpdate(update);
     } else {
-      toast.info("У вас последняя версия");
+      toast.info("У вас последняя версия", { id: "update-latest" });
     }
   };
 
@@ -92,7 +92,9 @@ export function SettingsModal() {
               onClick={handleCheckUpdates}
               className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
             >
-              <span className="text-sm font-medium text-white/90">Проверить обновления</span>
+              <span className="text-sm font-medium text-white/90">
+                Проверить обновления
+              </span>
               <RefreshCw className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>

@@ -6,22 +6,33 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { UpdateDialog } from "@/components/ui/UpdateDialog";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
-import { getScheduledUpdate, clearScheduledUpdate, checkForUpdates, getSkippedUpdate } from "@/lib/updater";
+import {
+  getScheduledUpdate,
+  clearScheduledUpdate,
+  checkForUpdates,
+  getSkippedUpdate,
+} from "@/lib/updater";
 
 // Lazy load views for code splitting
-const DashboardView = lazy(() => import("@/views/DashboardView").then(m => ({ default: m.DashboardView })));
-const ComposerView = lazy(() => import("@/views/ComposerView").then(m => ({ default: m.ComposerView })));
-const DitherView = lazy(() => import("@/views/DitherView").then(m => ({ default: m.DitherView })));
+const DashboardView = lazy(() =>
+  import("@/views/DashboardView").then((m) => ({ default: m.DashboardView })),
+);
+const ComposerView = lazy(() =>
+  import("@/views/ComposerView").then((m) => ({ default: m.ComposerView })),
+);
+const DitherView = lazy(() =>
+  import("@/views/DitherView").then((m) => ({ default: m.DitherView })),
+);
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
   animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -20 }
+  exit: { opacity: 0, x: -20 },
 };
 
 const pageTransition = {
   duration: 0.3,
-  ease: "easeOut" as const
+  ease: "easeOut" as const,
 };
 
 function PageLoader() {
@@ -33,7 +44,13 @@ function PageLoader() {
 }
 
 export default function App() {
-  const { currentView, loadRecent, pendingUpdate, setPendingUpdate, setAvailableUpdate } = useAppStore();
+  const {
+    currentView,
+    loadRecent,
+    pendingUpdate,
+    setPendingUpdate,
+    setAvailableUpdate,
+  } = useAppStore();
 
   useEffect(() => {
     loadRecent();
@@ -49,7 +66,7 @@ export default function App() {
     const checkUpdates = async () => {
       const skipped = getSkippedUpdate();
       const update = await checkForUpdates();
-      
+
       if (update) {
         if (skipped && skipped.version === update.version) {
           return;
@@ -57,12 +74,12 @@ export default function App() {
         setAvailableUpdate(update.version);
       }
     };
-    
+
     checkUpdates();
   }, []);
 
   return (
-    <div className="flex h-screen w-screen bg-[#050505] text-white overflow-hidden selection:bg-primary/30 font-sans">
+    <div className="flex h-screen w-full bg-[#050505] text-white overflow-hidden selection:bg-primary/30 font-sans">
       <main className="flex-1 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {currentView === "dashboard" && (

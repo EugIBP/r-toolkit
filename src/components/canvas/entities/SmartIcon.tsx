@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import type { IconInstance } from "@/types/project";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
@@ -11,15 +12,20 @@ export function SmartIcon({
   screenIdx,
   onStackClick,
 }: {
-  iconInstance: any;
+  iconInstance: IconInstance;
   iconIndex: number;
   screenIdx: number;
   onStackClick?: (e: React.MouseEvent) => void;
 }) {
   const { projectData, projectPath, updateIcon } = useProjectStore();
-  const { selectedIconIndex, setSelectedIcon, selectedStates, zoom, setSelectedAssetPath, setIconNaturalSize } =
-    useCanvasStore();
-
+  const {
+    selectedIconIndex,
+    setSelectedIcon,
+    selectedStates,
+    zoom,
+    setSelectedAssetPath,
+    setIconNaturalSize,
+  } = useCanvasStore();
 
   const {
     iconFrames,
@@ -35,7 +41,7 @@ export function SmartIcon({
   const isEditMode = canvasMode === "edit";
 
   const assetObj = useMemo(
-    () => projectData?.Objects.find((o: any) => o.Name === iconInstance.Name),
+    () => projectData?.Objects.find((o) => o.Name === iconInstance.Name),
     [projectData, iconInstance.Name],
   );
 
@@ -153,9 +159,10 @@ export function SmartIcon({
 
   // Sprite & States Logic (using assetName instead of index)
   const assetName = iconInstance.Name;
-  const isSprite = assetObj?.isSprite || assetObj?.Path.toLowerCase().includes("sprites");
-  const frames = isSprite ? (iconFrameCounts[screenIdx]?.[assetName] || 1) : 1;
-  const currentFrame = isSprite ? (iconFrames[screenIdx]?.[assetName] || 0) : 0;
+  const isSprite =
+    assetObj?.isSprite || assetObj?.Path.toLowerCase().includes("sprites");
+  const frames = isSprite ? iconFrameCounts[screenIdx]?.[assetName] || 1 : 1;
+  const currentFrame = isSprite ? iconFrames[screenIdx]?.[assetName] || 0 : 0;
   const orientation = iconOrientations[screenIdx]?.[assetName] || "vertical";
 
   const frameSize = useMemo(() => {
@@ -187,11 +194,12 @@ export function SmartIcon({
   }, [frames, currentFrame, orientation]);
 
   const activeStateIdx = selectedStates[`${screenIdx}_${assetName}`];
-  const activeState = activeStateIdx !== null && activeStateIdx !== undefined 
-    ? iconInstance.States?.[activeStateIdx] 
-    : null;
+  const activeState =
+    activeStateIdx !== null && activeStateIdx !== undefined
+      ? iconInstance.States?.[activeStateIdx]
+      : null;
   const isPureBlank = activeState?.Color === "PURE_BLANK";
-  
+
   const activeColorHex = useMemo(() => {
     if (activeState && !isPureBlank) {
       const hex = projectData?.Colors[activeState.Color];

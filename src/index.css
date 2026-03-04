@@ -43,10 +43,24 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Custom - Background Colors */
+    --color-bg-canvas: var(--bg-canvas);
+    --color-bg-sidebar: var(--bg-sidebar);
+    --color-bg-panel: var(--bg-panel);
+    --color-bg-elevated: var(--bg-elevated);
+    --color-bg-surface: var(--bg-surface);
+
+    /* Custom - Border Colors */
+    --color-border-subtle: var(--border-subtle);
+    --color-border-default: var(--border-default);
+    --color-border-active: var(--border-active);
 }
 
 :root {
     --radius: 0.625rem;
+    
+    /* Light mode (not used) */
     --background: oklch(1 0 0);
     --foreground: oklch(0.141 0.005 285.823);
     --card: oklch(1 0 0);
@@ -78,10 +92,22 @@
     --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
     --sidebar-border: oklch(0.92 0.004 286.32);
     --sidebar-ring: oklch(0.705 0.015 286.067);
+
+    /* Custom - Background Layers */
+    --bg-canvas: #050505;
+    --bg-sidebar: #030303;
+    --bg-panel: #0a0a0a;
+    --bg-elevated: #121212;
+    --bg-surface: #181818;
+    
+    /* Custom - Border variations */
+    --border-subtle: oklch(1 0 0 / 5%);
+    --border-default: oklch(1 0 0 / 10%);
+    --border-active: oklch(1 0 0 / 20%);
 }
 
 .dark {
-    --background: oklch(0.141 0.005 285.823);
+    --background: #050505;
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.21 0.006 285.885);
     --card-foreground: oklch(0.985 0 0);
@@ -112,21 +138,211 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.552 0.016 285.938);
+
+    /* Custom - Background Layers */
+    --bg-canvas: #050505;
+    --bg-sidebar: #030303;
+    --bg-panel: #0a0a0a;
+    --bg-elevated: #121212;
+    --bg-surface: #181818;
+    
+    /* Custom - Border variations */
+    --border-subtle: oklch(1 0 0 / 5%);
+    --border-default: oklch(1 0 0 / 10%);
+    --border-active: oklch(1 0 0 / 20%);
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+
+    html,
+    body,
+    #root {
+        @apply h-full w-full overflow-hidden m-0 p-0;
+    }
+
+    body {
+        @apply bg-background text-foreground;
     }
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+    display: none;
+}
+
+/* Custom Utility Classes - use as regular classes, not @apply */
+
+/* Toolbar */
+.toolbar-floating {
+    background-color: rgb(18 18 18 / 0.9);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+}
+
+/* Panel */
+.panel {
+    background-color: #0a0a0a;
+    border-color: rgb(255 255 255 / 0.1);
+    display: flex;
+    flex-direction: column;
+}
+.panel-header {
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    background-color: rgb(255 255 255 / 0.02);
+}
+
+/* Card */
+.card {
+    background-color: #0a0a0a;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+}
+.card-header {
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    padding: 24px;
+    background-color: rgb(255 255 255 / 0.02);
+}
+.card-content {
+    padding: 24px;
+}
+
+/* Input */
+.input-dark {
+    background-color: #181818;
+    border: 1px solid rgb(255 255 255 / 0.05);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: white;
+    transition: all 0.15s;
+}
+.input-dark::placeholder {
+    color: rgb(255 255 255 / 0.2);
+}
+.input-dark:focus {
+    outline: none;
+    border-color: rgb(var(--primary) / 0.4);
+}
+.input-dark:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.input-with-icon {
+    padding-left: 36px;
+}
+
+/* Button variants */
+.btn-ghost {
+    color: rgb(255 255 255 / 0.6);
+    border-radius: 8px;
+    transition: all 0.15s;
+}
+.btn-ghost:hover {
+    color: white;
+    background-color: rgb(255 255 255 / 0.1);
+}
+
+.btn-primary {
+    background-color: rgb(var(--primary) / 0.2);
+    color: rgb(var(--primary));
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+.btn-primary:hover {
+    background-color: rgb(var(--primary) / 0.3);
+}
+
+.btn-danger {
+    background-color: rgb(239 68 68 / 0.2);
+    color: rgb(239 68 68);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+.btn-danger:hover {
+    background-color: rgb(239 68 68 / 0.3);
+}
+
+/* Mode button active states */
+.mode-active {
+    box-shadow: 0 0 0 1px;
+}
+.mode-primary {
+    background-color: rgb(var(--primary) / 0.2);
+    color: rgb(var(--primary));
+    box-shadow: 0 0 0 1px rgb(var(--primary) / 0.3);
+}
+.mode-emerald {
+    background-color: rgb(16 185 129 / 0.2);
+    color: rgb(16 185 129);
+    box-shadow: 0 0 0 1px rgb(16 185 129 / 0.3);
+}
+.mode-amber {
+    background-color: rgb(245 158 11 / 0.2);
+    color: rgb(245 158 11);
+    box-shadow: 0 0 0 1px rgb(245 158 11 / 0.3);
+}
+.mode-blue {
+    background-color: rgb(59 130 246 / 0.2);
+    color: rgb(59 130 246);
+    box-shadow: 0 0 0 1px rgb(59 130 246 / 0.3);
+}
+
+/* Section label */
+.section-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgb(255 255 255 / 0.6);
+}
+
+/* Empty state */
+.empty-state {
+    padding: 40px 0;
+    text-align: center;
+    opacity: 0.3;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+}
+
+/* Status badge */
+.badge {
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.badge-emerald {
+    background-color: rgb(16 185 129 / 0.2);
+    color: rgb(16 185 129);
+}
+.badge-amber {
+    background-color: rgb(245 158 11 / 0.2);
+    color: rgb(245 158 11);
+}
+.badge-blue {
+    background-color: rgb(59 130 246 / 0.2);
+    color: rgb(59 130 246);
+}
+.badge-red {
+    background-color: rgb(239 68 68 / 0.2);
+    color: rgb(239 68 68);
 }

@@ -104,7 +104,7 @@ export function ExplorerScreens({
     });
 
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full flex-1 min-h-0">
         {/* HEADER */}
         <div className="flex flex-col gap-2 px-3 py-3 border-b border-white/5 bg-white/[0.01] shrink-0">
           <div className="flex items-center gap-2">
@@ -144,51 +144,54 @@ export function ExplorerScreens({
                 No instances on screen
               </motion.div>
             ) : (
-              instances.map(({ iconIdx, icon, isBackground: isBgInstance, path }) => {
-                const pathLower = path.toLowerCase();
-                const isSprite = pathLower.includes("sprites");
-                const isBG = pathLower.includes("backgrounds");
-                const isSelected = !isBgInstance && selectedIconIndex === iconIdx;
+              instances.map(
+                ({ iconIdx, icon, isBackground: isBgInstance, path }) => {
+                  const pathLower = path.toLowerCase();
+                  const isSprite = pathLower.includes("sprites");
+                  const isBG = pathLower.includes("backgrounds");
+                  const isSelected =
+                    !isBgInstance && selectedIconIndex === iconIdx;
 
-                return (
-                  <motion.div
-                    key={`${icon.Name}_${iconIdx}`}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    onClick={() => {
-                      setSelectedAssetPath(path);
-                      if (!isBgInstance) {
-                        setSelectedIcon(iconIdx);
-                      }
-                    }}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
-                      isSelected
-                        ? "bg-primary/20 border border-primary/30"
-                        : "bg-white/5 hover:bg-white/10 border border-transparent"
-                    }`}
-                  >
-                    {isBG ? (
-                      <BgIcon className="w-4 h-4 opacity-60 shrink-0" />
-                    ) : isSprite ? (
-                      <Film className="w-4 h-4 opacity-60 text-orange-400 shrink-0" />
-                    ) : (
-                      <Box className="w-4 h-4 opacity-60 text-blue-400 shrink-0" />
-                    )}
-                    <span className="text-xs font-semibold text-white truncate">
-                      {icon.Name}
-                    </span>
-                    {isBgInstance ? (
-                      <span className="text-[8px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded font-bold uppercase ml-auto shrink-0">
-                        BG
+                  return (
+                    <motion.div
+                      key={`${icon.Name}_${iconIdx}`}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      onClick={() => {
+                        setSelectedAssetPath(path);
+                        if (!isBgInstance) {
+                          setSelectedIcon(iconIdx);
+                        }
+                      }}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                        isSelected
+                          ? "bg-primary/20 border border-primary/30"
+                          : "bg-white/5 hover:bg-white/10 border border-transparent"
+                      }`}
+                    >
+                      {isBG ? (
+                        <BgIcon className="w-4 h-4 opacity-60 shrink-0" />
+                      ) : isSprite ? (
+                        <Film className="w-4 h-4 opacity-60 text-orange-400 shrink-0" />
+                      ) : (
+                        <Box className="w-4 h-4 opacity-60 text-blue-400 shrink-0" />
+                      )}
+                      <span className="text-xs font-semibold text-white truncate">
+                        {icon.Name}
                       </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground ml-auto font-mono shrink-0">
-                        {icon.X}, {icon.Y}
-                      </span>
-                    )}
-                  </motion.div>
-                );
-              })
+                      {isBgInstance ? (
+                        <span className="text-[8px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded font-bold uppercase ml-auto shrink-0">
+                          BG
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground ml-auto font-mono shrink-0">
+                          {icon.X}, {icon.Y}
+                        </span>
+                      )}
+                    </motion.div>
+                  );
+                },
+              )
             )}
           </div>
         </ScrollArea>
@@ -255,7 +258,9 @@ export function ExplorerScreens({
                   }`}
                 >
                   <Layout className="w-5 h-5 shrink-0 opacity-60" />
-                  <span className="truncate text-xs font-semibold">{s.Name}</span>
+                  <span className="truncate text-xs font-semibold">
+                    {s.Name}
+                  </span>
                   <span className="text-xs text-muted-foreground ml-auto font-mono shrink-0">
                     {s.Icons?.length ?? 0}
                   </span>

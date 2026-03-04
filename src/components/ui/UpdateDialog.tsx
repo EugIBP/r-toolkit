@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { UpdateInfo, downloadAndInstall, scheduleUpdate, clearScheduledUpdate } from "@/lib/updater";
-import { X, Download, Sparkles, Bug, Zap, Star, ArrowDown } from "lucide-react";
+import { X, Download } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface UpdateDialogProps {
@@ -90,12 +90,9 @@ export function UpdateDialog({ updateInfo }: UpdateDialogProps) {
             <ScrollArea className="h-[160px]">
               <div className="space-y-2 pr-4">
                 {updateInfo.body.split("\n").filter(Boolean).map((line, index) => {
-                  const icons = [Sparkles, Zap, Bug, Star, ArrowDown];
-                  const Icon = icons[index % icons.length];
                   const text = line.replace(/^[-•]\s*/, "").trim();
                   return (
-                    <div key={index} className="flex items-start gap-3 text-sm text-white/80">
-                      <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <div key={index} className="text-sm text-white/80">
                       <span>{text}</span>
                     </div>
                   );

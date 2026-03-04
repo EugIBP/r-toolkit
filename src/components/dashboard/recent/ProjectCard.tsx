@@ -11,11 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProjectActions } from "./ProjectActions";
+import { formatRelativeTime } from "@/lib/utils";
 
 export function ProjectCard({ project }: { project: any }) {
   const { setProject } = useProjectStore();
   const { loadWorkspace, resetCanvas } = useCanvasStore();
-  const { setCurrentView } = useAppStore();
+  const { setCurrentView, addRecent, loadRecent } = useAppStore();
   const [imgError, setImgError] = useState(false);
 
   // Формируем путь к превью
@@ -38,14 +39,24 @@ export function ProjectCard({ project }: { project: any }) {
         filePath: project.path,
       });
       const data = JSON.parse(content);
-      const lastIdx = Math.max(project.path.lastIndexOf("/"), project.path.lastIndexOf("\\"));
+      const lastIdx = Math.max(
+        project.path.lastIndexOf("/"),
+        project.path.lastIndexOf("\\"),
+      );
       const baseDir = project.path.substring(0, lastIdx);
       setProject(data, project.path);
       await resetCanvas();
       await loadWorkspace(baseDir);
+      await addRecent(project.path, project.displayName, true);
+      await loadWorkspace(baseDir);
       setCurrentView("composer");
+
+      setTimeout(async () => {
+        await addRecent(project.path, project.displayName, true);
+        await loadRecent();
+      }, 3000);
     } catch (err) {
-      toast.error("File moved or deleted");
+      toast.error("File moved or deleted", { id: "open-project-error" });
     }
   };
 
@@ -78,8 +89,8 @@ export function ProjectCard({ project }: { project: any }) {
         <h3 className="font-bold text-white text-sm truncate">
           {project.displayName || project.name}
         </h3>
-        <p className="text-xs text-muted-foreground font-mono truncate opacity-50">
-          {project.path}
+        <p className="text-xs text-muted-foreground opacity-50">
+          {formatRelativeTime(project.lastOpened)}
         </p>
       </div>
 
@@ -88,7 +99,7 @@ export function ProjectCard({ project }: { project: any }) {
         <span className="text-[8px] text-muted-foreground/50 uppercase font-black tracking-widest">
           Workspace
         </span>
-        
+
         {/* Кнопка меню (3 точки) - всегда видима */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -12,9 +12,11 @@ interface RecentProjectsProps {
 export function RecentProjects({ searchQuery }: RecentProjectsProps) {
   const { recentProjects, viewMode } = useAppStore();
 
-  const filtered = recentProjects.filter((p) =>
-    p.displayName.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filtered = recentProjects
+    .filter((p) =>
+      p.displayName.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .sort((a, b) => (b.lastOpened || 0) - (a.lastOpened || 0));
 
   return (
     <div className="flex-1 flex flex-col min-h-0">

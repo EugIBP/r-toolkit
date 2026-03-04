@@ -1,4 +1,5 @@
 import { Film, Image as ImageIcon, Lock, Copy, Trash2 } from "lucide-react";
+import type { AssetObject } from "@/types/project";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useProjectStore } from "@/store/useProjectStore";
@@ -10,16 +11,26 @@ import { IconSpriteFrames } from "./icon/IconSpriteFrames";
 import { IconColorStates } from "./icon/IconColorStates";
 
 export function InspectorIcon() {
-  const { projectData, projectPath, renameInstance, duplicateIcon, deleteIcon } = useProjectStore();
-  const { selectedIconIndex, canvasMode, activeScreenIdx, setSelectedIcon } = useCanvasStore();
+  const {
+    projectData,
+    projectPath,
+    renameInstance,
+    duplicateIcon,
+    deleteIcon,
+  } = useProjectStore();
+  const { selectedIconIndex, canvasMode, activeScreenIdx, setSelectedIcon } =
+    useCanvasStore();
   const { confirm } = useAppStore();
 
   if (!projectData || selectedIconIndex === null) return null;
   const icon = projectData.Screens[activeScreenIdx]?.Icons[selectedIconIndex];
   if (!icon) return null;
 
-  const asset = projectData.Objects.find((o: any) => o.Name === icon.Name);
-  const isSprite = asset?.isSprite || asset?.Path?.toLowerCase().includes("sprites");
+  const asset = projectData.Objects.find(
+    (o: AssetObject) => o.Name === icon.Name,
+  );
+  const isSprite =
+    asset?.isSprite || asset?.Path?.toLowerCase().includes("sprites");
   const isViewMode = canvasMode === "view";
 
   const lastIdx = Math.max(
@@ -44,7 +55,10 @@ export function InspectorIcon() {
             }}
           />
           {asset && (
-            <img src={previewSrc} className="max-w-full max-h-full object-contain relative z-10 p-4" />
+            <img
+              src={previewSrc}
+              className="max-w-full max-h-full object-contain relative z-10 p-4"
+            />
           )}
           {isViewMode && (
             <div className="absolute top-3 right-3 p-1.5 bg-black/60 rounded-md backdrop-blur-sm border border-white/5">
@@ -65,7 +79,13 @@ export function InspectorIcon() {
           ) : (
             <input
               value={icon.Name}
-              onChange={(e) => renameInstance(activeScreenIdx, selectedIconIndex, e.target.value)}
+              onChange={(e) =>
+                renameInstance(
+                  activeScreenIdx,
+                  selectedIconIndex,
+                  e.target.value,
+                )
+              }
               className="flex-1 bg-transparent text-xs font-mono text-muted-foreground outline-none focus:text-white transition-colors"
             />
           )}
@@ -75,7 +95,11 @@ export function InspectorIcon() {
       {/* Scrollable content */}
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-5 space-y-6">
-          <IconTransform screenIdx={activeScreenIdx} iconIdx={selectedIconIndex} isViewMode={isViewMode} />
+          <IconTransform
+            screenIdx={activeScreenIdx}
+            iconIdx={selectedIconIndex}
+            isViewMode={isViewMode}
+          />
           <IconAssetInfo assetName={icon.Name} isViewMode={isViewMode} />
           {isSprite && (
             <IconSpriteFrames
@@ -99,10 +123,15 @@ export function InspectorIcon() {
           <div className="p-5 py-6 space-y-3">
             <button
               onClick={() => {
-                const success = duplicateIcon(activeScreenIdx, selectedIconIndex);
+                const success = duplicateIcon(
+                  activeScreenIdx,
+                  selectedIconIndex,
+                );
                 if (success) {
                   const screen = projectData.Screens[activeScreenIdx];
-                  setSelectedIcon(screen.Icons?.length ? screen.Icons.length - 1 : 0);
+                  setSelectedIcon(
+                    screen.Icons?.length ? screen.Icons.length - 1 : 0,
+                  );
                 }
               }}
               className="w-full flex items-center justify-center gap-2 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest text-white transition-all active:scale-95"
@@ -111,7 +140,12 @@ export function InspectorIcon() {
             </button>
             <button
               onClick={async () => {
-                if (await confirm("Remove Icon", `Remove "${icon.Name}" from screen?`)) {
+                if (
+                  await confirm(
+                    "Remove Icon",
+                    `Remove "${icon.Name}" from screen?`,
+                  )
+                ) {
                   deleteIcon(activeScreenIdx, selectedIconIndex);
                   setSelectedIcon(null);
                 }

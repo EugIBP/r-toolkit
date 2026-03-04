@@ -142,7 +142,7 @@ export function CreateProjectModal({
 
   const handleSaveSettings = async () => {
     if (!selectedFolder) {
-      toast.error("Please select a folder");
+      toast.error("Please select a folder", { id: "no-folder-selected" });
       return;
     }
 
@@ -188,7 +188,9 @@ export function CreateProjectModal({
       handleClose();
     } catch (err) {
       console.error("Failed to create project:", err);
-      toast.error(`Failed to create project: ${err}`);
+      toast.error(`Failed to create project: ${err}`, {
+        id: "create-project-error",
+      });
     } finally {
       setIsCreating(false);
     }
@@ -273,163 +275,163 @@ export function CreateProjectModal({
 
         <ScrollArea className="max-h-[85vh]">
           <div className="p-6 space-y-6">
-              {/* Cover Image */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                    Cover Image
-                  </span>
-                  {thumbUrl && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveThumb();
-                      }}
-                      className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                      title="Remove cover image"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-                <div
-                  onClick={handleSelectThumb}
-                  className="relative aspect-video w-full rounded-xl bg-white/5 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group"
-                >
-                  <ImageIcon className="absolute w-8 h-8 text-white/20 group-hover:scale-110 transition-transform z-0" />
-
-                  {thumbUrl && (
-                    <img
-                      src={thumbUrl}
-                      alt=""
-                      onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:opacity-30 opacity-0"
-                    />
-                  )}
-
-                  <span className="text-xs font-medium text-white/60 z-20 bg-black/40 px-3 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-                    {thumbUrl ? "Change image" : "Click to browse image"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Resolution */}
-              <div className="space-y-2">
+            {/* Cover Image */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
                 <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  Resolution
+                  Cover Image
                 </span>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <select
-                      value={resolution}
-                      onChange={(e) => setResolution(e.target.value)}
-                      disabled={useCustomRes}
-                      className="w-full bg-[#181818] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none appearance-none cursor-pointer disabled:opacity-50"
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 12px center",
-                      }}
-                    >
-                      {RESOLUTIONS.map((res) => (
-                        <option
-                          key={res.value}
-                          value={res.value}
-                          className="bg-[#181818]"
-                        >
-                          {res.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={useCustomRes}
-                      onChange={(e) => setUseCustomRes(e.target.checked)}
-                      className="accent-primary"
-                    />
-                    Custom
-                  </label>
-                </div>
-                {useCustomRes && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <input
-                      type="number"
-                      placeholder="Width"
-                      value={customRes.width}
-                      onChange={(e) =>
-                        setCustomRes((prev) => ({
-                          ...prev,
-                          width: e.target.value,
-                        }))
-                      }
-                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-muted-foreground">x</span>
-                    <input
-                      type="number"
-                      placeholder="Height"
-                      value={customRes.height}
-                      onChange={(e) =>
-                        setCustomRes((prev) => ({
-                          ...prev,
-                          height: e.target.value,
-                        }))
-                      }
-                      className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                  </div>
+                {thumbUrl && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveThumb();
+                    }}
+                    className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                    title="Remove cover image"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 )}
               </div>
+              <div
+                onClick={handleSelectThumb}
+                className="relative aspect-video w-full rounded-xl bg-white/5 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group"
+              >
+                <ImageIcon className="absolute w-8 h-8 text-white/20 group-hover:scale-110 transition-transform z-0" />
 
-              {/* Alias */}
-              <div className="space-y-2">
-                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  Alias (Display Name)
-                </span>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm font-semibold text-white focus:ring-1 focus:ring-primary outline-none"
-                />
-              </div>
+                {thumbUrl && (
+                  <img
+                    src={thumbUrl}
+                    alt=""
+                    onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
+                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:opacity-30 opacity-0"
+                  />
+                )}
 
-              {/* Project Path */}
-              <div className="space-y-2">
-                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  Project Location
+                <span className="text-xs font-medium text-white/60 z-20 bg-black/40 px-3 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                  {thumbUrl ? "Change image" : "Click to browse image"}
                 </span>
-                <div
-                  onClick={handleSelectFolder}
-                  className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 min-w-0 cursor-pointer hover:border-white/10 transition-colors"
-                >
-                  <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
-                  <span className="text-xs font-mono text-muted-foreground select-all">
-                    {selectedFolder
-                      ? selectedFolder.length > 72
-                        ? `${selectedFolder.slice(0, 72)}...`
-                        : selectedFolder
-                      : "Click to select location"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  Description / Notes
-                </span>
-                <textarea
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)}
-                  rows={3}
-                  placeholder="Write some notes..."
-                  className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-primary outline-none resize-none"
-                />
               </div>
             </div>
-          </ScrollArea>
+
+            {/* Resolution */}
+            <div className="space-y-2">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Resolution
+              </span>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <select
+                    value={resolution}
+                    onChange={(e) => setResolution(e.target.value)}
+                    disabled={useCustomRes}
+                    className="w-full bg-[#181818] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none appearance-none cursor-pointer disabled:opacity-50"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 12px center",
+                    }}
+                  >
+                    {RESOLUTIONS.map((res) => (
+                      <option
+                        key={res.value}
+                        value={res.value}
+                        className="bg-[#181818]"
+                      >
+                        {res.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useCustomRes}
+                    onChange={(e) => setUseCustomRes(e.target.checked)}
+                    className="accent-primary"
+                  />
+                  Custom
+                </label>
+              </div>
+              {useCustomRes && (
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="number"
+                    placeholder="Width"
+                    value={customRes.width}
+                    onChange={(e) =>
+                      setCustomRes((prev) => ({
+                        ...prev,
+                        width: e.target.value,
+                      }))
+                    }
+                    className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span className="text-muted-foreground">x</span>
+                  <input
+                    type="number"
+                    placeholder="Height"
+                    value={customRes.height}
+                    onChange={(e) =>
+                      setCustomRes((prev) => ({
+                        ...prev,
+                        height: e.target.value,
+                      }))
+                    }
+                    className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-sm text-white w-24 focus:ring-1 focus:ring-primary outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Alias */}
+            <div className="space-y-2">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Alias (Display Name)
+              </span>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm font-semibold text-white focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
+
+            {/* Project Path */}
+            <div className="space-y-2">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Project Location
+              </span>
+              <div
+                onClick={handleSelectFolder}
+                className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 min-w-0 cursor-pointer hover:border-white/10 transition-colors"
+              >
+                <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
+                <span className="text-xs font-mono text-muted-foreground select-all">
+                  {selectedFolder
+                    ? selectedFolder.length > 72
+                      ? `${selectedFolder.slice(0, 72)}...`
+                      : selectedFolder
+                    : "Click to select location"}
+                </span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Description / Notes
+              </span>
+              <textarea
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                rows={3}
+                placeholder="Write some notes..."
+                className="w-full bg-[#181818] border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-primary outline-none resize-none"
+              />
+            </div>
+          </div>
+        </ScrollArea>
 
         {/* FOOTER */}
         <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">

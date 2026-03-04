@@ -3,10 +3,21 @@ import { toast } from "sonner";
 import type { ProjectStore, ScannedFile } from "./types";
 import type { StateCreator } from "zustand";
 
-export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<ProjectStore,
-  "projectData" | "projectPath" | "baseDir" | "scannedFiles" |
-  "setProject" | "saveProject" | "scanDirectory"
->> = (set, get) => ({
+export const createProjectSlice: StateCreator<
+  ProjectStore,
+  [],
+  [],
+  Pick<
+    ProjectStore,
+    | "projectData"
+    | "projectPath"
+    | "baseDir"
+    | "scannedFiles"
+    | "setProject"
+    | "saveProject"
+    | "scanDirectory"
+  >
+> = (set, get) => ({
   projectData: null,
   projectPath: null,
   baseDir: null,
@@ -21,7 +32,7 @@ export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<Project
       data = arg2;
     } else {
       data = arg1;
-      path = arg2;
+      path = arg2 as string;
     }
 
     if (!path || typeof path !== "string") {
@@ -34,7 +45,10 @@ export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<Project
     }
 
     const cleanPath = path.trim().replace(/^["']|["']$/g, "");
-    const lastIdx = Math.max(cleanPath.lastIndexOf("/"), cleanPath.lastIndexOf("\\"));
+    const lastIdx = Math.max(
+      cleanPath.lastIndexOf("/"),
+      cleanPath.lastIndexOf("\\"),
+    );
     const baseDir = lastIdx !== -1 ? cleanPath.substring(0, lastIdx) : "";
 
     // Load spriteAssets from .rtoolkit/canvas.json
@@ -63,7 +77,9 @@ export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<Project
     const { baseDir } = get();
     if (!baseDir) return;
     try {
-      const files = await invoke<ScannedFile[]>("scan_project_assets", { baseDir });
+      const files = await invoke<ScannedFile[]>("scan_project_assets", {
+        baseDir,
+      });
       set({ scannedFiles: files || [] });
     } catch (e) {
       console.error("Failed to scan directory:", e);
@@ -76,9 +92,11 @@ export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<Project
     if (!projectData || !projectPath) return;
 
     const updatedObjects = projectData.Objects.map((obj: any) => {
+      const existingType = obj.Type;
       const isBackground = obj.Path.toLowerCase().includes("backgrounds");
+      const isPal = existingType === "Pal";
       const { isSprite: _isSprite, ...cleanObj } = obj;
-      return { ...cleanObj, Type: isBackground ? "Bin" : "Ico" };
+      return { ...cleanObj, Type: isPal ? "Pal" : (isBackground ? "Bin" : "Ico") };
     }).sort((a: any, b: any) => {
       const getOrder = (obj: any) => {
         if (obj.Path.toLowerCase().includes("backgrounds")) return 0;
@@ -95,9 +113,9 @@ export const createProjectSlice: StateCreator<ProjectStore, [], [], Pick<Project
         path: projectPath,
         content: JSON.stringify(sortedData, null, 2),
       });
-      toast.success("Project saved");
+      toast.success("Project saved", { id: "project-saved" });
     } catch (e) {
-      toast.error(`Save failed: ${e}`);
+      toast.error(`Save failed: ${e}`, { id: "project-save-failed" });
     }
   },
 });
