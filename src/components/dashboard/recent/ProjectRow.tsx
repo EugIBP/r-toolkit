@@ -17,7 +17,10 @@ export function ProjectRow({ project }: { project: RecentProject }) {
         filePath: project.path,
       });
       const data = JSON.parse(content);
-      const lastIdx = Math.max(project.path.lastIndexOf("/"), project.path.lastIndexOf("\\"));
+      const lastIdx = Math.max(
+        project.path.lastIndexOf("/"),
+        project.path.lastIndexOf("\\"),
+      );
       const baseDir = project.path.substring(0, lastIdx);
       await useProjectStore.getState().setProject(project.path, data);
       useCanvasStore.getState().resetCanvas();
@@ -25,7 +28,9 @@ export function ProjectRow({ project }: { project: RecentProject }) {
       await useAppStore.getState().addRecent(project.path, project.displayName);
       useAppStore.getState().setCurrentView("composer");
     } catch (err) {
-      toast.error("Error opening project: " + err);
+      toast.error("Error opening project: " + err, {
+        id: "open-project-error",
+      });
     }
   };
 

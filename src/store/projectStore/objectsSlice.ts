@@ -4,11 +4,22 @@ import { useHistoryStore } from "../useHistory";
 import type { ProjectStore } from "./types";
 import type { StateCreator } from "zustand";
 
-export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<ProjectStore,
-  "updateProjectObject" | "deleteProjectObject" | "addProjectObject" |
-  "registerAllAssets" | "registerAndAddInstances" | "convertAssetType" |
-  "isNameUnique" | "getAssetInstances"
->> = (set, get) => ({
+export const createObjectsSlice: StateCreator<
+  ProjectStore,
+  [],
+  [],
+  Pick<
+    ProjectStore,
+    | "updateProjectObject"
+    | "deleteProjectObject"
+    | "addProjectObject"
+    | "registerAllAssets"
+    | "registerAndAddInstances"
+    | "convertAssetType"
+    | "isNameUnique"
+    | "getAssetInstances"
+  >
+> = (set, get) => ({
   updateProjectObject: (oldName, updates) => {
     set((state) => {
       if (!state.projectData) return state;
@@ -22,13 +33,21 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
   deleteProjectObject: (name) => {
     set((state) => {
       if (!state.projectData) return state;
-      const newObjects = state.projectData.Objects.filter((obj: any) => obj.Name !== name);
+      const newObjects = state.projectData.Objects.filter(
+        (obj: any) => obj.Name !== name,
+      );
       const newScreens = state.projectData.Screens.map((screen: any) => ({
         ...screen,
         Icons: screen.Icons.filter((icon: any) => icon.Name !== name),
         Background: screen.Background === name ? "" : screen.Background,
       }));
-      return { projectData: { ...state.projectData, Objects: newObjects, Screens: newScreens } };
+      return {
+        projectData: {
+          ...state.projectData,
+          Objects: newObjects,
+          Screens: newScreens,
+        },
+      };
     });
     useHistoryStore.getState().push(`Deleted asset "${name}"`);
   },
@@ -48,21 +67,42 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
   registerAllAssets: () => {
     set((state) => {
       if (!state.projectData || !state.scannedFiles.length) return state;
-      const existingPaths = new Set(state.projectData.Objects.map((o: any) => o.Path));
+      const existingPaths = new Set(
+        state.projectData.Objects.map((o: any) => o.Path),
+      );
       const newObjects = [...state.projectData.Objects];
 
       console.log("[registerAllAssets] scannedFiles:", state.scannedFiles);
 
       state.scannedFiles.forEach((file) => {
         if (!existingPaths.has(file.path)) {
-          const name = file.path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || file.path;
-          const type = file.asset_type === "bin" ? "Bin" : file.asset_type === "pal" ? "Pal" : "Ico";
-          console.log("[registerAllAssets] file:", file.path, "assetType:", file.asset_type, "-> Type:", type);
+          const name =
+            file.path
+              .split(/[\\/]/)
+              .pop()
+              ?.replace(/\.[^/.]+$/, "") || file.path;
+          const type =
+            file.asset_type === "bin"
+              ? "Bin"
+              : file.asset_type === "pal"
+                ? "Pal"
+                : "Ico";
+          console.log(
+            "[registerAllAssets] file:",
+            file.path,
+            "assetType:",
+            file.asset_type,
+            "-> Type:",
+            type,
+          );
           newObjects.push({ Name: name, Path: file.path, Type: type });
         }
       });
 
-      return { projectData: { ...state.projectData, Objects: newObjects }, scannedFiles: [] };
+      return {
+        projectData: { ...state.projectData, Objects: newObjects },
+        scannedFiles: [],
+      };
     });
   },
 
@@ -76,9 +116,17 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
 
     scannedFiles.forEach((file) => {
       if (!existingPaths.has(file.path)) {
-        const name = file.path.split(/[\\/]/).pop()?.replace(/\.[^/.]+$/, "") || file.path;
+        const name =
+          file.path
+            .split(/[\\/]/)
+            .pop()
+            ?.replace(/\.[^/.]+$/, "") || file.path;
         const isBackground = file.asset_type === "bin";
-        const type = isBackground ? "Bin" : file.asset_type === "pal" ? "Pal" : "Ico";
+        const type = isBackground
+          ? "Bin"
+          : file.asset_type === "pal"
+            ? "Pal"
+            : "Ico";
 
         newObjects.push({
           Name: name,
@@ -112,15 +160,25 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
       screens[screenIdx] = screen;
 
       return {
-        projectData: { ...state.projectData, Screens: screens, Objects: newObjects },
+        projectData: {
+          ...state.projectData,
+          Screens: screens,
+          Objects: newObjects,
+        },
         scannedFiles: [],
       };
     });
 
-    toast.success(`Added ${newInstances.length} instance${newInstances.length !== 1 ? "s" : ""} to screen`);
+    toast.success(
+      `Added ${newInstances.length} instance${newInstances.length !== 1 ? "s" : ""} to screen`,
+      { id: "instances-added" },
+    );
   },
 
-  convertAssetType: async (assetName: string, targetType: "icon" | "sprite") => {
+  convertAssetType: async (
+    assetName: string,
+    targetType: "icon" | "sprite" | "pal",
+  ) => {
     const { projectData } = get();
     if (!projectData) return false;
 
@@ -128,20 +186,24 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
     if (!asset) return false;
 
     const isSprite = targetType === "sprite";
+    const isPal = targetType === "pal";
 
     set((state) => {
       if (!state.projectData) return state;
       const newObjects = state.projectData.Objects.map((obj: any) =>
-        obj.Name === assetName ? { ...obj, isSprite } : obj,
+        obj.Name === assetName
+          ? { ...obj, isSprite, Type: isPal ? "Pal" : "Ico" }
+          : obj,
       );
       return { projectData: { ...state.projectData, Objects: newObjects } };
     });
 
-    // Mark canvas as having unsaved changes so spriteAssets gets saved on next saveWorkspace
     useCanvasStore.getState().setHasUnsavedChanges(true);
 
-    toast.success(`Converted to ${targetType}`);
-    useHistoryStore.getState().push(`Converted "${assetName}" to ${targetType}`);
+    toast.success(`Converted to ${targetType}`, { id: "asset-converted" });
+    useHistoryStore
+      .getState()
+      .push(`Converted "${assetName}" to ${targetType}`);
     return true;
   },
 
@@ -158,10 +220,12 @@ export const createObjectsSlice: StateCreator<ProjectStore, [], [], Pick<Project
     const { projectData } = get();
     if (!projectData) return [];
 
-    const instances: Array<{ screenIdx: number; iconIdx: number; icon: any }> = [];
+    const instances: Array<{ screenIdx: number; iconIdx: number; icon: any }> =
+      [];
     projectData.Screens.forEach((screen: any, screenIdx: number) => {
       screen.Icons?.forEach((icon: any, iconIdx: number) => {
-        if (icon.Name === assetName) instances.push({ screenIdx, iconIdx, icon });
+        if (icon.Name === assetName)
+          instances.push({ screenIdx, iconIdx, icon });
       });
     });
     return instances;

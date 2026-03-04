@@ -6,11 +6,12 @@ export function HotkeysPanel() {
 
   const hotkeys = [
     { keys: ["Ctrl", "Z"], action: "Undo" },
-    { keys: ["Ctrl", "Shift", "Z"], action: "Redo" },
+    { keys: ["Ctrl", "Y"], action: "Redo" },
     { keys: ["MMB"], action: "Pan" },
     { keys: ["Scroll"], action: "Zoom" },
-    { keys: ["Ctrl", "S"], action: "Save" },
-    { keys: ["Ctrl", "K"], action: "Toggle D&D" },
+    { keys: ["Ctrl", "K"], action: "Find assets ..." },
+    { keys: ["Ctrl", "S"], action: "Save Workspace" },
+    { keys: ["Ctrl", "Shift", "S"], action: "Save JSON" },
   ];
 
   return (
@@ -28,7 +29,9 @@ export function HotkeysPanel() {
       {isOpen && (
         <div className="absolute bottom-full mb-2 right-0 w-64 bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-3 border-b border-white/10">
-            <span className="text-xs font-semibold text-white">Keyboard Shortcuts</span>
+            <span className="text-xs font-semibold text-white">
+              Keyboard Shortcuts
+            </span>
           </div>
           <div className="p-2 space-y-1">
             {hotkeys.map((item, idx) => (
@@ -36,11 +39,17 @@ export function HotkeysPanel() {
                 key={idx}
                 className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5"
               >
-                <span className="text-xs text-muted-foreground">{item.action}</span>
+                <span className="text-xs text-muted-foreground">
+                  {item.action}
+                </span>
                 <div className="flex items-center gap-1">
                   {item.keys.map((key, keyIdx) => (
                     <span key={keyIdx}>
-                      {keyIdx > 0 && <span className="text-xs text-muted-foreground mx-0.5">+</span>}
+                      {keyIdx > 0 && (
+                        <span className="text-xs text-muted-foreground mx-0.5">
+                          +
+                        </span>
+                      )}
                       <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-xs font-mono text-white">
                         {key}
                       </kbd>

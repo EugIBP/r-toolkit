@@ -1,3 +1,12 @@
+// src/store/projectStore/types.ts
+import type {
+  ProjectData,
+  AssetObject,
+  ScreenData,
+  IconInstance,
+  ColorState,
+} from "@/types/project";
+
 export interface ScannedFile {
   path: string;
   dir: string;
@@ -5,40 +14,76 @@ export interface ScannedFile {
 }
 
 export interface ProjectStore {
-  projectData: any | null;
+  // Меняем any на ProjectData
+  projectData: ProjectData | null;
   projectPath: string | null;
   baseDir: string | null;
   scannedFiles: ScannedFile[];
 
   // projectSlice
-  setProject: (arg1: any, arg2: any) => void;
+  setProject: (
+    data: ProjectData | string,
+    pathOrData: string | ProjectData,
+  ) => void;
   saveProject: () => Promise<void>;
   scanDirectory: () => Promise<void>;
 
   // objectsSlice
-  updateProjectObject: (oldName: string, updates: Partial<any>) => void;
+  updateProjectObject: (oldName: string, updates: Partial<AssetObject>) => void;
   deleteProjectObject: (name: string) => void;
-  addProjectObject: (newObj: any) => void;
+  addProjectObject: (newObj: AssetObject) => void;
   registerAllAssets: () => void;
   registerAndAddInstances: (screenIdx: number) => Promise<void>;
-  convertAssetType: (assetName: string, targetType: "icon" | "sprite") => Promise<boolean>;
+  convertAssetType: (
+    assetName: string,
+    targetType: "icon" | "sprite" | "pal",
+  ) => Promise<boolean>;
   isNameUnique: (name: string) => boolean;
-  getAssetInstances: (assetName: string) => Array<{ screenIdx: number; iconIdx: number; icon: any }>;
+  getAssetInstances: (
+    assetName: string,
+  ) => Array<{ screenIdx: number; iconIdx: number; icon: IconInstance }>;
 
   // iconsSlice
-  updateScreen: (screenIdx: number, updates: Partial<any>) => void;
+  updateScreen: (screenIdx: number, updates: Partial<ScreenData>) => void;
   addScreen: () => void;
   duplicateScreen: (index: number) => void;
   deleteScreen: (index: number) => void;
   addColor: (name: string, hex: string) => void;
   updateColor: (oldName: string, newName: string, newHex: string) => void;
   deleteColor: (name: string) => void;
-  updateIcon: (screenIdx: number, iconIdx: number, updates: Partial<any>) => void;
+
+  // Меняем Partial<any> на Partial<IconInstance>
+  updateIcon: (
+    screenIdx: number,
+    iconIdx: number,
+    updates: Partial<IconInstance>,
+  ) => void;
+
   addIconState: (screenIdx: number, iconIdx: number) => void;
-  updateIconState: (screenIdx: number, iconIdx: number, stateIdx: number, updates: Partial<any>) => void;
-  deleteIconState: (screenIdx: number, iconIdx: number, stateIdx: number) => void;
-  addInstance: (screenIdx: number, assetName: string, options?: { name?: string; x?: number; y?: number; states?: any[] }) => boolean;
-  renameInstance: (screenIdx: number, iconIdx: number, newName: string) => boolean;
+
+  // Меняем Partial<any> на Partial<ColorState>
+  updateIconState: (
+    screenIdx: number,
+    iconIdx: number,
+    stateIdx: number,
+    updates: Partial<ColorState>,
+  ) => void;
+
+  deleteIconState: (
+    screenIdx: number,
+    iconIdx: number,
+    stateIdx: number,
+  ) => void;
+  addInstance: (
+    screenIdx: number,
+    assetName: string,
+    options?: { name?: string; x?: number; y?: number; states?: ColorState[] },
+  ) => boolean;
+  renameInstance: (
+    screenIdx: number,
+    iconIdx: number,
+    newName: string,
+  ) => boolean;
   duplicateIcon: (screenIdx: number, iconIdx: number) => boolean;
   deleteIcon: (screenIdx: number, iconIdx: number) => void;
 }

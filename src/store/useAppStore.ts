@@ -39,7 +39,7 @@ interface AppStore {
   setAvailableUpdate: (version: string | null) => void;
 
   loadRecent: () => Promise<void>;
-  addRecent: (path: string, name: string) => Promise<void>;
+  addRecent: (path: string, name: string, silent?: boolean) => Promise<void>;
   removeRecent: (id: string) => Promise<void>;
   updateProjectMeta: (
     id: string,
@@ -88,7 +88,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }
   },
 
-  addRecent: async (path, folderName) => {
+  addRecent: async (path, folderName, silent = false) => {
     const id = btoa(encodeURIComponent(path));
     const current = get().recentProjects;
     const existing = current.find((p) => p.id === id);
@@ -103,7 +103,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
       0,
       15,
     );
-    set({ recentProjects: updated });
+    if (!silent) {
+      set({ recentProjects: updated });
+    }
     await persistentStore.set("recent_projects_v3", updated);
     await persistentStore.save();
   },

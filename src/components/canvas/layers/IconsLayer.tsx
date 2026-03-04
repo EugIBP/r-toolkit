@@ -1,3 +1,4 @@
+import type { IconInstance, AssetObject } from "@/types/project";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore"; // <-- Импорт
 import { SmartIcon } from "../entities/SmartIcon";
@@ -13,16 +14,17 @@ export function IconsLayer({ activeScreenIdx }: { activeScreenIdx: number }) {
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none">
-      {activeScreen.Icons.map((iconInstance: any, idx: number) => {
-        // --- ЛОГИКА ФИЛЬТРАЦИИ НА ХОЛСТЕ ---
+      {/* 2. Заменяем (iconInstance: any) на (iconInstance: IconInstance) */}
+      {activeScreen.Icons.map((iconInstance: IconInstance, idx: number) => {
         if (assetFilter !== "all") {
-          // Находим ассет, чтобы проверить его путь
+          // 3. Заменяем (o: any) на (o: AssetObject)
           const asset = projectData.Objects.find(
-            (o: any) => o.Name === iconInstance.Name,
+            (o: AssetObject) => o.Name === iconInstance.Name,
           );
 
           if (asset) {
-            const isSprite = asset.isSprite || asset.Path.toLowerCase().includes("sprites");
+            const isSprite =
+              asset.isSprite || asset.Path.toLowerCase().includes("sprites");
 
             // Если выбран фильтр 'icons', а это спрайт -> скрываем
             if (assetFilter === "icons" && isSprite) return null;
@@ -41,7 +43,11 @@ export function IconsLayer({ activeScreenIdx }: { activeScreenIdx: number }) {
             key={`${iconInstance.Name}-${idx}`}
             className="pointer-events-auto"
           >
-            <SmartIcon iconInstance={iconInstance} iconIndex={idx} screenIdx={activeScreenIdx} />
+            <SmartIcon
+              iconInstance={iconInstance}
+              iconIndex={idx}
+              screenIdx={activeScreenIdx}
+            />
           </div>
         );
       })}

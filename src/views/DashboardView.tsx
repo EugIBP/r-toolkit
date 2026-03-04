@@ -5,7 +5,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
 import { RecentProjects } from "@/components/dashboard/RecentProjects";
 import { ToolsSection } from "@/components/dashboard/ToolsSection";
-import { Plus, FolderOpen, FilePlus, LayoutGrid, List, Search, ArrowUp } from "lucide-react";
+import {
+  Plus,
+  FolderOpen,
+  FilePlus,
+  LayoutGrid,
+  List,
+  Search,
+  ArrowUp,
+} from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
@@ -24,13 +32,25 @@ import {
 export function DashboardView() {
   const { setProject } = useProjectStore();
   const { resetCanvas, loadWorkspace } = useCanvasStore();
-  const { addRecent, setEditingWorkspaceId, workspaceTab, setWorkspaceTab, viewMode, setViewMode, setPendingUpdate, availableUpdate, setAvailableUpdate } = useAppStore();
+  const {
+    addRecent,
+    setEditingWorkspaceId,
+    workspaceTab,
+    setWorkspaceTab,
+    viewMode,
+    setViewMode,
+    setPendingUpdate,
+    availableUpdate,
+    setAvailableUpdate,
+  } = useAppStore();
   const [search, setSearch] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [appVersion, setAppVersion] = useState("");
 
   useEffect(() => {
-    getVersion().then(setAppVersion).catch(() => setAppVersion("0.0.0"));
+    getVersion()
+      .then(setAppVersion)
+      .catch(() => setAppVersion("0.0.0"));
   }, []);
 
   const handleVersionClick = async () => {
@@ -39,7 +59,7 @@ export function DashboardView() {
       setAvailableUpdate(update.version);
       setPendingUpdate(update);
     } else {
-      toast.info("You are using the latest version");
+      toast.info("You are using the latest version", { id: "update-latest" });
     }
   };
 
@@ -48,7 +68,10 @@ export function DashboardView() {
 
     const pathParts = filePath.split(/[\\/]/);
     const folderName = pathParts[pathParts.length - 2] || "New Workspace";
-    const lastIdx = Math.max(filePath.lastIndexOf("/"), filePath.lastIndexOf("\\"));
+    const lastIdx = Math.max(
+      filePath.lastIndexOf("/"),
+      filePath.lastIndexOf("\\"),
+    );
     const baseDir = filePath.substring(0, lastIdx);
 
     setProject(data, filePath);
@@ -98,7 +121,9 @@ export function DashboardView() {
                     {availableUpdate && (
                       <>
                         <ArrowUp className="w-2.5 h-2.5 text-green-400" />
-                        <span className="text-green-400">{availableUpdate}</span>
+                        <span className="text-green-400">
+                          {availableUpdate}
+                        </span>
                       </>
                     )}
                   </button>
@@ -106,7 +131,9 @@ export function DashboardView() {
               )}
             </h1>
             <p className="text-xs text-muted-foreground">
-              {workspaceTab === "workspace" ? "Open a workspace to get started" : "Select a tool to begin"}
+              {workspaceTab === "workspace"
+                ? "Open a workspace to get started"
+                : "Select a tool to begin"}
             </p>
           </div>
 
@@ -160,7 +187,11 @@ export function DashboardView() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={workspaceTab === "workspace" ? "Search workspaces..." : "Search tools..."}
+              placeholder={
+                workspaceTab === "workspace"
+                  ? "Search workspaces..."
+                  : "Search tools..."
+              }
               className="w-80 bg-white/5 border border-white/10 rounded-xl px-11 py-2.5 text-xs outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium"
             />
           </div>

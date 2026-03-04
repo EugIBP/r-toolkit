@@ -24,8 +24,14 @@ const getDisplayHex = (color: string) => {
   return color;
 };
 
-export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: Props) {
-  const { projectData, addIconState, updateIconState, deleteIconState } = useProjectStore();
+export function IconColorStates({
+  screenIdx,
+  iconIdx,
+  assetName,
+  isViewMode,
+}: Props) {
+  const { projectData, addIconState, updateIconState, deleteIconState } =
+    useProjectStore();
   const { selectedStates, setSelectedState } = useCanvasStore();
   const { confirm } = useAppStore();
 
@@ -55,20 +61,32 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
         <div className="space-y-2">
           {icon.States?.map((state: any, idx: number) => {
             const isPreviewing = activeStateIdx === idx;
-            const colorHex = getDisplayHex(projectData.Colors[state.Color] || "#fff");
+            const colorHex = getDisplayHex(
+              projectData.Colors[state.Color] || "#fff",
+            );
 
             const showColoring = isViewMode && isPreviewing;
 
             return (
-              <button
+              <div
                 key={idx}
-                onClick={() => setSelectedState(screenIdx, assetName, isPreviewing ? null : idx)}
+                onClick={() =>
+                  setSelectedState(
+                    screenIdx,
+                    assetName,
+                    isPreviewing ? null : idx,
+                  )
+                }
                 className={`group relative w-full rounded-xl border transition-all duration-200 text-left ${
                   showColoring
                     ? "bg-primary/20 border-primary/30 shadow-lg cursor-pointer"
                     : "bg-white/[0.02] border-white/5 hover:border-white/10 cursor-pointer"
                 }`}
-                style={showColoring ? { backgroundColor: `${colorHex}30` } : undefined}
+                style={
+                  showColoring
+                    ? { backgroundColor: `${colorHex}30` }
+                    : undefined
+                }
               >
                 <div className="flex items-start gap-3 p-3">
                   <div className="flex-1 min-w-0 space-y-2">
@@ -76,7 +94,9 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
                       value={state.Name}
                       readOnly={isViewMode}
                       onChange={(e) =>
-                        updateIconState(screenIdx, iconIdx, idx, { Name: e.target.value.toUpperCase() })
+                        updateIconState(screenIdx, iconIdx, idx, {
+                          Name: e.target.value.toUpperCase(),
+                        })
                       }
                       className={`w-full rounded-md py-1.5 px-2 text-xs font-bold outline-none transition-colors ${
                         isViewMode
@@ -96,7 +116,9 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
                           disabled={isViewMode}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => {
-                            updateIconState(screenIdx, iconIdx, idx, { Color: e.target.value });
+                            updateIconState(screenIdx, iconIdx, idx, {
+                              Color: e.target.value,
+                            });
                             setSelectedState(screenIdx, assetName, idx);
                           }}
                           className="flex-1 bg-black/40 hover:bg-black/60 border border-white/5 rounded-md py-1.5 px-2 text-xs font-bold text-muted-foreground hover:text-white outline-none cursor-pointer appearance-none transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
@@ -127,7 +149,12 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
                       >
                         <DropdownMenuItem
                           onClick={async () => {
-                            if (await confirm("Delete State", `Remove "${state.Name}"?`))
+                            if (
+                              await confirm(
+                                "Delete State",
+                                `Remove "${state.Name}"?`,
+                              )
+                            )
                               deleteIconState(screenIdx, iconIdx, idx);
                           }}
                           className="gap-2 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-400/10"
@@ -138,7 +165,7 @@ export function IconColorStates({ screenIdx, iconIdx, assetName, isViewMode }: P
                     </DropdownMenu>
                   )}
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>

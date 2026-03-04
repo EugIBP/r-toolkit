@@ -1,4 +1,4 @@
-import { Image as ImageIcon, RefreshCw, FolderOpen } from "lucide-react";
+import { Image as FolderOpen } from "lucide-react";
 import { useProjectStore } from "@/store/useProjectStore";
 
 interface Props {
@@ -14,7 +14,9 @@ export function IconAssetInfo({ assetName, isViewMode }: Props) {
   const asset = projectData.Objects.find((o: any) => o.Name === assetName);
   if (!asset) return null;
 
-  const isSprite = asset.isSprite || asset.Path?.toLowerCase().includes("sprites");
+  const isSprite =
+    asset.isSprite || asset.Path?.toLowerCase().includes("sprites");
+  const isPal = asset.Type === "Pal";
 
   return (
     <div className="space-y-2.5">
@@ -30,35 +32,56 @@ export function IconAssetInfo({ assetName, isViewMode }: Props) {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Type</span>
-          <span className={`text-xs font-bold ${isSprite ? "text-orange-400" : "text-blue-400"}`}>
-            {isSprite ? "Sprite" : "Icon"}
+          <span
+            className={`text-xs font-bold ${
+              isPal
+                ? "text-green-400"
+                : isSprite
+                  ? "text-orange-400"
+                  : "text-blue-400"
+            }`}
+          >
+            {isPal ? "Pal" : isSprite ? "Sprite" : "Icon"}
           </span>
         </div>
         {!isViewMode && (
           <div className="pt-2 border-t border-white/5">
-            <span className="text-xs text-muted-foreground mb-2 block">Convert to</span>
+            <span className="text-xs text-muted-foreground mb-2 block">
+              Convert to
+            </span>
             <div className="flex gap-2">
               <button
                 onClick={() => convertAssetType(asset.Name, "icon")}
-                disabled={!isSprite}
+                disabled={!isSprite && !isPal}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  isSprite
-                    ? "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
-                    : "bg-white/5 text-white/20 cursor-not-allowed"
+                  !isSprite && !isPal
+                    ? "bg-white/5 text-white/20 cursor-not-allowed"
+                    : "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
                 }`}
               >
-                <ImageIcon className="w-3 h-3" /> Icon
+                Icon
               </button>
               <button
                 onClick={() => convertAssetType(asset.Name, "sprite")}
                 disabled={isSprite}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  !isSprite
-                    ? "bg-orange-500/10 text-orange-400 hover:bg-orange-500/20"
-                    : "bg-white/5 text-white/20 cursor-not-allowed"
+                  isSprite
+                    ? "bg-white/5 text-white/20 cursor-not-allowed"
+                    : "bg-orange-500/10 text-orange-400 hover:bg-orange-500/20"
                 }`}
               >
-                <RefreshCw className="w-3 h-3" /> Sprite
+                Sprite
+              </button>
+              <button
+                onClick={() => convertAssetType(asset.Name, "pal")}
+                disabled={isPal}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  isPal
+                    ? "bg-white/5 text-white/20 cursor-not-allowed"
+                    : "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                }`}
+              >
+                Pal
               </button>
             </div>
           </div>

@@ -13,7 +13,7 @@ export function ExplorerColors() {
   const isEditMode = canvasMode === "edit";
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full flex-1 min-h-0">
       {/* HEADER */}
       <div className="flex flex-col gap-2 px-3 py-3 border-b border-white/5 bg-white/[0.01] shrink-0">
         <div className="flex items-center justify-between">
@@ -45,24 +45,22 @@ export function ExplorerColors() {
               No colors defined
             </div>
           ) : (
-            Object.entries(projectData.Colors).map(
-              ([name]: [string, any]) => (
-                <div
-                  key={name}
-                  onClick={() => setSelectedColorKey(name)}
-                  className={`flex items-center gap-3 px-3 py-2.5 text-[13px] rounded-xl cursor-pointer transition-all group ${
-                    selectedColorKey === name
-                      ? "bg-primary/20 border border-primary/30 shadow-sm"
-                      : "bg-white/5 border border-transparent hover:bg-white/10"
-                  }`}
-                >
-                  <PaintBucket className="w-5 h-5 shrink-0 opacity-60" />
-                  <span className="truncate text-xs font-semibold uppercase tracking-wide">
-                    {name}
-                  </span>
-                </div>
-              ),
-            )
+            Object.entries(projectData.Colors).map(([name]: [string, any]) => (
+              <div
+                key={name}
+                onClick={() => setSelectedColorKey(name)}
+                className={`flex items-center gap-3 px-3 py-2.5 text-[13px] rounded-xl cursor-pointer transition-all group ${
+                  selectedColorKey === name
+                    ? "bg-primary/20 border border-primary/30 shadow-sm"
+                    : "bg-white/5 border border-transparent hover:bg-white/10"
+                }`}
+              >
+                <PaintBucket className="w-5 h-5 shrink-0 opacity-60" />
+                <span className="truncate text-xs font-semibold uppercase tracking-wide">
+                  {name}
+                </span>
+              </div>
+            ))
           )}
         </div>
       </ScrollArea>
