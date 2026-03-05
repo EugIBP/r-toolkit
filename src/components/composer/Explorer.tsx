@@ -36,13 +36,13 @@ export function Explorer({
   }, [selectedIconName, activeTab]);
 
   return (
-    <div className="w-80 border-r border-white/10 flex flex-col bg-bg-panel z-30 h-full overflow-hidden font-sans">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden font-sans">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="flex-1 flex flex-col min-h-0 overflow-hidden"
       >
-        <div className="p-4 border-b border-white/10 bg-white/[0.02] shrink-0">
+        <div className="p-4 border-b border-white/10 bg-white/[0.02]">
           <SectionLabel className="mb-3 block">Explorer</SectionLabel>
           <TabsList variant="pill" className="w-full grid grid-cols-3 h-11">
             <TabsTrigger value="screens">Screens</TabsTrigger>

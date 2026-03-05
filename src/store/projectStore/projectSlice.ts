@@ -71,6 +71,11 @@ export const createProjectSlice: StateCreator<
     }
 
     set({ projectData: data, projectPath: cleanPath, baseDir });
+    
+    // Сохраняем путь к проекту в sessionStorage для восстановления при обновлении
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('projectPath', cleanPath);
+    }
   },
 
   scanDirectory: async () => {

@@ -54,9 +54,9 @@ interface AppStore {
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
-  currentView: "dashboard",
+  currentView: (typeof window !== 'undefined' && sessionStorage.getItem('currentView') as 'dashboard' | 'composer' | 'dither') || 'dashboard',
   viewMode: "grid",
-  workspaceTab: "workspace",
+  workspaceTab: (typeof window !== 'undefined' && sessionStorage.getItem('workspaceTab') as 'workspace' | 'tools') || 'workspace',
   recentProjects: [],
   isSettingsOpen: false,
   editingWorkspaceId: null,
@@ -64,9 +64,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
   availableUpdate: null,
   confirmDialog: null,
 
-  setCurrentView: (view) => set({ currentView: view }),
+  setCurrentView: (view) => {
+    sessionStorage.setItem('currentView', view);
+    set({ currentView: view });
+  },
   setViewMode: (mode) => set({ viewMode: mode }),
-  setWorkspaceTab: (tab: "workspace" | "tools") => set({ workspaceTab: tab }),
+  setWorkspaceTab: (tab: "workspace" | "tools") => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('workspaceTab', tab);
+    }
+    set({ workspaceTab: tab });
+  },
   setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
   setEditingWorkspaceId: (id) => set({ editingWorkspaceId: id }),
   setPendingUpdate: (update) => set({ pendingUpdate: update }),

@@ -91,7 +91,31 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
     const maxSteps = historyMaxSteps ?? MAX_DEFAULT_STEPS;
     console.log("History init:", { baseDir, historyMaxSteps, maxSteps });
-    set({ entries: [], currentIndex: -1, maxSteps, isInitialized: true });
+    
+    // Сохраняем начальное состояние проекта как первую запись в истории
+    const projectData = useProjectStore.getState().projectData;
+    const canvasStore = useCanvasStore.getState();
+    
+    if (projectData) {
+      const canvasData = {
+        iconFrames: canvasStore.iconFrames,
+        iconFrameCounts: canvasStore.iconFrameCounts,
+        iconOrientations: canvasStore.iconOrientations,
+        selectedStates: canvasStore.selectedStates,
+      };
+      
+      const initialEntry: HistoryEntry = {
+        id: generateId(),
+        description: "Initial state",
+        timestamp: Date.now(),
+        projectData: JSON.parse(JSON.stringify(projectData)),
+        canvasData: JSON.parse(JSON.stringify(canvasData)),
+      };
+      
+      set({ entries: [initialEntry], currentIndex: 0, maxSteps, isInitialized: true });
+    } else {
+      set({ entries: [], currentIndex: -1, maxSteps, isInitialized: true });
+    }
   },
 
   closeProject: () => {
@@ -135,9 +159,11 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
   undo: () => {
     const { currentIndex, entries } = get();
-    if (currentIndex <= 0) return;
+    if (currentIndex < 0) return;
 
     const newIndex = currentIndex - 1;
+    if (newIndex < 0) return;
+    
     const entry = entries[newIndex];
 
     useProjectStore.setState({ projectData: entry.projectData });
@@ -189,7 +215,10 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
   canUndo: () => get().currentIndex > 0,
 
-  canRedo: () => get().currentIndex < get().entries.length - 1,
+  canRedo: () => {
+    const { currentIndex, entries } = get();
+    return currentIndex < entries.length - 1;
+  },
 
   jumpTo: (index: number) => {
     const { entries } = get();

@@ -7,18 +7,19 @@ import { useHistoryStore } from "@/store/useHistory";
 import { SmartIcon } from "@/components/canvas/entities/SmartIcon";
 import { Explorer } from "@/components/composer/Explorer";
 import { Inspector } from "@/components/composer/Inspector";
-import { AssetsToolbar, ModeToolbar } from "@/components/composer/ComposerToolbar";
+import { ComposerTopBar } from "@/components/composer/ComposerTopBar";
 import { HotkeysPanel } from "@/components/composer/HotkeysPanel";
 import { HistoryPanel } from "@/components/composer/HistoryPanel";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { BackButton } from "@/components/ui/back-button";
 import { useCanvasInteraction } from "./hooks/useCanvasInteraction";
+import { ToolbarDivider } from "@/components/ui/floating-toolbar";
 
 export function ComposerView() {
   const { projectData, projectPath, saveProject } = useProjectStore();
   const { saveWorkspace } = useCanvasStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { setCurrentView } = useAppStore();
+  const { setCurrentView, recentProjects } = useAppStore();
   const {
     zoom,
     setSelectedIcon,
@@ -41,6 +42,12 @@ export function ComposerView() {
 
   const { containerRef, offset, isMiddlePanning, handleMouseDown } =
     useCanvasInteraction(projectPath);
+
+  const currentProjectDisplayName = useMemo(() => {
+    if (!projectPath) return null;
+    const project = recentProjects.find((p) => p.path === projectPath);
+    return project?.displayName || null;
+  }, [projectPath, recentProjects]);
 
   const handleContainerClick = useCallback(
     (e: React.MouseEvent) => {
@@ -159,50 +166,66 @@ export function ComposerView() {
 
   return (
     <div className="flex h-full w-full overflow-hidden">
-      <div className="shrink-0 flex flex-col border-r border-white/10 bg-bg-sidebar">
-        <div className="pt-6 px-4 pb-4 border-b border-white/10">
-          <BackButton
-            label="Back to Workspace"
-            onClick={() => setCurrentView("dashboard")}
-            className="w-full justify-start"
-          />
+      <div className="shrink-0 flex flex-col border-r border-white/10 bg-bg-sidebar w-80">
+        <div className="h-[80px] px-5 flex items-center border-b border-white/10 bg-white/[0.02] shrink-0">
+          <div className="flex items-center gap-2">
+            <BackButton
+              label="Back"
+              onClick={() => {
+                sessionStorage.removeItem('currentView');
+                sessionStorage.removeItem('projectPath');
+                sessionStorage.removeItem('workspaceTab');
+                setCurrentView("dashboard");
+              }}
+              className="shrink-0"
+            />
+            {currentProjectDisplayName && (
+              <>
+                <ToolbarDivider className="h-4" />
+                <span className="text-xs font-medium text-white/60 truncate max-w-[180px]" title={currentProjectDisplayName}>
+                  {currentProjectDisplayName}
+                </span>
+              </>
+            )}
+          </div>
         </div>
         <Explorer onScreenChange={setActiveScreenIdx} />
       </div>
 
       <div className="flex-1 relative flex flex-col min-w-0 bg-bg-canvas">
-        <AssetsToolbar searchInputRef={searchInputRef} />
-        <ModeToolbar />
-        <div className="absolute top-6 right-8 z-50">
-          <HistoryPanel />
-        </div>
+        <ComposerTopBar searchInputRef={searchInputRef} />
 
-        <div
-          ref={containerRef}
-          onMouseDown={handleMouseDown}
-          onClick={handleContainerClick}
-          className={`flex-1 relative overflow-hidden select-none outline-none ${
-            isMiddlePanning ? "cursor-grabbing" : ""
-          }`}
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
-            `,
-            backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
-            backgroundPosition: `${offset.x}px ${offset.y}px`,
-          }}
-        >
+        <div className="flex-1 relative overflow-hidden">
+          <div className="absolute top-4 right-6 z-10">
+            <HistoryPanel />
+          </div>
+
           <div
-            className="absolute shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5 bg-bg-panel"
+            ref={containerRef}
+            onMouseDown={handleMouseDown}
+            onClick={handleContainerClick}
+            className={`relative w-full h-full overflow-hidden select-none outline-none ${
+              isMiddlePanning ? "cursor-grabbing" : ""
+            }`}
             style={{
-              left: `calc(50% + ${offset.x}px)`,
-              top: `calc(50% + ${offset.y}px)`,
-              transform: "translate(-50%, -50%)",
-              width: canvasWidth,
-              height: canvasHeight,
+              backgroundImage: `
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+              `,
+              backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+              backgroundPosition: `${offset.x}px ${offset.y}px`,
             }}
           >
+            <div
+              className="absolute shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5 bg-bg-panel"
+              style={{
+                left: `calc(50% + ${offset.x}px)`,
+                top: `calc(50% + ${offset.y}px)`,
+                transform: "translate(-50%, -50%)",
+                width: canvasWidth,
+                height: canvasHeight,
+              }}
+            >
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeScreenIdx}
@@ -356,6 +379,7 @@ export function ComposerView() {
                 </motion.div>
               </motion.div>
             </AnimatePresence>
+            </div>
           </div>
         </div>
 

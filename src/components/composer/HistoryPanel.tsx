@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useHistoryStore, HistoryEntry } from "@/store/useHistory";
-import { Clock, Trash2, ChevronUp, ChevronDown, RotateCcw, RotateCw, Settings2 } from "lucide-react";
+import { Clock, Trash2, ChevronUp, ChevronDown, Settings2, RotateCcw, RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FloatingToolbar, ToolbarDivider } from "@/components/ui/floating-toolbar";
+import { ToolbarDivider } from "@/components/ui/floating-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/ui/typography";
@@ -44,9 +44,8 @@ export function HistoryPanel() {
 
   return (
     <div ref={dropdownRef} className="relative">
-      {/* Horizontal toolbar pill */}
-      <FloatingToolbar position="top-right" className="!top-6 !right-8">
-        {/* Undo */}
+      {/* Кнопка открытия истории с Undo/Redo */}
+      <div className="flex items-center gap-1 p-1 bg-bg-elevated/90 backdrop-blur-xl border border-white/10 rounded-xl">
         <Button
           variant="ghost-dark"
           size="icon-xs"
@@ -56,8 +55,6 @@ export function HistoryPanel() {
         >
           <RotateCcw className="w-4 h-4" />
         </Button>
-
-        {/* Redo */}
         <Button
           variant="ghost-dark"
           size="icon-xs"
@@ -67,15 +64,12 @@ export function HistoryPanel() {
         >
           <RotateCw className="w-4 h-4" />
         </Button>
-
-        <ToolbarDivider />
-
-        {/* History dropdown trigger */}
+        <ToolbarDivider className="h-5" />
         <button
           onClick={() => setIsOpen(!isOpen)}
           title="History"
           className={cn(
-            "flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all",
+            "flex items-center gap-2 px-2 py-1 rounded-lg transition-all",
             isOpen
               ? "bg-primary/20 text-primary ring-1 ring-primary/30"
               : "text-muted-foreground hover:text-white hover:bg-white/10"
@@ -88,7 +82,7 @@ export function HistoryPanel() {
             </span>
           )}
         </button>
-      </FloatingToolbar>
+      </div>
 
       {/* Dropdown */}
       {isOpen && (

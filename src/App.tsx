@@ -2,6 +2,9 @@ import { useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SettingsModal } from "@/components/layout/SettingsModal";
 import { useAppStore } from "@/store/useAppStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import { useCanvasStore } from "@/store/useCanvasStore";
+import { invoke } from "@tauri-apps/api/core";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { UpdateDialog } from "@/components/ui/UpdateDialog";
 import { Toaster } from "sonner";
@@ -50,7 +53,57 @@ export default function App() {
     pendingUpdate,
     setPendingUpdate,
     setAvailableUpdate,
+    setCurrentView,
   } = useAppStore();
+  const { projectPath, setProject } = useProjectStore();
+  const { resetCanvas, loadWorkspace } = useCanvasStore();
+
+  // Восстановление проекта при обновлении страницы
+  useEffect(() => {
+    const restoreProject = async () => {
+      const savedPath = sessionStorage.getItem('projectPath');
+      const savedView = sessionStorage.getItem('currentView') as 'dashboard' | 'composer' | 'dither' | null;
+      
+      if (savedPath && savedView && (savedView === 'composer' || savedView === 'dither')) {
+        try {
+          const content = await invoke<string>("load_project", {
+            filePath: savedPath,
+          });
+          const data = JSON.parse(content);
+          const lastIdx = Math.max(
+            savedPath.lastIndexOf("/"),
+            savedPath.lastIndexOf("\\"),
+          );
+          const baseDir = savedPath.substring(0, lastIdx);
+          
+          setProject(data, savedPath);
+          await resetCanvas();
+          await loadWorkspace(baseDir);
+        } catch (err) {
+          console.error('Failed to restore project:', err);
+          sessionStorage.removeItem('currentView');
+          sessionStorage.removeItem('projectPath');
+          setCurrentView('dashboard');
+        }
+      }
+    };
+    
+    restoreProject();
+  }, []);
+
+  // Если currentView = composer/dither, но проект не загружен после монтирования, сбрасываем на dashboard
+  useEffect(() => {
+    // Даем больше времени на загрузку проекта (если пользователь только что открыл его)
+    const timer = setTimeout(() => {
+      if ((currentView === 'composer' || currentView === 'dither') && !projectPath) {
+        console.log('No project path found, redirecting to dashboard');
+        sessionStorage.removeItem('currentView');
+        setCurrentView('dashboard');
+      }
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, [currentView, projectPath, setCurrentView]);
 
   useEffect(() => {
     loadRecent();

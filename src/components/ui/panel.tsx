@@ -45,7 +45,7 @@ const PanelHeader = React.forwardRef<HTMLDivElement, PanelHeaderProps>(
       <div
         ref={ref}
         className={cn(
-          "h-12 border-b border-white/10 flex items-center px-5 bg-white/[0.02] shrink-0",
+          "h-[80px] border-b border-white/10 flex items-center px-5 bg-white/[0.02] shrink-0",
           className
         )}
         {...props}

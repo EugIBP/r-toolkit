@@ -253,6 +253,7 @@ export function CreateProjectModal({
       await addRecent(projectPath, name);
 
       handleClose();
+      sessionStorage.setItem('currentView', 'composer');
       setCurrentView("composer");
     } catch (err) {
       console.error("Failed to create and open project:", err);

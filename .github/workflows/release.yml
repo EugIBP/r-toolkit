@@ -55,15 +55,28 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Release v0.3.8
+            ## Release v0.3.11
 
             🎨 **UI/UX Improvements**
-            - Unified design system with consistent components across all views
-            - Improved stacked icons: all icons in expanded stack now highlight at 100%
-            - Better contrast: dimmed icons reduced to 5% opacity
+            - New unified top toolbar in Composer view with asset filters, view modes, and zoom controls
+            - All panel headers now have consistent 80px height for visual harmony
+            - Project alias (display name) shown next to Back button for easy identification
+            - Improved History panel with integrated Undo/Redo buttons
 
-            🔧 **Fixes & Stability**
-            - Fixed stacked icons highlighting - now all icons in stack show at full brightness when expanded
+            ⏱️ **Smart Session Restore**
+            - Automatic state persistence: reopen projects after page refresh (F5)
+            - Remembers current view, project path, and active dashboard tab
+            - Graceful fallback to dashboard if project not found
+
+            📅 **Better Time Display**
+            - Enhanced relative time formatting for "Last Modified" timestamps
+            - Now shows: "Just now", "5 minutes ago", "Yesterday", "2 days ago", "Last week", etc.
+            - Proper calendar-aware calculations (leap years, varying month lengths)
+
+            🔧 **History & Undo Improvements**
+            - Fixed undo/redo logic: now steps through history one action at a time
+            - Initial project state saved as first history entry
+            - Removed duplicate undo/redo buttons from history dropdown
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

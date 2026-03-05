@@ -56,7 +56,10 @@ export function ToolsSection({ searchQuery }: ToolsSectionProps) {
               {filtered.map((tool) => (
                 <button
                   key={tool.id}
-                  onClick={() => setCurrentView(tool.action as "dither")}
+                  onClick={() => {
+                    sessionStorage.setItem('currentView', 'dither');
+                    setCurrentView(tool.action as "dither");
+                  }}
                   className="group flex items-start gap-4 p-5 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.05] hover:border-white/10 transition-all text-left"
                 >
                   <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-primary/30 group-hover:bg-primary/10 transition-colors">
@@ -85,7 +88,10 @@ export function ToolsSection({ searchQuery }: ToolsSectionProps) {
               {filtered.map((tool) => (
                 <button
                   key={tool.id}
-                  onClick={() => setCurrentView(tool.action as "dither")}
+                  onClick={() => {
+                    sessionStorage.setItem('currentView', 'dither');
+                    setCurrentView(tool.action as "dither");
+                  }}
                   className="group flex items-center gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.05] hover:border-white/10 transition-all text-left"
                 >
                   <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-primary/30 group-hover:bg-primary/10 transition-colors">

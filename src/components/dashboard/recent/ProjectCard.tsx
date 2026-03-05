@@ -48,7 +48,7 @@ export function ProjectCard({ project }: { project: any }) {
       await resetCanvas();
       await loadWorkspace(baseDir);
       await addRecent(project.path, project.displayName, true);
-      await loadWorkspace(baseDir);
+      sessionStorage.setItem('currentView', 'composer');
       setCurrentView("composer");
 
       setTimeout(async () => {

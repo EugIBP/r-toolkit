@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAppStore } from "@/store/useAppStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import { useCanvasStore } from "@/store/useCanvasStore";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -15,6 +17,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/typography";
+import { toast } from "sonner";
 
 export function WorkspaceMetaModal() {
   const {
@@ -24,7 +27,10 @@ export function WorkspaceMetaModal() {
     updateProjectMeta,
     setCurrentView,
     refreshRecent,
+    addRecent,
   } = useAppStore();
+  const { setProject } = useProjectStore();
+  const { resetCanvas, loadWorkspace } = useCanvasStore();
 
   const project = useMemo(
     () => recentProjects.find((p) => p.id === editingWorkspaceId),
@@ -66,10 +72,32 @@ export function WorkspaceMetaModal() {
     setEditingWorkspaceId(null);
   };
 
-  const handleSaveAndOpen = () => {
+  const handleSaveAndOpen = async () => {
     updateProjectMeta(project.id, name, desc);
     setEditingWorkspaceId(null);
-    setCurrentView("composer");
+    
+    // Загружаем проект
+    try {
+      const content = await invoke<string>("load_project", {
+        filePath: project.path,
+      });
+      const data = JSON.parse(content);
+      const lastIdx = Math.max(
+        project.path.lastIndexOf("/"),
+        project.path.lastIndexOf("\\"),
+      );
+      const baseDir = project.path.substring(0, lastIdx);
+      
+      setProject(data, project.path);
+      await resetCanvas();
+      await loadWorkspace(baseDir);
+      await addRecent(project.path, project.displayName, true);
+      
+      sessionStorage.setItem('currentView', 'composer');
+      setCurrentView("composer");
+    } catch (err) {
+      toast.error("Failed to open project", { id: "open-project-error" });
+    }
   };
 
   const handleChangeThumb = async () => {

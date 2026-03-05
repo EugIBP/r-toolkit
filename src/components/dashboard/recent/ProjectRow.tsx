@@ -26,6 +26,7 @@ export function ProjectRow({ project }: { project: RecentProject }) {
       useCanvasStore.getState().resetCanvas();
       await useCanvasStore.getState().loadWorkspace(baseDir);
       await useAppStore.getState().addRecent(project.path, project.displayName);
+      sessionStorage.setItem('currentView', 'composer');
       useAppStore.getState().setCurrentView("composer");
     } catch (err) {
       toast.error("Error opening project: " + err, {

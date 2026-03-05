@@ -78,7 +78,15 @@ export function DitherView() {
       <div className="w-full max-w-4xl -translate-y-[5vh] animate-in fade-in zoom-in-95 duration-700">
         {/* Header */}
         <div className="mb-12">
-          <BackButton label="Back to Workspace" onClick={() => setCurrentView("dashboard")} />
+          <BackButton 
+            label="Back to Workspace" 
+            onClick={() => {
+              sessionStorage.removeItem('currentView');
+              sessionStorage.removeItem('projectPath');
+              sessionStorage.removeItem('workspaceTab');
+              setCurrentView("dashboard");
+            }} 
+          />
           <div className="flex items-center gap-4 mt-8">
             <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl backdrop-blur-md">
               <ImageIcon className="w-7 h-7 text-primary opacity-60" />
