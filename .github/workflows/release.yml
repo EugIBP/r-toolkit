@@ -55,28 +55,13 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Release v0.3.11
+            ## Release v0.3.12
 
-            🎨 **UI/UX Improvements**
-            - New unified top toolbar in Composer view with asset filters, view modes, and zoom controls
-            - All panel headers now have consistent 80px height for visual harmony
-            - Project alias (display name) shown next to Back button for easy identification
-            - Improved History panel with integrated Undo/Redo buttons
-
-            ⏱️ **Smart Session Restore**
-            - Automatic state persistence: reopen projects after page refresh (F5)
-            - Remembers current view, project path, and active dashboard tab
-            - Graceful fallback to dashboard if project not found
-
-            📅 **Better Time Display**
-            - Enhanced relative time formatting for "Last Modified" timestamps
-            - Now shows: "Just now", "5 minutes ago", "Yesterday", "2 days ago", "Last week", etc.
-            - Proper calendar-aware calculations (leap years, varying month lengths)
-
-            🔧 **History & Undo Improvements**
-            - Fixed undo/redo logic: now steps through history one action at a time
-            - Initial project state saved as first history entry
-            - Removed duplicate undo/redo buttons from history dropdown
+            🔧 **Cross-Platform Path Fixes**
+            - Fixed path normalization in `description.json`: now always uses backslashes (`\`) regardless of OS
+            - All asset paths saved as `{dir}\{asset}` format for Windows and Linux (Gentoo) compatibility
+            - Updated Rust backend `scan_project_assets` to generate consistent backslash paths
+            - Added `normalizePath()` and `normalizeProjectPaths()` utilities for reliable path handling
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

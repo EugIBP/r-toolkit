@@ -108,6 +108,7 @@ fn scan_project_assets(base_dir: String) -> Result<Vec<ScannedAsset>, String> {
                                                 || file_name.ends_with(".jpg")
                                             {
                                                 let asset_type = get_asset_type(dir_name);
+                                                // Используем обратный слэш для совместимости с форматом description.json
                                                 assets.push(ScannedAsset {
                                                     path: format!("{}\\{}", dir_name, file_name),
                                                     dir: dir_name.to_string(),
@@ -201,7 +202,7 @@ fn create_project(
       "Icons": []
     }}
   ],
-  "PriorityAssets": ["assets\\FF000000.BIN"],
+  "PriorityAssets": ["assets\\\\FF000000.BIN"],
   "Assets": []
 }}"###,
         width, height, width, height

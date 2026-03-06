@@ -5,6 +5,51 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Нормализует пути к единому виду с обратными слэшами (Windows-style)
+ * Конвертирует все прямые слеши в обратные для совместимости с форматом description.json
+ */
+export function normalizePath(path: any): string {
+  if (typeof path === "string") {
+    return path.replace(/\//g, "\\");
+  }
+  // Если это объект с полем Path
+  if (path && typeof path === "object" && path.Path) {
+    return path.Path.replace(/\//g, "\\");
+  }
+  return "";
+}
+
+/**
+ * Нормализует все пути в объекте проекта
+ * Гарантирует, что все пути в description.json используют обратные слеши (Windows-style)
+ */
+export function normalizeProjectPaths(data: any): any {
+  if (!data || typeof data !== "object") return data;
+
+  const normalized = { ...data };
+
+  // Нормализуем пути в Objects
+  if (Array.isArray(normalized.Objects)) {
+    normalized.Objects = normalized.Objects.map((obj: any) => ({
+      ...obj,
+      Path: normalizePath(obj.Path || ""),
+    }));
+  }
+
+  // Нормализуем PriorityAssets (может быть массивом строк или объектов)
+  if (Array.isArray(normalized.PriorityAssets)) {
+    normalized.PriorityAssets = normalized.PriorityAssets.map((p: any) => normalizePath(p));
+  }
+
+  // Нормализуем Assets (может быть массивом строк или объектов)
+  if (Array.isArray(normalized.Assets)) {
+    normalized.Assets = normalized.Assets.map((a: any) => normalizePath(a));
+  }
+
+  return normalized;
+}
+
 export function formatRelativeTime(timestamp: number): string {
   if (!timestamp) return "";
 

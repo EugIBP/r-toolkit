@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import type { ProjectStore, ScannedFile } from "./types";
 import type { StateCreator } from "zustand";
+import { normalizeProjectPaths } from "@/lib/utils";
 
 export const createProjectSlice: StateCreator<
   ProjectStore,
@@ -111,7 +112,8 @@ export const createProjectSlice: StateCreator<
       return getOrder(a) - getOrder(b);
     });
 
-    const sortedData = { ...projectData, Objects: updatedObjects };
+    // Нормализуем все пути перед сохранением (конвертируем \ в /)
+    const sortedData = normalizeProjectPaths({ ...projectData, Objects: updatedObjects });
 
     try {
       await invoke("save_text_file", {
