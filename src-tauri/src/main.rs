@@ -202,7 +202,7 @@ fn create_project(
       "Icons": []
     }}
   ],
-  "PriorityAssets": ["assets\\\\FF000000.BIN"],
+  "PriorityAssets": ["assets\\FF000000.BIN"],
   "Assets": []
 }}"###,
         width, height, width, height

@@ -6,6 +6,32 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Полифилл для requestIdleCallback
+ * Используется в Safari и других браузерах без нативной поддержки
+ */
+export const requestIdleCallbackCompat: typeof requestIdleCallback = (cb, options) => {
+  if (typeof requestIdleCallback !== "undefined") {
+    return requestIdleCallback(cb, options);
+  }
+  // Фоллбэк: выполняем через setTimeout
+  const start = Date.now();
+  return setTimeout(() => {
+    cb({
+      didTimeout: false,
+      timeRemaining: () => Math.max(0, (options?.timeout || 0) - (Date.now() - start)),
+    });
+  }, 1) as unknown as ReturnType<typeof requestIdleCallback>;
+};
+
+export const cancelIdleCallbackCompat: typeof cancelIdleCallback = (id) => {
+  if (typeof cancelIdleCallback !== "undefined") {
+    cancelIdleCallback(id);
+  } else {
+    clearTimeout(id as unknown as number);
+  }
+};
+
+/**
  * Нормализует пути к единому виду с обратными слэшами (Windows-style)
  * Конвертирует все прямые слеши в обратные для совместимости с форматом description.json
  */

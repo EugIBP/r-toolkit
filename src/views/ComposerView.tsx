@@ -14,6 +14,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { BackButton } from "@/components/ui/back-button";
 import { useCanvasInteraction } from "./hooks/useCanvasInteraction";
 import { ToolbarDivider } from "@/components/ui/floating-toolbar";
+import { requestIdleCallbackCompat, cancelIdleCallbackCompat } from "@/lib/utils";
 
 export function ComposerView() {
   const { projectData, projectPath, saveProject } = useProjectStore();
@@ -129,11 +130,11 @@ export function ComposerView() {
 
   useEffect(() => {
     if (visibleCount >= totalIcons) return;
-    const id = requestIdleCallback(
+    const id = requestIdleCallbackCompat(
       () => setVisibleCount((n) => Math.min(n + BATCH_SIZE, totalIcons)),
       { timeout: 100 },
     );
-    return () => cancelIdleCallback(id);
+    return () => cancelIdleCallbackCompat(id);
   }, [visibleCount, totalIcons]);
 
   const activeScreen = projectData?.Screens?.[activeScreenIdx] || null;
