@@ -9,8 +9,15 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import { toast } from "sonner";
 import { ProjectActions } from "./ProjectActions";
+import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function ProjectRow({ project }: { project: RecentProject }) {
+  const { toggleProjectSelection, selectedProjectIds } = useAppStore();
+  const [isHovered, setIsHovered] = useState(false);
+
+  const isSelected = selectedProjectIds.has(project.id);
+
   const handleOpen = async () => {
     try {
       const content = await invoke<string>("load_project", {
@@ -35,17 +42,40 @@ export function ProjectRow({ project }: { project: RecentProject }) {
     }
   };
 
+  const handleCheckboxClick = () => {
+    toggleProjectSelection(project.id);
+  };
+
   return (
     <div
       onClick={handleOpen}
-      className="group flex items-center justify-between p-4 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.06] hover:border-white/20 transition-all cursor-pointer shadow-sm"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`group flex items-center justify-between p-4 bg-white/[0.03] border rounded-2xl transition-all duration-300 cursor-pointer shadow-sm ${
+        isSelected
+          ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+          : "border-white/10 hover:bg-white/[0.06] hover:border-white/20 hover:shadow-md"
+      }`}
     >
       <div className="flex items-center gap-4 min-w-0 flex-1">
-        <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center shrink-0 border border-white/5 shadow-inner">
+        {/* Checkbox */}
+        <div
+          className={`shrink-0 transition-all ${
+            isHovered || isSelected ? "opacity-100 visible" : "opacity-0 invisible"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={handleCheckboxClick}
+          />
+        </div>
+
+        <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center shrink-0 border border-white/5 shadow-inner group-hover:scale-105 transition-transform">
           <FolderOpen className="w-6 h-6 text-primary/70 group-hover:text-primary transition-all" />
         </div>
         <div className="min-w-0 flex-1 pr-6">
-          <h4 className="font-semibold text-white text-base truncate group-hover:text-primary transition-colors">
+          <h4 className="font-semibold text-white text-base truncate group-hover:text-primary/90 transition-colors">
             {project.displayName}
           </h4>
           <p className="text-[11px] text-muted-foreground opacity-50 truncate font-mono mt-0.5">

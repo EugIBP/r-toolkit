@@ -6,6 +6,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import { Folder, MoreVertical, Image as ImageIcon } from "lucide-react";
 import { useState, useMemo } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,8 +17,17 @@ import { formatRelativeTime } from "@/lib/utils";
 export function ProjectCard({ project }: { project: any }) {
   const { setProject } = useProjectStore();
   const { loadWorkspace, resetCanvas } = useCanvasStore();
-  const { setCurrentView, addRecent, loadRecent } = useAppStore();
+  const {
+    setCurrentView,
+    addRecent,
+    loadRecent,
+    toggleProjectSelection,
+    selectedProjectIds,
+  } = useAppStore();
   const [imgError, setImgError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const isSelected = selectedProjectIds.has(project.id);
 
   // Формируем путь к превью
   const thumbSrc = useMemo(() => {
@@ -48,7 +58,7 @@ export function ProjectCard({ project }: { project: any }) {
       await resetCanvas();
       await loadWorkspace(baseDir);
       await addRecent(project.path, project.displayName, true);
-      sessionStorage.setItem('currentView', 'composer');
+      sessionStorage.setItem("currentView", "composer");
       setCurrentView("composer");
 
       setTimeout(async () => {
@@ -60,11 +70,33 @@ export function ProjectCard({ project }: { project: any }) {
     }
   };
 
+  const handleCheckboxClick = () => {
+    toggleProjectSelection(project.id);
+  };
+
   return (
     <div
       onClick={handleOpen}
-      className="group relative bg-bg-elevated border border-white/5 hover:border-primary/30 rounded-2xl overflow-hidden transition-all cursor-pointer flex flex-col"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`group relative bg-bg-elevated border border-white/5 hover:border-primary/30 rounded-2xl overflow-hidden transition-all cursor-pointer flex flex-col ${
+        isSelected ? "border-primary bg-primary/5" : ""
+      }`}
     >
+      {/* Checkbox overlay - top right */}
+      <div
+        className={`absolute top-3 right-3 z-20 transition-all duration-200 ${
+          isHovered || isSelected
+            ? "opacity-100 visible"
+            : "opacity-0 invisible"
+          }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={handleCheckboxClick}
+        />
+      </div>
       {/* ПРЕВЬЮ ПРОЕКТА */}
       <div className="aspect-video w-full bg-black/40 relative flex items-center justify-center overflow-hidden">
         {!imgError ? (

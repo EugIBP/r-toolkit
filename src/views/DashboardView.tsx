@@ -109,8 +109,8 @@ export function DashboardView() {
     <div className="h-full w-full bg-bg-canvas flex flex-col items-center relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-primary/5 blur-[120px] pointer-events-none" />
 
-      <div className="flex-1 w-full max-w-7xl px-10 flex flex-col pt-[12vh] pb-20 animate-in fade-in duration-1000">
-        <div className="flex items-end justify-between mb-16">
+      <div className="flex-1 w-full max-w-7xl px-10 flex flex-col min-h-0 animate-in fade-in duration-1000">
+        <div className="flex items-end justify-between mb-8 pt-10 shrink-0">
           <div className="space-y-2">
             <PageTitle className="flex items-center gap-3">
               Resource Toolkit

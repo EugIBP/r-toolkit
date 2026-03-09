@@ -14,15 +14,17 @@ export default defineConfig(async () => ({
     },
   },
 
-  // Split vendor chunks for better caching
+  // Build optimization
   build: {
+    target: "esnext",
+    minify: "esbuild",
+    cssMinify: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          // React ecosystem
-          "vendor-react": ["react", "react-dom"],
-          // Radix UI components
+          "vendor-framer": ["framer-motion"],
           "vendor-radix": [
+            "radix-ui",
             "@radix-ui/react-dropdown-menu",
             "@radix-ui/react-select",
             "@radix-ui/react-tabs",
@@ -31,9 +33,16 @@ export default defineConfig(async () => ({
             "@radix-ui/react-progress",
             "@radix-ui/react-dialog",
             "@radix-ui/react-popover",
+            "@radix-ui/react-checkbox",
           ],
-          // Other vendors
-          "vendor-utils": ["lucide-react", "sonner", "framer-motion", "zustand", "clsx", "tailwind-merge"],
+          "vendor-utils": [
+            "lucide-react",
+            "sonner",
+            "zustand",
+            "clsx",
+            "tailwind-merge",
+            "class-variance-authority",
+          ],
         },
       },
     },

@@ -12,6 +12,10 @@ export interface RecentProject {
   lastOpened: number;
 }
 
+type Density = "small" | "medium" | "large";
+type SortBy = "lastOpened" | "name";
+type SortOrder = "asc" | "desc";
+
 interface AppStore {
   currentView: "dashboard" | "composer" | "dither";
   viewMode: "grid" | "list";
@@ -21,6 +25,15 @@ interface AppStore {
   editingWorkspaceId: string | null;
   pendingUpdate: UpdateInfo | null;
   availableUpdate: string | null;
+
+  // Density & Pagination
+  density: Density;
+  currentPage: number;
+  sortBy: SortBy;
+  sortOrder: SortOrder;
+
+  // Bulk selection
+  selectedProjectIds: Set<string>;
 
   // Global confirmation dialog state
   confirmDialog: {
@@ -38,6 +51,17 @@ interface AppStore {
   setPendingUpdate: (update: UpdateInfo | null) => void;
   setAvailableUpdate: (version: string | null) => void;
 
+  // Density & Pagination setters
+  setDensity: (density: Density) => void;
+  setCurrentPage: (page: number) => void;
+  setSortBy: (sortBy: SortBy) => void;
+  setSortOrder: (order: SortOrder) => void;
+
+  // Bulk selection setters
+  toggleProjectSelection: (id: string) => void;
+  clearSelection: () => void;
+  selectAll: (ids: string[]) => void;
+
   loadRecent: () => Promise<void>;
   addRecent: (path: string, name: string, silent?: boolean) => Promise<void>;
   removeRecent: (id: string) => Promise<void>;
@@ -47,6 +71,10 @@ interface AppStore {
     newDesc: string,
   ) => Promise<void>;
   refreshRecent: () => Promise<void>;
+
+  // Persistence
+  loadSettings: () => Promise<void>;
+  saveSettings: () => Promise<void>;
 
   // Method to show confirmation dialog (returns Promise)
   confirm: (title: string, message: string) => Promise<boolean>;
@@ -64,6 +92,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
   availableUpdate: null,
   confirmDialog: null,
 
+  // Density & Pagination
+  density: "medium",
+  currentPage: 1,
+  sortBy: "lastOpened",
+  sortOrder: "desc",
+  selectedProjectIds: new Set(),
+
   setCurrentView: (view) => {
     sessionStorage.setItem('currentView', view);
     set({ currentView: view });
@@ -79,6 +114,69 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setEditingWorkspaceId: (id) => set({ editingWorkspaceId: id }),
   setPendingUpdate: (update) => set({ pendingUpdate: update }),
   setAvailableUpdate: (version) => set({ availableUpdate: version }),
+
+  // Density & Pagination setters
+  setDensity: (density) => {
+    set({ density, currentPage: 1 });
+    get().saveSettings();
+  },
+  setCurrentPage: (page) => set({ currentPage: page }),
+  setSortBy: (sortBy) => {
+    set({ sortBy, currentPage: 1 });
+    get().saveSettings();
+  },
+  setSortOrder: (order) => {
+    set({ sortOrder: order, currentPage: 1 });
+    get().saveSettings();
+  },
+
+  // Bulk selection setters
+  toggleProjectSelection: (id) => {
+    const selected = new Set(get().selectedProjectIds);
+    if (selected.has(id)) {
+      selected.delete(id);
+    } else {
+      selected.add(id);
+    }
+    set({ selectedProjectIds: selected });
+  },
+  clearSelection: () => set({ selectedProjectIds: new Set() }),
+  selectAll: (ids) => set({ selectedProjectIds: new Set(ids) }),
+
+  // Persistence for dashboard settings
+  loadSettings: async () => {
+    try {
+      const savedSettings = await persistentStore.get<{
+        density?: Density;
+        sortBy?: SortBy;
+        sortOrder?: SortOrder;
+      }>("dashboard_settings");
+
+      if (savedSettings) {
+        set({
+          density: savedSettings.density || "medium",
+          sortBy: savedSettings.sortBy || "lastOpened",
+          sortOrder: savedSettings.sortOrder || "desc",
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to load dashboard settings", e);
+    }
+  },
+
+  saveSettings: async () => {
+    try {
+      const { density, sortBy, sortOrder } = get();
+      await persistentStore.set("dashboard_settings", {
+        density,
+        sortBy,
+        sortOrder,
+      });
+      await persistentStore.save();
+    } catch (e) {
+      console.warn("Failed to save dashboard settings", e);
+    }
+  },
 
   loadRecent: async () => {
     try {

@@ -7,11 +7,11 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  X,
-  Image as ImageIcon,
-  FolderOpen,
-  ArrowRight,
-  Trash2,
+    X,
+    Image as ImageIcon,
+    FolderOpen,
+    ArrowRight,
+    Trash2,
 } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,256 +20,280 @@ import { SectionLabel } from "@/components/ui/typography";
 import { toast } from "sonner";
 
 export function WorkspaceMetaModal() {
-  const {
-    editingWorkspaceId,
-    setEditingWorkspaceId,
-    recentProjects,
-    updateProjectMeta,
-    setCurrentView,
-    refreshRecent,
-    addRecent,
-  } = useAppStore();
-  const { setProject } = useProjectStore();
-  const { resetCanvas, loadWorkspace } = useCanvasStore();
+    const {
+        editingWorkspaceId,
+        setEditingWorkspaceId,
+        recentProjects,
+        updateProjectMeta,
+        setCurrentView,
+        refreshRecent,
+        addRecent,
+    } = useAppStore();
+    const { setProject } = useProjectStore();
+    const { resetCanvas, loadWorkspace } = useCanvasStore();
 
-  const project = useMemo(
-    () => recentProjects.find((p) => p.id === editingWorkspaceId),
-    [recentProjects, editingWorkspaceId],
-  );
+    const project = useMemo(
+        () => recentProjects.find((p) => p.id === editingWorkspaceId),
+        [recentProjects, editingWorkspaceId],
+    );
 
-  const [name, setName] = useState("");
-  const [desc, setDesc] = useState("");
-  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [imgError, setImgError] = useState(false);
+    const [name, setName] = useState("");
+    const [desc, setDesc] = useState("");
+    const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [imgError, setImgError] = useState(false);
 
-  useEffect(() => {
-    if (project) {
-      setName(project.displayName);
-      setDesc(project.description || "");
-      setImgError(false); // Reset error when project changes
+    useEffect(() => {
+        if (project) {
+            setName(project.displayName);
+            setDesc(project.description || "");
+            setImgError(false); // Reset error when project changes
 
-      const lastIndex = Math.max(
-        project.path.lastIndexOf("/"),
-        project.path.lastIndexOf("\\"),
-      );
-      const baseDir = project.path.substring(0, lastIndex);
+            const lastIndex = Math.max(
+                project.path.lastIndexOf("/"),
+                project.path.lastIndexOf("\\"),
+            );
+            const baseDir = project.path
+                .substring(0, lastIndex)
+                .replace(/\\/g, "/");
 
-      // Нормализуем путь для Tauri
-      const fullPath = `${baseDir}/.rtoolkit/thumb.png`.replace(/\\/g, "/");
-      setThumbUrl(convertFileSrc(fullPath) + `?t=${refreshKey}`);
-    } else {
-      setThumbUrl(null);
-    }
-  }, [project, refreshKey]);
+            // Нормализуем путь для Tauri
+            const fullPath = `${baseDir}/.rtoolkit/thumb.png`;
+            setThumbUrl(convertFileSrc(fullPath) + `?t=${refreshKey}`);
+        } else {
+            setThumbUrl(null);
+        }
+    }, [project, refreshKey]);
 
-  if (!project) return null;
+    if (!project) return null;
 
-  const handleCancel = () => setEditingWorkspaceId(null);
+    const handleCancel = () => setEditingWorkspaceId(null);
 
-  const handleSaveOnly = () => {
-    updateProjectMeta(project.id, name, desc);
-    setEditingWorkspaceId(null);
-  };
+    const handleSaveOnly = () => {
+        updateProjectMeta(project.id, name, desc);
+        setEditingWorkspaceId(null);
+    };
 
-  const handleSaveAndOpen = async () => {
-    updateProjectMeta(project.id, name, desc);
-    setEditingWorkspaceId(null);
-    
-    // Загружаем проект
-    try {
-      const content = await invoke<string>("load_project", {
-        filePath: project.path,
-      });
-      const data = JSON.parse(content);
-      const lastIdx = Math.max(
-        project.path.lastIndexOf("/"),
-        project.path.lastIndexOf("\\"),
-      );
-      const baseDir = project.path.substring(0, lastIdx);
-      
-      setProject(data, project.path);
-      await resetCanvas();
-      await loadWorkspace(baseDir);
-      await addRecent(project.path, project.displayName, true);
-      
-      sessionStorage.setItem('currentView', 'composer');
-      setCurrentView("composer");
-    } catch (err) {
-      toast.error("Failed to open project", { id: "open-project-error" });
-    }
-  };
+    const handleSaveAndOpen = async () => {
+        updateProjectMeta(project.id, name, desc);
+        setEditingWorkspaceId(null);
 
-  const handleChangeThumb = async () => {
-    try {
-      const selected = await open({
-        multiple: false,
-        title: "Select Project Thumbnail",
-        filters: [{ name: "Images", extensions: ["png", "jpg", "jpeg"] }],
-      });
+        // Загружаем проект
+        try {
+            const content = await invoke<string>("load_project", {
+                filePath: project.path,
+            });
+            const data = JSON.parse(content);
+            const lastIdx = Math.max(
+                project.path.lastIndexOf("/"),
+                project.path.lastIndexOf("\\"),
+            );
+            const baseDir = project.path.substring(0, lastIdx);
 
-      if (selected && typeof selected === "string") {
-        const lastIndex = Math.max(
-          project.path.lastIndexOf("/"),
-          project.path.lastIndexOf("\\"),
-        );
-        const baseDir = project.path.substring(0, lastIndex);
-        const destination = `${baseDir}/.rtoolkit/thumb.png`;
+            setProject(data, project.path);
+            await resetCanvas();
+            await loadWorkspace(baseDir);
+            await addRecent(project.path, project.displayName, true);
 
-        // Copy file and wait for it to complete
-        await invoke("copy_asset_file", { source: selected, destination });
+            sessionStorage.setItem("currentView", "composer");
+            setCurrentView("composer");
+        } catch (err) {
+            toast.error("Failed to open project", { id: "open-project-error" });
+        }
+    };
 
-        // Wait a bit to ensure file is written
-        await new Promise((resolve) => setTimeout(resolve, 200));
+    const handleChangeThumb = async () => {
+        try {
+            const selected = await open({
+                multiple: false,
+                title: "Select Project Thumbnail",
+                filters: [
+                    { name: "Images", extensions: ["png", "jpg", "jpeg"] },
+                ],
+            });
 
-        // Update refresh key to trigger re-render with new image
-        const newKey = Date.now();
-        setRefreshKey(newKey);
+            if (selected && typeof selected === "string") {
+                const lastIndex = Math.max(
+                    project.path.lastIndexOf("/"),
+                    project.path.lastIndexOf("\\"),
+                );
+                const baseDir = project.path.substring(0, lastIndex);
+                const destination = `${baseDir}/.rtoolkit/thumb.png`;
 
-        // Also refresh recent projects to update the thumbnail on dashboard
-        await refreshRecent();
+                // Copy file and wait for it to complete
+                await invoke("copy_asset_file", {
+                    source: selected,
+                    destination,
+                });
 
-        // Force another re-render after a short delay to ensure image loads
-        setTimeout(() => {
-          setRefreshKey(Date.now());
-        }, 100);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+                // Wait a bit to ensure file is written
+                await new Promise((resolve) => setTimeout(resolve, 200));
 
-  const handleRemoveThumb = async () => {
-    if (!project) return;
+                // Update refresh key to trigger re-render with new image
+                const newKey = Date.now();
+                setRefreshKey(newKey);
 
-    try {
-      const lastIndex = Math.max(
-        project.path.lastIndexOf("/"),
-        project.path.lastIndexOf("\\"),
-      );
-      const baseDir = project.path.substring(0, lastIndex);
-      const fullPath = `${baseDir}/.rtoolkit/thumb.png`;
+                // Also refresh recent projects to update the thumbnail on dashboard
+                await refreshRecent();
 
-      await invoke("delete_project_file", { path: fullPath });
+                // Force another re-render after a short delay to ensure image loads
+                setTimeout(() => {
+                    setRefreshKey(Date.now());
+                }, 100);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
-      // Refresh the thumbnail display
-      await refreshRecent();
-      setRefreshKey(Date.now());
-      setImgError(true); // Show placeholder
-    } catch (err) {
-      // File might not exist, that's ok
-      console.error(err);
-    }
-  };
+    const handleRemoveThumb = async () => {
+        if (!project) return;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <Card className="w-[33vw] min-w-[400px] max-w-[600px] animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-        <CardHeader className="flex flex-row items-center justify-between p-5 border-b border-white/10 bg-white/[0.02]">
-          <h2 className="text-sm font-semibold text-white">Workspace Configuration</h2>
-          <button
-            onClick={handleCancel}
-            className="text-muted-foreground hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </CardHeader>
+        try {
+            const lastIndex = Math.max(
+                project.path.lastIndexOf("/"),
+                project.path.lastIndexOf("\\"),
+            );
+            const baseDir = project.path.substring(0, lastIndex);
+            const fullPath = `${baseDir}/.rtoolkit/thumb.png`;
 
-        <ScrollArea className="flex-1">
-          <CardContent className="p-6 space-y-6">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <SectionLabel>Cover Image</SectionLabel>
+            await invoke("delete_project_file", { path: fullPath });
 
-                {/* Кнопка удаления - показываем только если есть изображение */}
-                {thumbUrl && !imgError && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveThumb();
-                    }}
-                    className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                    title="Remove cover image"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-              <div
-                onClick={handleChangeThumb}
-                className="relative aspect-video w-full rounded-xl bg-white/5 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group"
-              >
-                <ImageIcon className="absolute w-8 h-8 text-white/20 group-hover:scale-110 transition-transform z-0" />
+            // Refresh the thumbnail display
+            await refreshRecent();
+            setRefreshKey(Date.now());
+            setImgError(true); // Show placeholder
+        } catch (err) {
+            // File might not exist, that's ok
+            console.error(err);
+        }
+    };
 
-                {/* Рендерим изображение только если URL валиден и нет ошибки */}
-                {thumbUrl && !imgError && (
-                  <img
-                    src={thumbUrl}
-                    alt=""
-                    onError={() => setImgError(true)}
-                    onLoad={(e) => (e.currentTarget.style.opacity = "0.6")}
-                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:opacity-30 opacity-0"
-                  />
-                )}
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <Card className="w-[33vw] min-w-[400px] max-w-[600px] animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                <CardHeader className="flex flex-row items-center justify-between p-5 border-b border-white/10 bg-white/[0.02]">
+                    <h2 className="text-sm font-semibold text-white">
+                        Workspace Configuration
+                    </h2>
+                    <button
+                        onClick={handleCancel}
+                        className="text-muted-foreground hover:text-white transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </CardHeader>
 
-                <span className="text-xs font-medium text-white/60 z-20 bg-black/40 px-3 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-                  Click to browse image
-                </span>
-              </div>
-            </div>
+                <ScrollArea className="flex-1">
+                    <CardContent className="p-6 space-y-6">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <SectionLabel>Cover Image</SectionLabel>
 
-            <div className="space-y-4">
-              <div className="flex flex-col">
-                <SectionLabel className="mb-2">Alias (Display Name)</SectionLabel>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
+                                {/* Кнопка удаления - показываем только если есть изображение */}
+                                {thumbUrl && !imgError && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveThumb();
+                                        }}
+                                        className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                        title="Remove cover image"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                            <div
+                                onClick={handleChangeThumb}
+                                className="relative aspect-video w-full rounded-xl bg-white/5 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group"
+                            >
+                                <ImageIcon className="absolute w-8 h-8 text-white/20 group-hover:scale-110 transition-transform z-0" />
 
-              <div className="flex flex-col">
-                <SectionLabel className="mb-2">Project Path</SectionLabel>
-                <div className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 min-w-0">
-                  <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
-                  <span className="text-xs font-mono text-muted-foreground select-all">
-                    {project.path.length > 72 ? `${project.path.slice(0, 72)}...` : project.path}
-                  </span>
+                                {/* Рендерим изображение только если URL валиден и нет ошибки */}
+                                {thumbUrl && !imgError && (
+                                    <img
+                                        src={thumbUrl}
+                                        alt=""
+                                        onError={() => setImgError(true)}
+                                        onLoad={(e) =>
+                                            (e.currentTarget.style.opacity =
+                                                "0.6")
+                                        }
+                                        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:opacity-30 opacity-0"
+                                    />
+                                )}
+
+                                <span className="text-xs font-medium text-white/60 z-20 bg-black/40 px-3 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Click to browse image
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex flex-col">
+                                <SectionLabel className="mb-2">
+                                    Alias (Display Name)
+                                </SectionLabel>
+                                <Input
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex flex-col">
+                                <SectionLabel className="mb-2">
+                                    Project Path
+                                </SectionLabel>
+                                <div className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 min-w-0">
+                                    <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
+                                    <span className="text-xs font-mono text-muted-foreground select-all">
+                                        {project.path.length > 72
+                                            ? `${project.path.slice(0, 72)}...`
+                                            : project.path}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <SectionLabel className="mb-2">
+                                    Description / Notes
+                                </SectionLabel>
+                                <textarea
+                                    value={desc}
+                                    onChange={(e) => setDesc(e.target.value)}
+                                    rows={3}
+                                    placeholder="Write some notes..."
+                                    className="bg-bg-surface border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-primary outline-none resize-none"
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </ScrollArea>
+
+                <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
+                    <Button
+                        variant="ghost"
+                        onClick={handleCancel}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                    >
+                        Cancel
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={handleSaveOnly}>
+                            Save Settings
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={handleSaveAndOpen}
+                            className="shadow-[0_0_20px_rgba(255,165,0,0.2)]"
+                        >
+                            Open Project <ArrowRight className="w-4 h-4" />
+                        </Button>
+                    </div>
                 </div>
-              </div>
-
-              <div className="flex flex-col">
-                <SectionLabel className="mb-2">Description / Notes</SectionLabel>
-                <textarea
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)}
-                  rows={3}
-                  placeholder="Write some notes..."
-                  className="bg-bg-surface border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-primary outline-none resize-none"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </ScrollArea>
-
-        <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={handleCancel}
-            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-          >
-            Cancel
-          </Button>
-
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleSaveOnly}>
-              Save Settings
-            </Button>
-            <Button variant="default" onClick={handleSaveAndOpen} className="shadow-[0_0_20px_rgba(255,165,0,0.2)]">
-              Open Project <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
+            </Card>
         </div>
-      </Card>
-    </div>
-  );
+    );
 }

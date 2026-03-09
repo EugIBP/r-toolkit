@@ -107,24 +107,22 @@ export function ExplorerScreens({
       <div className="flex flex-col h-full flex-1 min-h-0">
         {/* HEADER */}
         <div className="flex flex-col gap-2 px-3 py-3 border-b border-white/5 bg-white/[0.01] shrink-0">
-          <div className="flex items-center gap-2">
-            <motion.button
-              onClick={() => {
-                setScreenListMode("list");
-                setSelectedIcon(null);
-                setSelectedAssetPath(null);
-              }}
-              whileHover={{ x: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-1.5 text-muted-foreground hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </motion.button>
-            <Layout className="w-3.5 h-3.5 text-primary opacity-80" />
+          <motion.button
+            onClick={() => {
+              setScreenListMode("list");
+              setSelectedIcon(null);
+              setSelectedAssetPath(null);
+            }}
+            whileHover={{ x: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all w-full"
+          >
+            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+            <Layout className="w-4 h-4 text-primary opacity-80" />
             <span className="text-xs font-semibold text-white truncate">
               {activeScreen.Name}
             </span>
-          </div>
+          </motion.button>
           <div className="flex items-center justify-between pl-1">
             <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
               {instances.length} instance{instances.length !== 1 ? "s" : ""}

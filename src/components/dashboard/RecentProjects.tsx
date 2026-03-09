@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppStore } from "@/store/useAppStore";
 import { ProjectCard } from "./recent/ProjectCard";
 import { ProjectRow } from "./recent/ProjectRow";
+import { BulkActionsBar } from "./BulkActionsBar";
 
 interface RecentProjectsProps {
   searchQuery: string;
@@ -19,8 +20,8 @@ export function RecentProjects({ searchQuery }: RecentProjectsProps) {
     .sort((a, b) => (b.lastOpened || 0) - (a.lastOpened || 0));
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      <ScrollArea className="flex-1 pr-4 -mr-4">
+    <div className="flex flex-col h-full">
+      <ScrollArea className="h-full pr-4 -mr-4">
         <AnimatePresence mode="wait">
           {filtered.length > 0 ? (
             viewMode === "grid" ? (
@@ -67,6 +68,8 @@ export function RecentProjects({ searchQuery }: RecentProjectsProps) {
           )}
         </AnimatePresence>
       </ScrollArea>
+
+      <BulkActionsBar visibleProjects={filtered} />
     </div>
   );
 }

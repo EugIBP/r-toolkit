@@ -91,22 +91,23 @@ export default function App() {
     restoreProject();
   }, []);
 
-  // Если currentView = composer/dither, но проект не загружен после монтирования, сбрасываем на dashboard
+  // Если currentView = composer, но проект не загружен после монтирования, сбрасываем на dashboard
   useEffect(() => {
     // Даем больше времени на загрузку проекта (если пользователь только что открыл его)
     const timer = setTimeout(() => {
-      if ((currentView === 'composer' || currentView === 'dither') && !projectPath) {
+      if (currentView === 'composer' && !projectPath) {
         console.log('No project path found, redirecting to dashboard');
         sessionStorage.removeItem('currentView');
         setCurrentView('dashboard');
       }
     }, 1500);
-    
+
     return () => clearTimeout(timer);
   }, [currentView, projectPath, setCurrentView]);
 
   useEffect(() => {
     loadRecent();
+    useAppStore.getState().loadSettings();
   }, []);
 
   useEffect(() => {
@@ -133,7 +134,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-full bg-bg-canvas text-white overflow-hidden selection:bg-primary/30 font-sans">
-      <main className="flex-1 relative overflow-hidden">
+      <main className="flex-1 h-full relative overflow-hidden">
         <AnimatePresence mode="wait">
           {currentView === "dashboard" && (
             <motion.div

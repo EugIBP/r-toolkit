@@ -55,13 +55,15 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Release v0.3.12
+            ## Release v0.3.15
 
             🔧 **Cross-Platform Path Fixes**
-            - Fixed path normalization in `description.json`: now always uses backslashes (`\`) regardless of OS
-            - All asset paths saved as `{dir}\{asset}` format for Windows and Linux (Gentoo) compatibility
-            - Updated Rust backend `scan_project_assets` to generate consistent backslash paths
-            - Added `normalizePath()` and `normalizeProjectPaths()` utilities for reliable path handling
+            - Fixed path normalization in `description.json`
+
+            🎨 **Dashboard Enhancements**
+            - Added bulk selection: select multiple workspaces with checkboxes for batch operations
+            - New BulkActionsBar for mass delete operations with confirmation dialog
+            - All dashboard settings persist across sessions
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

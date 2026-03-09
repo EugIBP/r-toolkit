@@ -14,380 +14,571 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { BackButton } from "@/components/ui/back-button";
 import { useCanvasInteraction } from "./hooks/useCanvasInteraction";
 import { ToolbarDivider } from "@/components/ui/floating-toolbar";
-import { requestIdleCallbackCompat, cancelIdleCallbackCompat } from "@/lib/utils";
+import {
+    requestIdleCallbackCompat,
+    cancelIdleCallbackCompat,
+} from "@/lib/utils";
 
 export function ComposerView() {
-  const { projectData, projectPath, saveProject } = useProjectStore();
-  const { saveWorkspace } = useCanvasStore();
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const { setCurrentView, recentProjects } = useAppStore();
-  const {
-    zoom,
-    setSelectedIcon,
-    setSelectedColorKey,
-    setSelectedAssetPath,
-    activeScreenIdx,
-    setActiveScreenIdx,
-    assetFilter,
-    searchQuery,
-    setSearchQuery,
-    selectedAssetPath,
-    expandedStackIndices,
-    setExpandedStackIndices,
-    iconNaturalSizes,
-    iconFrameCounts,
-    previewBgPath,
-    setPreviewBgPath,
-    stackThreshold,
-  } = useCanvasStore();
+    const { projectData, projectPath, saveProject } = useProjectStore();
+    const { saveWorkspace } = useCanvasStore();
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const { setCurrentView, recentProjects } = useAppStore();
+    const {
+        zoom,
+        setSelectedIcon,
+        setSelectedColorKey,
+        setSelectedAssetPath,
+        activeScreenIdx,
+        setActiveScreenIdx,
+        assetFilter,
+        searchQuery,
+        setSearchQuery,
+        selectedAssetPath,
+        expandedStackIndices,
+        setExpandedStackIndices,
+        iconNaturalSizes,
+        iconFrameCounts,
+        previewBgPath,
+        setPreviewBgPath,
+        stackThreshold,
+    } = useCanvasStore();
 
-  const { containerRef, offset, isMiddlePanning, handleMouseDown } =
-    useCanvasInteraction(projectPath);
+    const { containerRef, offset, isMiddlePanning, handleMouseDown } =
+        useCanvasInteraction(projectPath);
 
-  const currentProjectDisplayName = useMemo(() => {
-    if (!projectPath) return null;
-    const project = recentProjects.find((p) => p.path === projectPath);
-    return project?.displayName || null;
-  }, [projectPath, recentProjects]);
+    const currentProjectDisplayName = useMemo(() => {
+        if (!projectPath) return null;
+        const project = recentProjects.find((p) => p.path === projectPath);
+        return project?.displayName || null;
+    }, [projectPath, recentProjects]);
 
-  const handleContainerClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === containerRef.current) {
-        setSelectedIcon(null);
-        setSelectedColorKey(null);
-        setSelectedAssetPath(null);
-        setExpandedStackIndices(null);
-        setPreviewBgPath(null);
-      }
-    },
-    [containerRef, setSelectedIcon, setSelectedColorKey, setSelectedAssetPath, setExpandedStackIndices, setPreviewBgPath],
-  );
-
-  // ESC сбрасывает выделение или очищает поиск, Ctrl+Z undo, Ctrl+Shift+Z redo, Ctrl+S save workspace, Ctrl+Shift+S save project, Ctrl+K search
-  const { undo, redo, canUndo, canRedo } = useHistoryStore();
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Escape") {
-        e.preventDefault();
-        if (searchQuery) {
-          setSearchQuery("");
-        } else {
-          setSelectedIcon(null);
-          setSelectedColorKey(null);
-          setSelectedAssetPath(null);
-          setExpandedStackIndices(null);
-          setPreviewBgPath(null);
-        }
-      }
-      if ((e.ctrlKey || e.metaKey) && e.code === "KeyZ" && !e.shiftKey) {
-        e.preventDefault();
-        if (canUndo()) undo();
-      }
-      if ((e.ctrlKey || e.metaKey) && (e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey))) {
-        e.preventDefault();
-        if (canRedo()) redo();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.code === "KeyS" && !e.shiftKey) {
-        e.preventDefault();
-        saveWorkspace();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.code === "KeyS" && e.shiftKey) {
-        e.preventDefault();
-        saveProject();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.code === "KeyK") {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [searchQuery, setSearchQuery, setSelectedIcon, setSelectedColorKey, setSelectedAssetPath, setExpandedStackIndices, undo, redo, canUndo, canRedo, saveWorkspace, saveProject, searchInputRef]);
-
-  const stackedIcons = useMemo(() => {
-    if (!projectData?.Screens?.[activeScreenIdx]?.Icons) return new Map<string, number[]>();
-    const icons = projectData.Screens[activeScreenIdx].Icons;
-    const stackMap = new Map<string, number[]>();
-    icons.forEach((icon: any, idx: number) => {
-      const key = `${Math.round(icon.X / stackThreshold)}_${Math.round(icon.Y / stackThreshold)}`;
-      if (!stackMap.has(key)) stackMap.set(key, []);
-      stackMap.get(key)!.push(idx);
-    });
-    const result = new Map<string, number[]>();
-    stackMap.forEach((indices, key) => { if (indices.length > 1) result.set(key, indices); });
-    return result;
-  }, [projectData, activeScreenIdx, stackThreshold]);
-
-  // Батчинг рендера иконок: показываем по BATCH_SIZE штук за раз,
-  // чтобы не блокировать UI при открытии экрана с большим количеством ассетов.
-  const BATCH_SIZE = 20;
-  const totalIcons = projectData?.Screens?.[activeScreenIdx]?.Icons?.length ?? 0;
-  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
-
-  useEffect(() => {
-    setVisibleCount(BATCH_SIZE);
-  }, [activeScreenIdx]);
-
-  useEffect(() => {
-    if (visibleCount >= totalIcons) return;
-    const id = requestIdleCallbackCompat(
-      () => setVisibleCount((n) => Math.min(n + BATCH_SIZE, totalIcons)),
-      { timeout: 100 },
+    const handleContainerClick = useCallback(
+        (e: React.MouseEvent) => {
+            if (e.target === containerRef.current) {
+                setSelectedIcon(null);
+                setSelectedColorKey(null);
+                setSelectedAssetPath(null);
+                setExpandedStackIndices(null);
+                setPreviewBgPath(null);
+            }
+        },
+        [
+            containerRef,
+            setSelectedIcon,
+            setSelectedColorKey,
+            setSelectedAssetPath,
+            setExpandedStackIndices,
+            setPreviewBgPath,
+        ],
     );
-    return () => cancelIdleCallbackCompat(id);
-  }, [visibleCount, totalIcons]);
 
-  const activeScreen = projectData?.Screens?.[activeScreenIdx] || null;
+    // ESC сбрасывает выделение или очищает поиск, Ctrl+Z undo, Ctrl+Shift+Z redo, Ctrl+S save workspace, Ctrl+Shift+S save project, Ctrl+K search
+    const { undo, redo, canUndo, canRedo } = useHistoryStore();
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.code === "Escape") {
+                e.preventDefault();
+                if (searchQuery) {
+                    setSearchQuery("");
+                } else {
+                    setSelectedIcon(null);
+                    setSelectedColorKey(null);
+                    setSelectedAssetPath(null);
+                    setExpandedStackIndices(null);
+                    setPreviewBgPath(null);
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.code === "KeyZ" && !e.shiftKey) {
+                e.preventDefault();
+                if (canUndo()) undo();
+            }
+            if (
+                (e.ctrlKey || e.metaKey) &&
+                (e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey))
+            ) {
+                e.preventDefault();
+                if (canRedo()) redo();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.code === "KeyS" && !e.shiftKey) {
+                e.preventDefault();
+                saveWorkspace();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.code === "KeyS" && e.shiftKey) {
+                e.preventDefault();
+                saveProject();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.code === "KeyK") {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [
+        searchQuery,
+        setSearchQuery,
+        setSelectedIcon,
+        setSelectedColorKey,
+        setSelectedAssetPath,
+        setExpandedStackIndices,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        saveWorkspace,
+        saveProject,
+        searchInputRef,
+    ]);
 
-  if (!projectData || !activeScreen) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-bg-canvas text-white/20 gap-4">
-        <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <span className="text-xs uppercase tracking-[0.2em] font-bold">Initialising Canvas...</span>
-      </div>
-    );
-  }
+    const stackedIcons = useMemo(() => {
+        if (!projectData?.Screens?.[activeScreenIdx]?.Icons)
+            return new Map<string, number[]>();
+        const icons = projectData.Screens[activeScreenIdx].Icons;
+        const stackMap = new Map<string, number[]>();
+        icons.forEach((icon: any, idx: number) => {
+            const key = `${Math.round(icon.X / stackThreshold)}_${Math.round(icon.Y / stackThreshold)}`;
+            if (!stackMap.has(key)) stackMap.set(key, []);
+            stackMap.get(key)!.push(idx);
+        });
+        const result = new Map<string, number[]>();
+        stackMap.forEach((indices, key) => {
+            if (indices.length > 1) result.set(key, indices);
+        });
+        return result;
+    }, [projectData, activeScreenIdx, stackThreshold]);
 
-  const canvasWidth = (projectData.DisplayWidth || 1920) * zoom;
-  const canvasHeight = (projectData.DisplayHeight || 1080) * zoom;
+    // Батчинг рендера иконок: показываем по BATCH_SIZE штук за раз,
+    // чтобы не блокировать UI при открытии экрана с большим количеством ассетов.
+    const BATCH_SIZE = 20;
+    const totalIcons =
+        projectData?.Screens?.[activeScreenIdx]?.Icons?.length ?? 0;
+    const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
 
-  const currentBg = (() => {
-    if (!activeScreen.Background || !projectPath) return null;
-    const bgAsset = projectData.Objects.find((o: any) => o.Name === activeScreen.Background);
-    if (!bgAsset) return null;
-    const lastIdx = Math.max(projectPath.lastIndexOf("/"), projectPath.lastIndexOf("\\"));
-    return convertFileSrc(`${projectPath.substring(0, lastIdx)}/${bgAsset.Path}`.replace(/\\/g, "/"));
-  })();
+    useEffect(() => {
+        setVisibleCount(BATCH_SIZE);
+    }, [activeScreenIdx]);
 
-  const previewBgSrc = (() => {
-    if (!previewBgPath || !projectPath) return null;
-    const lastIdx = Math.max(projectPath.lastIndexOf("/"), projectPath.lastIndexOf("\\"));
-    return convertFileSrc(`${projectPath.substring(0, lastIdx)}/${previewBgPath}`.replace(/\\/g, "/"));
-  })();
+    useEffect(() => {
+        if (visibleCount >= totalIcons) return;
+        const id = requestIdleCallbackCompat(
+            () => setVisibleCount((n) => Math.min(n + BATCH_SIZE, totalIcons)),
+            { timeout: 100 },
+        );
+        return () => cancelIdleCallbackCompat(id);
+    }, [visibleCount, totalIcons]);
 
-  return (
-    <div className="flex h-full w-full overflow-hidden">
-      <div className="shrink-0 flex flex-col border-r border-white/10 bg-bg-sidebar w-80">
-        <div className="h-[80px] px-5 flex items-center border-b border-white/10 bg-white/[0.02] shrink-0">
-          <div className="flex items-center gap-2">
-            <BackButton
-              label="Back"
-              onClick={() => {
-                sessionStorage.removeItem('currentView');
-                sessionStorage.removeItem('projectPath');
-                sessionStorage.removeItem('workspaceTab');
-                setCurrentView("dashboard");
-              }}
-              className="shrink-0"
-            />
-            {currentProjectDisplayName && (
-              <>
-                <ToolbarDivider className="h-4" />
-                <span className="text-xs font-medium text-white/60 truncate max-w-[180px]" title={currentProjectDisplayName}>
-                  {currentProjectDisplayName}
+    const activeScreen = projectData?.Screens?.[activeScreenIdx] || null;
+
+    if (!projectData || !activeScreen) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center bg-bg-canvas text-white/20 gap-4">
+                <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <span className="text-xs uppercase tracking-[0.2em] font-bold">
+                    Initialising Canvas...
                 </span>
-              </>
-            )}
-          </div>
-        </div>
-        <Explorer onScreenChange={setActiveScreenIdx} />
-      </div>
+            </div>
+        );
+    }
 
-      <div className="flex-1 relative flex flex-col min-w-0 bg-bg-canvas">
-        <ComposerTopBar searchInputRef={searchInputRef} />
+    const canvasWidth = (projectData.DisplayWidth || 1920) * zoom;
+    const canvasHeight = (projectData.DisplayHeight || 1080) * zoom;
 
-        <div className="flex-1 relative overflow-hidden">
-          <div className="absolute top-4 right-6 z-10">
-            <HistoryPanel />
-          </div>
+    const currentBg = (() => {
+        if (!activeScreen.Background || !projectPath) return null;
+        const bgAsset = projectData.Objects.find(
+            (o: any) => o.Name === activeScreen.Background,
+        );
+        if (!bgAsset) return null;
+        const lastIdx = Math.max(
+            projectPath.lastIndexOf("/"),
+            projectPath.lastIndexOf("\\"),
+        );
+        const baseDir = projectPath.substring(0, lastIdx).replace(/\\/g, "/");
+        const assetPath = bgAsset.Path.replace(/\\/g, "/");
+        return convertFileSrc(`${baseDir}/${assetPath}`);
+    })();
 
-          <div
-            ref={containerRef}
-            onMouseDown={handleMouseDown}
-            onClick={handleContainerClick}
-            className={`relative w-full h-full overflow-hidden select-none outline-none ${
-              isMiddlePanning ? "cursor-grabbing" : ""
-            }`}
-            style={{
-              backgroundImage: `
+    const previewBgSrc = (() => {
+        if (!previewBgPath || !projectPath) return null;
+        const lastIdx = Math.max(
+            projectPath.lastIndexOf("/"),
+            projectPath.lastIndexOf("\\"),
+        );
+        const baseDir = projectPath.substring(0, lastIdx).replace(/\\/g, "/");
+        const assetPath = previewBgPath.replace(/\\/g, "/");
+        return convertFileSrc(`${baseDir}/${assetPath}`);
+    })();
+
+    return (
+        <div className="flex h-full w-full overflow-hidden">
+            <div className="shrink-0 flex flex-col border-r border-white/10 bg-bg-sidebar w-80">
+                <div className="h-[80px] px-5 flex items-center border-b border-white/10 bg-white/[0.02] shrink-0">
+                    <div className="flex items-center gap-2">
+                        <BackButton
+                            label="Back"
+                            onClick={() => {
+                                sessionStorage.removeItem("currentView");
+                                sessionStorage.removeItem("projectPath");
+                                sessionStorage.removeItem("workspaceTab");
+                                setCurrentView("dashboard");
+                            }}
+                            className="shrink-0"
+                        />
+                        {currentProjectDisplayName && (
+                            <>
+                                <ToolbarDivider className="h-4" />
+                                <span
+                                    className="text-xs font-medium text-white/60 truncate max-w-[180px]"
+                                    title={currentProjectDisplayName}
+                                >
+                                    {currentProjectDisplayName}
+                                </span>
+                            </>
+                        )}
+                    </div>
+                </div>
+                <Explorer onScreenChange={setActiveScreenIdx} />
+            </div>
+
+            <div className="flex-1 relative flex flex-col min-w-0 bg-bg-canvas">
+                <ComposerTopBar searchInputRef={searchInputRef} />
+
+                <div className="flex-1 relative overflow-hidden">
+                    <div className="absolute top-4 right-6 z-10">
+                        <HistoryPanel />
+                    </div>
+
+                    <div
+                        ref={containerRef}
+                        onMouseDown={handleMouseDown}
+                        onClick={handleContainerClick}
+                        className={`relative w-full h-full overflow-hidden select-none outline-none ${
+                            isMiddlePanning ? "cursor-grabbing" : ""
+                        }`}
+                        style={{
+                            backgroundImage: `
                 linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
               `,
-              backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
-              backgroundPosition: `${offset.x}px ${offset.y}px`,
-            }}
-          >
-            <div
-              className="absolute shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5 bg-bg-panel"
-              style={{
-                left: `calc(50% + ${offset.x}px)`,
-                top: `calc(50% + ${offset.y}px)`,
-                transform: "translate(-50%, -50%)",
-                width: canvasWidth,
-                height: canvasHeight,
-              }}
-            >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeScreenIdx}
-                initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
-                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                className="absolute inset-0"
-                onClick={() => {
-                  if (expandedStackIndices) {
-                    setExpandedStackIndices(null);
-                    setSelectedIcon(null);
-                  }
-                }}
-              >
-                {currentBg &&
-                  !previewBgSrc &&
-                  assetFilter !== "icons" &&
-                  assetFilter !== "sprites" &&
-                  assetFilter !== "stacked" && (
-                    <motion.img
-                      initial={{ opacity: 0, scale: 1.1 }}
-                      animate={{ opacity: searchQuery ? 0.15 : 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
-                      src={currentBg}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                    />
-                  )}
-
-                {previewBgSrc && (
-                  <motion.img
-                    key={previewBgSrc}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    src={previewBgSrc}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover pointer-events-none z-[1]"
-                  />
-                )}
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
-                >
-                  {activeScreen.Icons?.slice(0, visibleCount).map((icon: any, idx: number) => {
-                    const asset = projectData.Objects.find((o: any) => o.Name === icon.Name);
-                    const isSprite = asset?.isSprite || asset?.Path.toLowerCase().includes("sprites");
-
-                    const iconStackKey = Array.from(stackedIcons.keys()).find((key) =>
-                      stackedIcons.get(key)?.includes(idx),
-                    );
-                    const isStacked = !!iconStackKey;
-
-                    if (assetFilter === "stacked") {
-                      if (!isStacked) return null;
-                    } else if (assetFilter !== "all") {
-                      if (assetFilter === "icons" && isSprite) return null;
-                      if (assetFilter === "sprites" && !isSprite) return null;
-                      if (assetFilter === "bg") return null;
-                    }
-
-                    const matchesSearch =
-                      !searchQuery || icon.Name.toLowerCase().includes(searchQuery.toLowerCase());
-                    const selectedAsset = projectData.Objects.find(
-                      (o: any) => o.Path === selectedAssetPath,
-                    );
-                    
-                    // Проверяем, выбрана ли эта иконка ИЛИ стек раскрыт и эта иконка в нём
-                    const isSelectedAsset = asset && asset.Path === selectedAsset?.Path;
-                    const isInExpandedStack = expandedStackIndices?.includes(idx) ?? false;
-                    const matchesSelectedAsset = !selectedAssetPath || isSelectedAsset || isInExpandedStack;
-
-                    const isStackExpanded = expandedStackIndices !== null;
-                    const stackIndex = isStackExpanded ? expandedStackIndices.indexOf(idx) : -1;
-                    const centerIndex = isStackExpanded
-                      ? (expandedStackIndices.length - 1) / 2
-                      : 0;
-                    // Шаг = реальная ширина иконки (из naturalSize) + зазор 16px
-                    const naturalW = asset ? (iconNaturalSizes[asset.Path]?.width ?? 64) : 64;
-                    const iconW = isSprite
-                      ? naturalW / (iconFrameCounts[activeScreenIdx]?.[icon.Name] || 1)
-                      : naturalW;
-                    const stackStep = (iconW + 16) * zoom;
-                    const expandedOffset =
-                      isInExpandedStack && stackIndex >= 0
-                        ? (stackIndex - centerIndex) * stackStep
-                        : 0;
-                    const isDimmed = expandedStackIndices !== null && !isInExpandedStack;
-
-                    const handleIconClick = (e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      if (asset) setSelectedAssetPath(asset.Path);
-
-                      if (isStacked) {
-                        if (!expandedStackIndices) {
-                          // Стек закрыт — раскрыть
-                          const key = Array.from(stackedIcons.keys()).find((k) =>
-                            stackedIcons.get(k)?.includes(idx),
-                          );
-                          setExpandedStackIndices(stackedIcons.get(key || "") || []);
-                        } else if (isInExpandedStack) {
-                          // Клик по иконке из раскрытого стека — выбрать, стек остаётся открытым
-                          setSelectedIcon(idx);
-                        } else {
-                          // Клик по иконке из другого стека — переключить на него
-                          const key = Array.from(stackedIcons.keys()).find((k) =>
-                            stackedIcons.get(k)?.includes(idx),
-                          );
-                          setExpandedStackIndices(stackedIcons.get(key || "") || []);
-                        }
-                      } else {
-                        setSelectedIcon(idx);
-                      }
-                    };
-
-                    return (
-                      <motion.div
-                        key={`${icon.Name}_${idx}`}
-                        initial={{ opacity: 0 }}
-                        animate={{
-                          opacity:
-                            matchesSearch && matchesSelectedAsset
-                              ? isDimmed ? 0.05 : 1
-                              : 0.05,
-                          x: expandedOffset,
-                          scale: isInExpandedStack ? 1.2 : 1,
+                            backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+                            backgroundPosition: `${offset.x}px ${offset.y}px`,
                         }}
-                        style={{
-                          position: "absolute",
-                          left: icon.X * zoom,
-                          top: icon.Y * zoom,
-                          zIndex: isInExpandedStack ? 100 : 1,
-                        }}
-                        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                        onClick={isStacked ? handleIconClick : undefined}
-                        className={isStacked && !isInExpandedStack ? "cursor-pointer" : ""}
-                      >
-                        <SmartIcon
-                          iconInstance={icon}
-                          iconIndex={idx}
-                          screenIdx={activeScreenIdx}
-                          onStackClick={isStacked && !isInExpandedStack ? handleIconClick : undefined}
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
+                    >
+                        <div
+                            className="absolute shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-bg-panel"
+                            style={{
+                                left: `calc(50% + ${offset.x}px)`,
+                                top: `calc(50% + ${offset.y}px)`,
+                                transform: "translate(-50%, -50%)",
+                                width: canvasWidth,
+                                height: canvasHeight,
+                            }}
+                        >
+                            {/* Границы рабочей области с мягким свечением */}
+                            <div className="absolute inset-0 border border-white/40 pointer-events-none z-[1000] shadow-[0_0_15px_rgba(0,0,0,0.3)]" />
+                            {/* Размеры области */}
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-mono text-white/60 bg-black/40 px-2 py-0.5 rounded whitespace-nowrap z-[1001]">
+                                {projectData.DisplayWidth || 1920} ×{" "}
+                                {projectData.DisplayHeight || 1080}
+                            </div>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeScreenIdx}
+                                    initial={{
+                                        opacity: 0,
+                                        scale: 0.95,
+                                        filter: "blur(10px)",
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        scale: 1,
+                                        filter: "blur(0px)",
+                                    }}
+                                    exit={{
+                                        opacity: 0,
+                                        scale: 1.05,
+                                        filter: "blur(10px)",
+                                    }}
+                                    transition={{
+                                        duration: 0.4,
+                                        ease: [0.4, 0, 0.2, 1],
+                                    }}
+                                    className="absolute inset-0"
+                                    onClick={() => {
+                                        if (expandedStackIndices) {
+                                            setExpandedStackIndices(null);
+                                            setSelectedIcon(null);
+                                        }
+                                    }}
+                                >
+                                    {currentBg &&
+                                        !previewBgSrc &&
+                                        assetFilter !== "icons" &&
+                                        assetFilter !== "sprites" &&
+                                        assetFilter !== "stacked" && (
+                                            <motion.img
+                                                initial={{
+                                                    opacity: 0,
+                                                    scale: 1.1,
+                                                }}
+                                                animate={{
+                                                    opacity: searchQuery
+                                                        ? 0.15
+                                                        : 1,
+                                                    scale: 1,
+                                                }}
+                                                transition={{
+                                                    duration: 0.5,
+                                                    delay: 0.1,
+                                                }}
+                                                src={currentBg}
+                                                alt=""
+                                                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                            />
+                                        )}
+
+                                    {previewBgSrc && (
+                                        <motion.img
+                                            key={previewBgSrc}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.15 }}
+                                            src={previewBgSrc}
+                                            alt=""
+                                            className="absolute inset-0 w-full h-full object-cover pointer-events-none z-[1]"
+                                        />
+                                    )}
+
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{
+                                            duration: 0.3,
+                                            delay: 0.2,
+                                        }}
+                                    >
+                                        {activeScreen.Icons?.slice(
+                                            0,
+                                            visibleCount,
+                                        ).map((icon: any, idx: number) => {
+                                            const asset =
+                                                projectData.Objects.find(
+                                                    (o: any) =>
+                                                        o.Name === icon.Name,
+                                                );
+                                            const isSprite =
+                                                asset?.isSprite ||
+                                                asset?.Path.toLowerCase().includes(
+                                                    "sprites",
+                                                );
+
+                                            const iconStackKey = Array.from(
+                                                stackedIcons.keys(),
+                                            ).find((key) =>
+                                                stackedIcons
+                                                    .get(key)
+                                                    ?.includes(idx),
+                                            );
+                                            const isStacked = !!iconStackKey;
+
+                                            if (assetFilter === "stacked") {
+                                                if (!isStacked) return null;
+                                            } else if (assetFilter !== "all") {
+                                                if (
+                                                    assetFilter === "icons" &&
+                                                    isSprite
+                                                )
+                                                    return null;
+                                                if (
+                                                    assetFilter === "sprites" &&
+                                                    !isSprite
+                                                )
+                                                    return null;
+                                                if (assetFilter === "bg")
+                                                    return null;
+                                            }
+
+                                            const matchesSearch =
+                                                !searchQuery ||
+                                                icon.Name.toLowerCase().includes(
+                                                    searchQuery.toLowerCase(),
+                                                );
+                                            const selectedAsset =
+                                                projectData.Objects.find(
+                                                    (o: any) =>
+                                                        o.Path ===
+                                                        selectedAssetPath,
+                                                );
+
+                                            // Проверяем, выбрана ли эта иконка ИЛИ стек раскрыт и эта иконка в нём
+                                            const isSelectedAsset =
+                                                asset &&
+                                                asset.Path ===
+                                                    selectedAsset?.Path;
+                                            const isInExpandedStack =
+                                                expandedStackIndices?.includes(
+                                                    idx,
+                                                ) ?? false;
+                                            const matchesSelectedAsset =
+                                                !selectedAssetPath ||
+                                                isSelectedAsset ||
+                                                isInExpandedStack;
+
+                                            const isStackExpanded =
+                                                expandedStackIndices !== null;
+                                            const stackIndex = isStackExpanded
+                                                ? expandedStackIndices.indexOf(
+                                                      idx,
+                                                  )
+                                                : -1;
+                                            const centerIndex = isStackExpanded
+                                                ? (expandedStackIndices.length -
+                                                      1) /
+                                                  2
+                                                : 0;
+                                            // Шаг = реальная ширина иконки (из naturalSize) + зазор 16px
+                                            const naturalW = asset
+                                                ? (iconNaturalSizes[asset.Path]
+                                                      ?.width ?? 64)
+                                                : 64;
+                                            const iconW = isSprite
+                                                ? naturalW /
+                                                  (iconFrameCounts[
+                                                      activeScreenIdx
+                                                  ]?.[icon.Name] || 1)
+                                                : naturalW;
+                                            const stackStep =
+                                                (iconW + 16) * zoom;
+                                            const expandedOffset =
+                                                isInExpandedStack &&
+                                                stackIndex >= 0
+                                                    ? (stackIndex -
+                                                          centerIndex) *
+                                                      stackStep
+                                                    : 0;
+                                            const isDimmed =
+                                                expandedStackIndices !== null &&
+                                                !isInExpandedStack;
+
+                                            const handleIconClick = (
+                                                e: React.MouseEvent,
+                                            ) => {
+                                                e.stopPropagation();
+                                                if (asset)
+                                                    setSelectedAssetPath(
+                                                        asset.Path,
+                                                    );
+
+                                                if (isStacked) {
+                                                    if (!expandedStackIndices) {
+                                                        // Стек закрыт — раскрыть
+                                                        const key = Array.from(
+                                                            stackedIcons.keys(),
+                                                        ).find((k) =>
+                                                            stackedIcons
+                                                                .get(k)
+                                                                ?.includes(idx),
+                                                        );
+                                                        setExpandedStackIndices(
+                                                            stackedIcons.get(
+                                                                key || "",
+                                                            ) || [],
+                                                        );
+                                                    } else if (
+                                                        isInExpandedStack
+                                                    ) {
+                                                        // Клик по иконке из раскрытого стека — выбрать, стек остаётся открытым
+                                                        setSelectedIcon(idx);
+                                                    } else {
+                                                        // Клик по иконке из другого стека — переключить на него
+                                                        const key = Array.from(
+                                                            stackedIcons.keys(),
+                                                        ).find((k) =>
+                                                            stackedIcons
+                                                                .get(k)
+                                                                ?.includes(idx),
+                                                        );
+                                                        setExpandedStackIndices(
+                                                            stackedIcons.get(
+                                                                key || "",
+                                                            ) || [],
+                                                        );
+                                                    }
+                                                } else {
+                                                    setSelectedIcon(idx);
+                                                }
+                                            };
+
+                                            return (
+                                                <motion.div
+                                                    key={`${icon.Name}_${idx}`}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{
+                                                        opacity:
+                                                            matchesSearch &&
+                                                            matchesSelectedAsset
+                                                                ? isDimmed
+                                                                    ? 0.05
+                                                                    : 1
+                                                                : 0.05,
+                                                        x: expandedOffset,
+                                                        scale: isInExpandedStack
+                                                            ? 1.2
+                                                            : 1,
+                                                    }}
+                                                    style={{
+                                                        position: "absolute",
+                                                        left: icon.X * zoom,
+                                                        top: icon.Y * zoom,
+                                                        zIndex: isInExpandedStack
+                                                            ? 100
+                                                            : 1,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.3,
+                                                        ease: [0.4, 0, 0.2, 1],
+                                                    }}
+                                                    onClick={
+                                                        isStacked
+                                                            ? handleIconClick
+                                                            : undefined
+                                                    }
+                                                    className={
+                                                        isStacked &&
+                                                        !isInExpandedStack
+                                                            ? "cursor-pointer"
+                                                            : ""
+                                                    }
+                                                >
+                                                    <SmartIcon
+                                                        iconInstance={icon}
+                                                        iconIndex={idx}
+                                                        screenIdx={
+                                                            activeScreenIdx
+                                                        }
+                                                        onStackClick={
+                                                            isStacked &&
+                                                            !isInExpandedStack
+                                                                ? handleIconClick
+                                                                : undefined
+                                                        }
+                                                    />
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </motion.div>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                </div>
+
+                <HotkeysPanel />
             </div>
-          </div>
+
+            <Inspector />
         </div>
-
-        <HotkeysPanel />
-      </div>
-
-      <Inspector />
-    </div>
-  );
+    );
 }
