@@ -55,15 +55,41 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Release v0.3.15
+            ## Resource Toolkit v0.3.21
 
-            🔧 **Cross-Platform Path Fixes**
-            - Fixed path normalization in `description.json`
+            ✨ **What's New**
 
-            🎨 **Dashboard Enhancements**
-            - Added bulk selection: select multiple workspaces with checkboxes for batch operations
-            - New BulkActionsBar for mass delete operations with confirmation dialog
-            - All dashboard settings persist across sessions
+            **Composer — Completely Redesigned**
+            - Brand new interface with floating toolbars for quick access
+            - Improved asset explorer with tabs and smart filtering
+            - Enhanced inspector for editing screens, icons, and colors
+            - Better drag-and-drop experience
+
+            **New Features**
+            - Open folder in system explorer directly from the app
+            - Quick search for assets with type filtering
+            - Context menus for common operations
+            - Improved keyboard shortcuts
+
+            🎨 **Improvements**
+
+            **UI/UX**
+            - Unified design across all views
+            - New modern components (dialogs, badges, tooltips)
+            - Better hover states and animations
+            - Optimized icons and visuals
+
+            **Performance**
+            - Faster canvas rendering
+            - Improved asset loading
+            - Reduced memory usage
+
+            🐛 **Bug Fixes**
+
+            - Fixed path handling for cross-platform compatibility
+            - Fixed selection and focus issues
+            - Fixed z-index problems with floating panels
+            - Various stability improvements
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
