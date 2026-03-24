@@ -13,6 +13,7 @@ export interface CanvasStore {
   previewBgPath: string | null;
 
   setZoom: (value: number) => void;
+  resetZoom: () => void;
   setSearchQuery: (val: string) => void;
   setActiveTab: (tab: string) => void;
   setActiveScreenIdx: (idx: number) => void;

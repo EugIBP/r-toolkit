@@ -10,12 +10,12 @@ import {
   Loader2,
   Sparkles,
   CheckCircle2,
+  Settings2,
 } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { BackButton } from "@/components/ui/back-button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { SectionLabel, BodyText } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 
 export function DitherView() {
@@ -42,8 +42,12 @@ export function DitherView() {
   }, []);
 
   const selectFolder = async (setter: (path: string) => void) => {
-    const selected = await open({ directory: true, multiple: false });
-    if (selected && typeof selected === "string") setter(selected);
+    try {
+      const selected = await open({ directory: true, multiple: false });
+      if (selected && typeof selected === "string") setter(selected);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const startProcessing = async () => {
@@ -71,32 +75,32 @@ export function DitherView() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center bg-bg-canvas relative p-6 overflow-hidden">
+    <div className="h-full w-full flex flex-col items-center justify-center bg-background relative p-6 overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="w-full max-w-4xl -translate-y-[5vh] animate-in fade-in zoom-in-95 duration-700">
         {/* Header */}
         <div className="mb-12">
-          <BackButton 
-            label="Back to Workspace" 
+          <BackButton
+            label="Back to Dashboard"
             onClick={() => {
-              sessionStorage.removeItem('currentView');
-              sessionStorage.removeItem('projectPath');
-              sessionStorage.removeItem('workspaceTab');
+              sessionStorage.removeItem("currentView");
+              sessionStorage.removeItem("projectPath");
+              sessionStorage.removeItem("workspaceTab");
               setCurrentView("dashboard");
-            }} 
+            }}
           />
           <div className="flex items-center gap-4 mt-8">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl backdrop-blur-md">
-              <ImageIcon className="w-7 h-7 text-primary opacity-60" />
+            <div className="w-14 h-14 rounded-2xl bg-muted/50 border border-border flex items-center justify-center shadow-xl backdrop-blur-md">
+              <ImageIcon className="w-7 h-7 text-primary opacity-80" />
             </div>
             <div>
-              <h2 className="text-4xl font-semibold tracking-tighter text-white">
+              <h2 className="text-4xl font-semibold tracking-tighter text-foreground">
                 Dither Studio
               </h2>
-              <div className="flex items-center gap-2 mt-1 opacity-50">
-                <Sparkles className="w-3 h-3 text-primary" />
+              <div className="flex items-center gap-2 mt-1 text-muted-foreground">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
                 <p className="text-xs font-medium uppercase tracking-[0.3em]">
                   Batch Processing Engine
                 </p>
@@ -106,33 +110,39 @@ export function DitherView() {
         </div>
 
         {/* Main Card */}
-        <Card className="w-full">
+        <Card className="w-full bg-background border-border shadow-lg">
           {/* Card Header */}
-          <CardHeader>
-            <SectionLabel>Conversion Parameters</SectionLabel>
+          <CardHeader className="pb-4 border-b border-border bg-muted/10">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Settings2 className="w-4 h-4 text-primary opacity-80" />{" "}
+              Conversion Parameters
+            </h3>
           </CardHeader>
 
           {/* Card Content */}
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-8 pt-6">
             {/* Directories Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Input Directory */}
-              <div className="space-y-3">
-                <SectionLabel>Input Directory</SectionLabel>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider block mb-1">
+                  Input Directory
+                </label>
                 <div className="flex gap-2">
-                  <Input
-                    variant="dark"
-                    icon={<FolderInput className="w-3.5 h-3.5" />}
-                    value={inputDir}
-                    readOnly
-                    className="flex-1 font-mono"
-                    placeholder="Select input folder..."
-                  />
+                  <div className="relative flex-1">
+                    <FolderInput className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={inputDir}
+                      readOnly
+                      className="pl-9 bg-muted/50 border-border text-xs font-mono text-muted-foreground"
+                      placeholder="Select input folder..."
+                    />
+                  </div>
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
                     onClick={() => selectFolder(setInputDir)}
-                    className="bg-white/5 hover:bg-white/10 border border-white/5"
+                    className="shrink-0"
                   >
                     <FolderInput className="w-4 h-4" />
                   </Button>
@@ -140,22 +150,25 @@ export function DitherView() {
               </div>
 
               {/* Output Directory */}
-              <div className="space-y-3">
-                <SectionLabel>Output Directory</SectionLabel>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider block mb-1">
+                  Output Directory
+                </label>
                 <div className="flex gap-2">
-                  <Input
-                    variant="dark"
-                    icon={<FolderOutput className="w-3.5 h-3.5" />}
-                    value={outputDir}
-                    readOnly
-                    className="flex-1 font-mono"
-                    placeholder="Select output folder..."
-                  />
+                  <div className="relative flex-1">
+                    <FolderOutput className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={outputDir}
+                      readOnly
+                      className="pl-9 bg-muted/50 border-border text-xs font-mono text-muted-foreground"
+                      placeholder="Select output folder..."
+                    />
+                  </div>
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
                     onClick={() => selectFolder(setOutputDir)}
-                    className="bg-white/5 hover:bg-white/10 border border-white/5"
+                    className="shrink-0"
                   >
                     <FolderOutput className="w-4 h-4" />
                   </Button>
@@ -166,40 +179,43 @@ export function DitherView() {
             {/* Mode Selection & Action */}
             <div className="flex flex-col md:flex-row items-end justify-between gap-6">
               {/* Mode Selection */}
-              <div className="space-y-3 w-full max-w-xs">
-                <SectionLabel>Dithering Mode</SectionLabel>
-                <div className="flex bg-black/40 border border-white/10 rounded-xl p-1">
+              <div className="space-y-2 w-full max-w-xs">
+                <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider block mb-1">
+                  Dithering Mode
+                </label>
+                <div className="flex bg-muted/30 border border-border rounded-lg p-1">
                   {[
                     { value: "565", label: "RGB 565" },
                     { value: "4444", label: "RGBA 4444" },
                     { value: "1555", label: "RGBA 1555" },
                   ].map((mode) => (
-                    <Button
+                    <button
                       key={mode.value}
-                      variant={ditherMode === mode.value ? "primary" : "ghost-dark"}
-                      size="sm"
                       onClick={() => !isProcessing && setDitherMode(mode.value)}
                       disabled={isProcessing}
-                      className="flex-1"
+                      className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        ditherMode === mode.value
+                          ? "bg-primary/20 text-primary shadow-sm"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
                     >
                       {mode.label}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* Start Button */}
               <Button
-                variant="primary"
                 size="lg"
                 onClick={startProcessing}
                 disabled={isProcessing}
-                className="px-6"
+                className="px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isProcessing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Play className="w-3.5 h-3.5" />
+                  <Play className="w-4 h-4 fill-current" />
                 )}
                 {isProcessing ? "Processing..." : "Start Conversion"}
               </Button>
@@ -207,35 +223,39 @@ export function DitherView() {
 
             {/* Progress */}
             {isProcessing && (
-              <div className="pt-6 border-t border-white/5 space-y-3">
+              <div className="pt-6 border-t border-border space-y-3 animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <SectionLabel>Progress</SectionLabel>
-                  <span className="text-xs font-semibold text-white">
+                  <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                    Progress
+                  </label>
+                  <span className="text-xs font-mono font-bold text-primary">
                     {progress}%
                   </span>
                 </div>
-                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <BodyText>{statusMsg}</BodyText>
+                <p className="text-[10px] text-muted-foreground font-mono animate-pulse">
+                  {statusMsg}
+                </p>
               </div>
             )}
 
             {/* Result */}
             {!isProcessing && resultMsg && (
-              <div className="pt-6 border-t border-white/5 animate-in fade-in">
+              <div className="pt-6 border-t border-border animate-in fade-in">
                 <div
                   className={`flex items-center gap-3 p-4 rounded-xl border ${
                     resultMsg.includes("Error")
-                      ? "bg-red-500/5 border-red-500/20 text-red-400"
-                      : "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
+                      ? "bg-destructive/10 border-destructive/20 text-destructive"
+                      : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
                   }`}
                 >
                   {!resultMsg.includes("Error") && (
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-5 h-5 shrink-0" />
                   )}
                   <span className="text-xs font-medium">{resultMsg}</span>
                 </div>

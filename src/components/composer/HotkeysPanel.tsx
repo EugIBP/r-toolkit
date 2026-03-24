@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Keyboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/typography";
 
 export function HotkeysPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,23 +16,21 @@ export function HotkeysPanel() {
   ];
 
   return (
-    <div className="absolute bottom-6 right-8 z-50">
+    <div className="absolute bottom-4 left-6 z-10 flex flex-col items-start gap-2">
       {/* Toggle button */}
-      <Button
-        variant="ghost-dark"
-        onClick={() => setIsOpen(!isOpen)}
-      >
+      <Button variant="ghost-dark" onClick={() => setIsOpen(!isOpen)}>
         <Keyboard className="w-4 h-4" />
         Hotkeys
       </Button>
 
       {/* Panel - expands upward */}
       {isOpen && (
-        <div className="absolute bottom-full mb-2 right-0 w-64 bg-bg-elevated/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-          <div className="p-3 border-b border-white/10">
-            <SectionLabel>Keyboard Shortcuts</SectionLabel>
-          </div>
-          <div className="p-2 space-y-1">
+        <div className="bg-background/90 backdrop-blur-xl border border-border p-4 rounded-2xl shadow-xl w-[320px] animate-in slide-in-from-bottom-2 fade-in">
+          {/* Заменили SectionLabel на стандартный h3 */}
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+            Keyboard Shortcuts
+          </h3>
+          <div className="space-y-3">
             {hotkeys.map((item, idx) => (
               <div
                 key={idx}

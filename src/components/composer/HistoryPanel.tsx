@@ -1,227 +1,164 @@
-import { useState, useRef, useEffect } from "react";
-import { useHistoryStore, HistoryEntry } from "@/store/useHistory";
-import { Clock, Trash2, ChevronUp, ChevronDown, Settings2, RotateCcw, RotateCw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ToolbarDivider } from "@/components/ui/floating-toolbar";
+import { useState } from "react";
+import { useHistoryStore } from "@/store/useHistory";
+import { History, Undo2, Redo2, Trash2, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/typography";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 export function HistoryPanel() {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
   const {
     entries,
     currentIndex,
     maxSteps,
+    setMaxSteps,
     undo,
     redo,
-    clear,
-    setMaxSteps,
     canUndo,
     canRedo,
+    push,
+    clear,
     jumpTo,
   } = useHistoryStore();
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [customAction, setCustomAction] = useState("");
 
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const handlePushCustom = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && customAction.trim()) {
+      push(customAction.trim());
+      setCustomAction("");
+    }
+  };
+
+  const handleMaxStepsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseInt(e.target.value);
+    if (!isNaN(val)) {
+      setMaxSteps(val);
+    }
   };
 
   return (
-    <div ref={dropdownRef} className="relative">
-      {/* Кнопка открытия истории с Undo/Redo */}
-      <div className="flex items-center gap-1 p-1 bg-bg-elevated/90 backdrop-blur-xl border border-white/10 rounded-xl">
+    <div className="flex flex-col items-end gap-2">
+      {/* Тулбар с кнопками истории */}
+      <div className="flex items-center p-1.5 bg-background/90 backdrop-blur-xl border border-border rounded-2xl shadow-xl gap-1">
         <Button
-          variant="ghost-dark"
-          size="icon-xs"
+          variant="ghost"
+          size="icon"
+          className="w-8 h-8 rounded-xl"
+          onClick={() => setIsOpen(!isOpen)}
+          title="Toggle History"
+        >
+          <History
+            className={`w-4 h-4 ${isOpen ? "text-primary" : "text-muted-foreground"}`}
+          />
+        </Button>
+        <Separator orientation="vertical" className="h-5 mx-1" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-8 h-8 rounded-xl text-muted-foreground"
           onClick={undo}
           disabled={!canUndo()}
           title="Undo (Ctrl+Z)"
         >
-          <RotateCcw className="w-4 h-4" />
+          <Undo2 className="w-4 h-4" />
         </Button>
         <Button
-          variant="ghost-dark"
-          size="icon-xs"
+          variant="ghost"
+          size="icon"
+          className="w-8 h-8 rounded-xl text-muted-foreground"
           onClick={redo}
           disabled={!canRedo()}
-          title="Redo (Ctrl+Shift+Z)"
+          title="Redo (Ctrl+Y)"
         >
-          <RotateCw className="w-4 h-4" />
+          <Redo2 className="w-4 h-4" />
         </Button>
-        <ToolbarDivider className="h-5" />
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          title="History"
-          className={cn(
-            "flex items-center gap-2 px-2 py-1 rounded-lg transition-all",
-            isOpen
-              ? "bg-primary/20 text-primary ring-1 ring-primary/30"
-              : "text-muted-foreground hover:text-white hover:bg-white/10"
-          )}
-        >
-          <Clock className="w-4 h-4" />
-          {entries.length > 0 && (
-            <span className="text-xs font-mono">
-              {currentIndex + 1}/{entries.length}
-            </span>
-          )}
-        </button>
       </div>
 
-      {/* Dropdown */}
+      {/* Выпадающая панель истории */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-bg-elevated/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-          {/* Header */}
-          <div className="p-3 border-b border-white/10 flex items-center justify-between">
+        <div className="bg-background/90 backdrop-blur-xl border border-border p-4 rounded-2xl shadow-xl w-[320px] animate-in slide-in-from-top-2 fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              History
+            </h3>
+
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-xs font-medium">History</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={undo}
-                disabled={!canUndo()}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Undo (Ctrl+Z)"
+              {/* ВОЗВРАЩЕНО: Поле для изменения количества шагов (maxSteps) */}
+              <div
+                className="flex items-center gap-1 bg-muted/50 border border-border rounded-md px-2 h-6 transition-colors focus-within:border-primary/50"
+                title="Max History Steps"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={redo}
-                disabled={!canRedo()}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                title="Redo (Ctrl+Shift+Z)"
-              >
-                <RotateCw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Max Steps Setting */}
-          <div className="p-3 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Settings2 className="w-3.5 h-3.5" />
-              <SectionLabel>Max steps</SectionLabel>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost-dark"
-                size="icon-xs"
-                onClick={() => setMaxSteps(maxSteps - 1)}
-              >
-                <ChevronDown className="w-3 h-3" />
-              </Button>
-              <Input
-                type="number"
-                value={maxSteps}
-                onChange={(e) => setMaxSteps(parseInt(e.target.value) || 50)}
-                min={1}
-                max={100}
-                className="w-12 h-7 text-center text-xs [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-              />
-              <Button
-                variant="ghost-dark"
-                size="icon-xs"
-                onClick={() => setMaxSteps(maxSteps + 1)}
-              >
-                <ChevronUp className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-
-          {/* History List */}
-          <ScrollArea className="h-[200px]">
-            {entries.length === 0 ? (
-              <div className="p-6 text-center text-xs text-muted-foreground">
-                No history yet. Start making changes!
+                <Settings2 className="w-3 h-3 text-muted-foreground" />
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={maxSteps}
+                  onChange={handleMaxStepsChange}
+                  className="w-8 bg-transparent text-[10px] text-foreground text-center outline-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
               </div>
-            ) : (
-              [...entries].reverse().map((entry, reversedIdx) => {
-                const originalIdx = entries.length - 1 - reversedIdx;
-                return (
-                  <HistoryItem
-                    key={entry.id}
-                    entry={entry}
-                    index={originalIdx}
-                    isActive={originalIdx === currentIndex}
-                    onClick={() => jumpTo(originalIdx)}
-                    formatTime={formatTime}
-                  />
-                );
-              })
-            )}
-          </ScrollArea>
 
-          {/* Footer */}
-          {entries.length > 0 && (
-            <div className="p-3 border-t border-white/10">
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={clear}
-                className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                Clear History
+                <Trash2 className="w-3 h-3 mr-1" />
+                Clear
               </Button>
             </div>
-          )}
+          </div>
+
+          <div className="mb-4">
+            <Input
+              value={customAction}
+              onChange={(e) => setCustomAction(e.target.value)}
+              onKeyDown={handlePushCustom}
+              placeholder="Type manual action and press Enter..."
+              className="h-8 text-xs bg-muted/50 border-border"
+            />
+          </div>
+
+          <ScrollArea className="h-[250px] pr-3 -mr-3">
+            {!entries || entries.length === 0 ? (
+              <div className="py-10 text-center text-xs font-medium text-muted-foreground uppercase tracking-widest opacity-50">
+                No history
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {/* Отрисовываем историю (самые новые сверху) */}
+                {[...entries].reverse().map((entry, idx) => {
+                  // Вычисляем реальный индекс элемента в оригинальном массиве (так как мы его развернули)
+                  const realIndex = entries.length - 1 - idx;
+                  const isActive = realIndex === currentIndex;
+                  const isFuture = realIndex > currentIndex;
+
+                  return (
+                    <div
+                      key={entry.id || idx}
+                      onClick={() => jumpTo && jumpTo(realIndex)}
+                      className={`text-xs px-3 py-2 rounded-lg border transition-colors cursor-pointer truncate ${
+                        isActive
+                          ? "bg-primary/20 border-primary/30 text-primary font-medium" // Текущее состояние
+                          : isFuture
+                            ? "bg-muted/10 border-transparent text-muted-foreground/50 line-through" // Отмененные действия (Redo)
+                            : "bg-muted/30 border-border/50 text-foreground/80 hover:bg-muted" // Прошлые действия
+                      }`}
+                      title={entry.description}
+                    >
+                      {entry.description || "Unknown action"}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
         </div>
       )}
     </div>
-  );
-}
-
-function HistoryItem({
-  entry,
-  index,
-  isActive,
-  onClick,
-  formatTime,
-}: {
-  entry: HistoryEntry;
-  index: number;
-  isActive: boolean;
-  onClick: () => void;
-  formatTime: (ts: number) => string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full p-3 flex items-start gap-3 text-left transition-colors ${
-        isActive
-          ? "bg-primary/10 border-l-2 border-primary"
-          : "hover:bg-white/5 border-l-2 border-transparent"
-      }`}
-    >
-      <div
-        className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-          isActive ? "bg-primary text-white" : "bg-white/10 text-muted-foreground"
-        }`}
-      >
-        {index + 1}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-xs font-medium truncate">{entry.description}</div>
-        <div className="text-xs text-muted-foreground mt-0.5">
-          {formatTime(entry.timestamp)}
-        </div>
-      </div>
-    </button>
   );
 }

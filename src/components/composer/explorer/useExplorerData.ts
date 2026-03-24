@@ -41,9 +41,17 @@ export function useExplorerData() {
       string,
       AssetObject & { isRegistered: boolean }
     >();
-    projectData.Objects.forEach((obj: AssetObject) =>
-      allFilesMap.set(obj.Path, { ...obj, isRegistered: true }),
-    );
+
+    projectData.Objects.forEach((obj: AssetObject) => {
+      const existing = allFilesMap.get(obj.Path);
+      if (!existing) {
+        allFilesMap.set(obj.Path, { ...obj, isRegistered: true });
+      } else {
+        if (obj.Name.length < existing.Name.length) {
+          allFilesMap.set(obj.Path, { ...obj, isRegistered: true });
+        }
+      }
+    });
 
     let newCount = 0;
     scannedFiles?.forEach((file) => {
@@ -79,6 +87,7 @@ export function useExplorerData() {
         screenIdx: number;
       }>
     >();
+
     projectData.Screens.forEach((screen: ScreenData, screenIdx: number) => {
       if (screen.Background) {
         const bgAsset = projectData.Objects.find(
@@ -111,12 +120,18 @@ export function useExplorerData() {
 
     let mergedAssets = Array.from(allFilesMap.values());
 
+    // Шаг 1: Если мы в режиме сканирования, берем ТОЛЬКО новые файлы
+    if (newCount > 0) {
+      mergedAssets = mergedAssets.filter((obj) => !obj.isRegistered);
+    }
+
     if (searchQuery) {
       mergedAssets = mergedAssets.filter((obj) =>
         obj.Name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
+    // Шаг 2 (ИСПРАВЛЕНИЕ): Всегда применяем глобальный фильтр типов ассетов поверх новых файлов!
     if (assetFilter !== "all") {
       mergedAssets = mergedAssets.filter((obj) => {
         const isSprite = obj.isSprite;

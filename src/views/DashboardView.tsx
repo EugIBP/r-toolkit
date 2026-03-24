@@ -29,12 +29,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { PageTitle, SectionLabel } from "@/components/ui/typography";
-import { ModeButton } from "@/components/ui/mode-button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export function DashboardView() {
   const { setProject } = useProjectStore();
   const { resetCanvas, loadWorkspace } = useCanvasStore();
+
+  // ИСПРАВЛЕНИЕ: Добавили recentProjects и setCurrentView в деструктуризацию
   const {
     addRecent,
     setEditingWorkspaceId,
@@ -45,7 +47,10 @@ export function DashboardView() {
     setPendingUpdate,
     availableUpdate,
     setAvailableUpdate,
+    recentProjects,
+    setCurrentView,
   } = useAppStore();
+
   const [search, setSearch] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [appVersion, setAppVersion] = useState("");
@@ -77,13 +82,20 @@ export function DashboardView() {
     );
     const baseDir = filePath.substring(0, lastIdx);
 
+    const id = btoa(encodeURIComponent(filePath));
+    const isKnown = recentProjects.some((p) => p.id === id);
+
     setProject(data, filePath);
     await resetCanvas();
     await loadWorkspace(baseDir);
     await addRecent(filePath, folderName);
 
-    const id = btoa(encodeURIComponent(filePath));
-    setEditingWorkspaceId(id);
+    if (isKnown) {
+      sessionStorage.setItem("currentView", "composer");
+      setCurrentView("composer");
+    } else {
+      setEditingWorkspaceId(id, true);
+    }
   };
 
   const handleOpenProject = async () => {
@@ -102,80 +114,78 @@ export function DashboardView() {
       await setupAndShowModal(filePath, data);
     } catch (err) {
       console.error("Failed to open project:", err);
+      toast.error("Failed to open project file");
     }
   };
 
   return (
-    <div className="h-full w-full bg-bg-canvas flex flex-col items-center relative overflow-hidden">
+    <div className="h-full w-full bg-background flex flex-col items-center relative overflow-hidden">
+      {/* Декоративное свечение */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-primary/5 blur-[120px] pointer-events-none" />
 
-      <div className="flex-1 w-full max-w-7xl px-10 flex flex-col min-h-0 animate-in fade-in duration-1000">
+      <div className="flex-1 w-full max-w-7xl px-10 flex flex-col min-h-0 animate-in fade-in duration-1000 z-10">
+        {/* Шапка (Заголовок и Кнопка добавления) */}
         <div className="flex items-end justify-between mb-8 pt-10 shrink-0">
           <div className="space-y-2">
-            <PageTitle className="flex items-center gap-3">
+            <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-3">
               Resource Toolkit
               {appVersion && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost-dark"
-                    size="xs"
-                    onClick={handleVersionClick}
-                    className="bg-white/5 px-2 py-0.5"
-                  >
-                    v{appVersion}
-                    {availableUpdate && (
-                      <>
-                        <ArrowUp className="w-2.5 h-2.5 text-green-400" />
-                        <span className="text-green-400">
-                          {availableUpdate}
-                        </span>
-                      </>
-                    )}
-                  </Button>
-                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleVersionClick}
+                  className="h-6 px-2 text-xs"
+                >
+                  v{appVersion}
+                  {availableUpdate && (
+                    <>
+                      <ArrowUp className="w-3 h-3 text-emerald-500 ml-1" />
+                      <span className="text-emerald-500 ml-1">
+                        {availableUpdate}
+                      </span>
+                    </>
+                  )}
+                </Button>
               )}
-            </PageTitle>
-            <SectionLabel className="text-xs font-medium normal-case tracking-normal text-white/60">
+            </h1>
+            <p className="text-sm font-medium text-muted-foreground">
               {workspaceTab === "workspace"
                 ? "Open a workspace to get started"
                 : "Select a tool to begin"}
-            </SectionLabel>
+            </p>
           </div>
 
           {workspaceTab === "workspace" && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default" size="sm">
-                  <Plus className="w-3.5 h-3.5" />
+                <Button variant="default" size="sm" className="gap-2">
+                  <Plus className="w-4 h-4" />
                   Workspace
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="bg-[#121212] border-white/10 text-white min-w-[200px] p-1.5 rounded-xl shadow-2xl z-50"
-              >
+              <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="gap-3 focus:bg-white/10 cursor-pointer py-3 rounded-lg font-medium"
+                  className="gap-3 py-3 cursor-pointer"
                 >
                   <FilePlus className="w-4 h-4 text-primary" />
                   <div className="flex flex-col">
-                    <span className="text-xs">Create New</span>
+                    <span className="text-sm font-medium">Create New</span>
                     <span className="text-xs text-muted-foreground">
                       Create new workspace
                     </span>
                   </div>
                 </DropdownMenuItem>
 
-                <div className="h-px bg-white/5 my-1.5" />
+                <div className="h-px bg-border my-1" />
 
                 <DropdownMenuItem
                   onClick={handleOpenProject}
-                  className="gap-3 focus:bg-white/10 cursor-pointer py-3 rounded-lg font-medium"
+                  className="gap-3 py-3 cursor-pointer"
                 >
-                  <FolderOpen className="w-4 h-4 opacity-70" />
+                  <FolderOpen className="w-4 h-4 text-muted-foreground" />
                   <div className="flex flex-col">
-                    <span className="text-xs">Open Existing</span>
+                    <span className="text-sm font-medium">Open Existing</span>
                     <span className="text-xs text-muted-foreground">
                       Select description.json
                     </span>
@@ -186,11 +196,11 @@ export function DashboardView() {
           )}
         </div>
 
+        {/* Панель управления (Поиск, Табы, Вид) */}
         <div className="flex items-center justify-between mb-8 shrink-0">
           <div className="relative group">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              variant="dark"
-              icon={<Search className="w-4 h-4" />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={
@@ -198,39 +208,47 @@ export function DashboardView() {
                   ? "Search workspaces..."
                   : "Search tools..."
               }
-              className="w-80"
+              className="w-80 pl-9 bg-muted/50 border-border"
             />
           </div>
 
-          <div className="flex bg-black/40 border border-white/10 rounded-xl p-1">
-            <ModeButton
-              onClick={() => setWorkspaceTab("workspace")}
-              active={workspaceTab === "workspace"}
-            >
-              Workspace
-            </ModeButton>
-            <ModeButton
-              onClick={() => setWorkspaceTab("tools")}
-              active={workspaceTab === "tools"}
-            >
-              Tools
-            </ModeButton>
-          </div>
+          {/* Стандартные Табы shadcn */}
+          <Tabs
+            value={workspaceTab}
+            onValueChange={(v) => setWorkspaceTab(v as "workspace" | "tools")}
+          >
+            <TabsList className="bg-muted/50 border border-border">
+              <TabsTrigger value="workspace" className="text-xs">
+                Workspace
+              </TabsTrigger>
+              <TabsTrigger value="tools" className="text-xs">
+                Tools
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-          <div className="flex bg-black/40 border border-white/10 rounded-xl p-1 shadow-inner gap-1">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === "grid" ? "bg-primary/20 text-primary shadow-sm ring-1 ring-primary/30" : "text-muted-foreground hover:bg-white/5 hover:text-white"}`}
+          {/* Стандартный ToggleGroup shadcn */}
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(v) => v && setViewMode(v as "grid" | "list")}
+            className="bg-muted/50 border border-border rounded-lg p-0.5"
+          >
+            <ToggleGroupItem
+              value="grid"
+              aria-label="Grid view"
+              className="h-8 w-8 px-0"
             >
               <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === "list" ? "bg-primary/20 text-primary shadow-sm ring-1 ring-primary/30" : "text-muted-foreground hover:bg-white/5 hover:text-white"}`}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="list"
+              aria-label="List view"
+              className="h-8 w-8 px-0"
             >
               <List className="w-4 h-4" />
-            </button>
-          </div>
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
         <AnimatePresence mode="wait">

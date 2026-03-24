@@ -1,299 +1,275 @@
-import { useState, useEffect, useMemo } from "react";
-import { useAppStore } from "@/store/useAppStore";
-import { useProjectStore } from "@/store/useProjectStore";
-import { useCanvasStore } from "@/store/useCanvasStore";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import { useAppStore } from "@/store/useAppStore";
 import {
-    X,
-    Image as ImageIcon,
-    FolderOpen,
-    ArrowRight,
-    Trash2,
-} from "lucide-react";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/typography";
 import { toast } from "sonner";
+import { UploadCloud, Trash2 } from "lucide-react";
 
 export function WorkspaceMetaModal() {
-    const {
-        editingWorkspaceId,
-        setEditingWorkspaceId,
-        recentProjects,
-        updateProjectMeta,
-        setCurrentView,
-        refreshRecent,
-        addRecent,
-    } = useAppStore();
-    const { setProject } = useProjectStore();
-    const { resetCanvas, loadWorkspace } = useCanvasStore();
+  const {
+    editingWorkspaceId,
+    setEditingWorkspaceId,
+    recentProjects,
+    updateProjectMeta,
+    isNewImport,
+    setCurrentView,
+  } = useAppStore();
 
-    const project = useMemo(
-        () => recentProjects.find((p) => p.id === editingWorkspaceId),
-        [recentProjects, editingWorkspaceId],
+  const [displayName, setDisplayName] = useState("");
+  const [description, setDescription] = useState("");
+  const [newThumbPath, setNewThumbPath] = useState<string | null>(null);
+  const [timestamp, setTimestamp] = useState(Date.now());
+
+  const project = editingWorkspaceId
+    ? recentProjects.find((p) => p.id === editingWorkspaceId)
+    : null;
+
+  useEffect(() => {
+    if (project) {
+      setDisplayName(project.displayName || "");
+      setDescription(project.description || "");
+      setNewThumbPath(null);
+      setTimestamp(Date.now());
+    }
+  }, [project]);
+
+  const getBaseDir = () => {
+    if (!project?.path) return "";
+    const lastIdx = Math.max(
+      project.path.lastIndexOf("/"),
+      project.path.lastIndexOf("\\"),
     );
+    return project.path.substring(0, lastIdx);
+  };
 
-    const [name, setName] = useState("");
-    const [desc, setDesc] = useState("");
-    const [thumbUrl, setThumbUrl] = useState<string | null>(null);
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [imgError, setImgError] = useState(false);
+  const handleSelectImage = async () => {
+    try {
+      const selected = await openDialog({
+        multiple: false,
+        filters: [{ name: "Images", extensions: ["png", "jpg", "jpeg"] }],
+      });
+      if (selected && typeof selected === "string") {
+        setNewThumbPath(selected);
+      }
+    } catch (e) {
+      console.error("Failed to open file dialog", e);
+    }
+  };
 
-    useEffect(() => {
-        if (project) {
-            setName(project.displayName);
-            setDesc(project.description || "");
-            setImgError(false); // Reset error when project changes
+  const handleRemoveThumb = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const baseDir = getBaseDir();
+    const destPath = `${baseDir}/.rtoolkit/thumb.png`.replace(/\\/g, "/");
+    try {
+      await invoke("delete_project_file", { path: destPath });
+      setNewThumbPath(null);
+      setTimestamp(Date.now());
+      toast.success("Thumbnail removed");
+    } catch (err) {
+      console.error("Delete error:", err);
+      toast.error("Failed to remove thumbnail");
+    }
+  };
 
-            const lastIndex = Math.max(
-                project.path.lastIndexOf("/"),
-                project.path.lastIndexOf("\\"),
-            );
-            const baseDir = project.path
-                .substring(0, lastIndex)
-                .replace(/\\/g, "/");
+  const handleSave = async () => {
+    if (!project) return;
 
-            // Нормализуем путь для Tauri
-            const fullPath = `${baseDir}/.rtoolkit/thumb.png`;
-            setThumbUrl(convertFileSrc(fullPath) + `?t=${refreshKey}`);
-        } else {
-            setThumbUrl(null);
-        }
-    }, [project, refreshKey]);
+    if (newThumbPath) {
+      const baseDir = getBaseDir();
+      const destPath = `${baseDir}/.rtoolkit/thumb.png`.replace(/\\/g, "/");
+      try {
+        await invoke("copy_asset_file", {
+          source: newThumbPath,
+          destination: destPath,
+        });
+      } catch (err) {
+        console.error("Copy asset error:", err);
+        toast.error("Failed to save image file");
+        return;
+      }
+    }
 
-    if (!project) return null;
+    try {
+      await updateProjectMeta(
+        project.id,
+        displayName.trim(),
+        description.trim(),
+      );
+    } catch (err) {
+      console.error("Update store error:", err);
+      toast.error("Failed to save project metadata");
+      return;
+    }
 
-    const handleCancel = () => setEditingWorkspaceId(null);
+    setEditingWorkspaceId(null);
 
-    const handleSaveOnly = () => {
-        updateProjectMeta(project.id, name, desc);
-        setEditingWorkspaceId(null);
-    };
+    if (isNewImport) {
+      sessionStorage.setItem("currentView", "composer");
+      setCurrentView("composer");
+      toast.success("Workspace imported successfully");
+    } else {
+      toast.success("Workspace updated");
+    }
+  };
 
-    const handleSaveAndOpen = async () => {
-        updateProjectMeta(project.id, name, desc);
-        setEditingWorkspaceId(null);
+  const handleOpenFolder = async () => {
+    const folderPath = getBaseDir();
+    if (!folderPath) return;
+    try {
+      await invoke("open_folder", { path: folderPath });
+    } catch (e) {
+      console.error("Opener error:", e);
+      toast.error("Failed to open folder");
+    }
+  };
 
-        // Загружаем проект
-        try {
-            const content = await invoke<string>("load_project", {
-                filePath: project.path,
-            });
-            const data = JSON.parse(content);
-            const lastIdx = Math.max(
-                project.path.lastIndexOf("/"),
-                project.path.lastIndexOf("\\"),
-            );
-            const baseDir = project.path.substring(0, lastIdx);
+  if (!project) return null;
 
-            setProject(data, project.path);
-            await resetCanvas();
-            await loadWorkspace(baseDir);
-            await addRecent(project.path, project.displayName, true);
+  const baseDir = getBaseDir();
+  const currentThumb = `${baseDir}/.rtoolkit/thumb.png`.replace(/\\/g, "/");
+  const displaySrc = newThumbPath
+    ? convertFileSrc(newThumbPath)
+    : `${convertFileSrc(currentThumb)}?t=${timestamp}`;
 
-            sessionStorage.setItem("currentView", "composer");
-            setCurrentView("composer");
-        } catch (err) {
-            toast.error("Failed to open project", { id: "open-project-error" });
-        }
-    };
+  return (
+    <Dialog
+      open={!!editingWorkspaceId}
+      onOpenChange={() => setEditingWorkspaceId(null)}
+    >
+      <DialogContent className="max-w-md bg-background border-border text-foreground">
+        <DialogHeader>
+          <DialogTitle>
+            {isNewImport ? "Import Workspace" : "Workspace Settings"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {isNewImport
+              ? "Review metadata for the imported workspace."
+              : "Edit metadata and thumbnail for your workspace."}
+          </DialogDescription>
+        </DialogHeader>
 
-    const handleChangeThumb = async () => {
-        try {
-            const selected = await open({
-                multiple: false,
-                title: "Select Project Thumbnail",
-                filters: [
-                    { name: "Images", extensions: ["png", "jpg", "jpeg"] },
-                ],
-            });
+        <div className="space-y-6 py-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground block">
+                Project Thumbnail
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveThumb}
+                className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Remove
+              </Button>
+            </div>
 
-            if (selected && typeof selected === "string") {
-                const lastIndex = Math.max(
-                    project.path.lastIndexOf("/"),
-                    project.path.lastIndexOf("\\"),
-                );
-                const baseDir = project.path.substring(0, lastIndex);
-                const destination = `${baseDir}/.rtoolkit/thumb.png`;
+            <div
+              onClick={handleSelectImage}
+              className="relative group cursor-pointer aspect-video w-full rounded-xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all flex items-center justify-center overflow-hidden"
+            >
+              <img
+                src={displaySrc}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+                onLoad={(e) => {
+                  e.currentTarget.style.display = "block";
+                }}
+                className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-30 transition-opacity hidden"
+              />
 
-                // Copy file and wait for it to complete
-                await invoke("copy_asset_file", {
-                    source: selected,
-                    destination,
-                });
-
-                // Wait a bit to ensure file is written
-                await new Promise((resolve) => setTimeout(resolve, 200));
-
-                // Update refresh key to trigger re-render with new image
-                const newKey = Date.now();
-                setRefreshKey(newKey);
-
-                // Also refresh recent projects to update the thumbnail on dashboard
-                await refreshRecent();
-
-                // Force another re-render after a short delay to ensure image loads
-                setTimeout(() => {
-                    setRefreshKey(Date.now());
-                }, 100);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const handleRemoveThumb = async () => {
-        if (!project) return;
-
-        try {
-            const lastIndex = Math.max(
-                project.path.lastIndexOf("/"),
-                project.path.lastIndexOf("\\"),
-            );
-            const baseDir = project.path.substring(0, lastIndex);
-            const fullPath = `${baseDir}/.rtoolkit/thumb.png`;
-
-            await invoke("delete_project_file", { path: fullPath });
-
-            // Refresh the thumbnail display
-            await refreshRecent();
-            setRefreshKey(Date.now());
-            setImgError(true); // Show placeholder
-        } catch (err) {
-            // File might not exist, that's ok
-            console.error(err);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <Card className="w-[33vw] min-w-[400px] max-w-[600px] animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                <CardHeader className="flex flex-row items-center justify-between p-5 border-b border-white/10 bg-white/[0.02]">
-                    <h2 className="text-sm font-semibold text-white">
-                        Workspace Configuration
-                    </h2>
-                    <button
-                        onClick={handleCancel}
-                        className="text-muted-foreground hover:text-white transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </CardHeader>
-
-                <ScrollArea className="flex-1">
-                    <CardContent className="p-6 space-y-6">
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <SectionLabel>Cover Image</SectionLabel>
-
-                                {/* Кнопка удаления - показываем только если есть изображение */}
-                                {thumbUrl && !imgError && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRemoveThumb();
-                                        }}
-                                        className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                                        title="Remove cover image"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
-                            </div>
-                            <div
-                                onClick={handleChangeThumb}
-                                className="relative aspect-video w-full rounded-xl bg-white/5 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group"
-                            >
-                                <ImageIcon className="absolute w-8 h-8 text-white/20 group-hover:scale-110 transition-transform z-0" />
-
-                                {/* Рендерим изображение только если URL валиден и нет ошибки */}
-                                {thumbUrl && !imgError && (
-                                    <img
-                                        src={thumbUrl}
-                                        alt=""
-                                        onError={() => setImgError(true)}
-                                        onLoad={(e) =>
-                                            (e.currentTarget.style.opacity =
-                                                "0.6")
-                                        }
-                                        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 z-10 group-hover:opacity-30 opacity-0"
-                                    />
-                                )}
-
-                                <span className="text-xs font-medium text-white/60 z-20 bg-black/40 px-3 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Click to browse image
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex flex-col">
-                                <SectionLabel className="mb-2">
-                                    Alias (Display Name)
-                                </SectionLabel>
-                                <Input
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="flex flex-col">
-                                <SectionLabel className="mb-2">
-                                    Project Path
-                                </SectionLabel>
-                                <div className="flex items-center gap-3 bg-black/40 border border-white/5 rounded-lg p-3 min-w-0">
-                                    <FolderOpen className="w-4 h-4 text-primary/70 shrink-0" />
-                                    <span className="text-xs font-mono text-muted-foreground select-all">
-                                        {project.path.length > 72
-                                            ? `${project.path.slice(0, 72)}...`
-                                            : project.path}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col">
-                                <SectionLabel className="mb-2">
-                                    Description / Notes
-                                </SectionLabel>
-                                <textarea
-                                    value={desc}
-                                    onChange={(e) => setDesc(e.target.value)}
-                                    rows={3}
-                                    placeholder="Write some notes..."
-                                    className="bg-bg-surface border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-primary outline-none resize-none"
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </ScrollArea>
-
-                <div className="p-5 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
-                    <Button
-                        variant="ghost"
-                        onClick={handleCancel}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                        Cancel
-                    </Button>
-
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={handleSaveOnly}>
-                            Save Settings
-                        </Button>
-                        <Button
-                            variant="default"
-                            onClick={handleSaveAndOpen}
-                            className="shadow-[0_0_20px_rgba(255,165,0,0.2)]"
-                        >
-                            Open Project <ArrowRight className="w-4 h-4" />
-                        </Button>
-                    </div>
+              <div className="flex flex-col items-center gap-2 relative z-10 p-4 text-center">
+                <div className="p-3 bg-background/80 backdrop-blur-sm rounded-full shadow-sm border border-border group-hover:scale-110 group-hover:border-primary/30 transition-all">
+                  <UploadCloud className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
-            </Card>
+                <div className="flex flex-col drop-shadow-md">
+                  <span className="text-xs font-semibold text-foreground">
+                    Click to upload cover
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    PNG, JPG recommended 16:9
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
+              Metadata
+            </h3>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                Display Name
+              </label>
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="e.g. Hero Character Project"
+                className="bg-muted/50 border-border text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief description of this workspace..."
+                className="flex min-h-[60px] w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
+              Location
+            </h3>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={project.path}
+                className="bg-muted/50 border-border text-xs font-mono text-muted-foreground"
+              />
+              <Button
+                variant="secondary"
+                onClick={handleOpenFolder}
+                className="shrink-0"
+              >
+                Reveal
+              </Button>
+            </div>
+          </div>
         </div>
-    );
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setEditingWorkspaceId(null)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            {isNewImport ? "Open Workspace" : "Save Changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

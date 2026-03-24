@@ -1,11 +1,11 @@
 import type { IconInstance, AssetObject } from "@/types/project";
 import { useProjectStore } from "@/store/useProjectStore";
-import { useCanvasStore } from "@/store/useCanvasStore"; // <-- Импорт
+import { useCanvasStore } from "@/store/useCanvasStore";
 import { SmartIcon } from "../entities/SmartIcon";
 
 export function IconsLayer({ activeScreenIdx }: { activeScreenIdx: number }) {
   const { projectData } = useProjectStore();
-  const { assetFilter } = useCanvasStore(); // <-- Достаем фильтр
+  const { assetFilter } = useCanvasStore();
 
   if (!projectData) return null;
 

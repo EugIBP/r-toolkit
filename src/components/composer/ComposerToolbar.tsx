@@ -1,23 +1,28 @@
+import { Button } from "@/components/ui/button";
+import { FloatingToolbar } from "@/components/ui/floating-toolbar";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import {
-  Hand,
-  MousePointer2,
-  Search,
-  Layers,
-  Box,
   Image as BgIcon,
+  Box,
   Film,
+  Hand,
+  Layers,
+  MousePointer2,
   Move,
+  RotateCcw,
+  Search,
   SquareStack,
   ZoomIn,
   ZoomOut,
-  RotateCcw,
 } from "lucide-react";
-import { ToolbarDivider, FloatingToolbar } from "@/components/ui/floating-toolbar";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
-export function AssetsToolbar({ searchInputRef }: { searchInputRef?: React.RefObject<HTMLInputElement | null> }) {
+export function AssetsToolbar({
+  searchInputRef,
+}: {
+  searchInputRef?: React.RefObject<HTMLInputElement | null>;
+}) {
   const {
     searchQuery,
     setSearchQuery,
@@ -93,9 +98,11 @@ export function AssetsToolbar({ searchInputRef }: { searchInputRef?: React.RefOb
             title="Stacked"
           />
         </div>
-        <ToolbarDivider />
+        <Separator orientation="vertical" className="h-5 mx-1" />
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">Threshold</span>
+          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+            Threshold
+          </span>
           <input
             type="number"
             min={1}
@@ -111,7 +118,8 @@ export function AssetsToolbar({ searchInputRef }: { searchInputRef?: React.RefOb
 }
 
 export function ModeToolbar() {
-  const { canvasMode, setCanvasMode, allowDnd, setAllowDnd, zoom, setZoom } = useCanvasStore();
+  const { canvasMode, setCanvasMode, allowDnd, setAllowDnd, zoom, setZoom } =
+    useCanvasStore();
 
   const handleZoomIn = () => setZoom(Math.min(zoom + 0.1, 5));
   const handleZoomOut = () => setZoom(Math.max(zoom - 0.1, 0.1));
@@ -134,8 +142,6 @@ export function ModeToolbar() {
         activeClass="bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/30"
       />
 
-      <ToolbarDivider />
-
       <ModeBtn
         active={allowDnd}
         onClick={() => setAllowDnd(!allowDnd)}
@@ -143,8 +149,6 @@ export function ModeToolbar() {
         label="D&D"
         activeClass="bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
       />
-
-      <ToolbarDivider />
 
       {/* ZOOM CONTROLS */}
       <div className="flex items-center gap-1">

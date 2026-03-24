@@ -17,6 +17,7 @@ export const createProjectSlice: StateCreator<
     | "setProject"
     | "saveProject"
     | "scanDirectory"
+    | "clearScannedFiles"
   >
 > = (set, get) => ({
   projectData: null,
@@ -72,10 +73,10 @@ export const createProjectSlice: StateCreator<
     }
 
     set({ projectData: data, projectPath: cleanPath, baseDir });
-    
+
     // Сохраняем путь к проекту в sessionStorage для восстановления при обновлении
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('projectPath', cleanPath);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("projectPath", cleanPath);
     }
   },
 
@@ -93,6 +94,8 @@ export const createProjectSlice: StateCreator<
     }
   },
 
+  clearScannedFiles: () => set({ scannedFiles: [] }),
+
   saveProject: async () => {
     const { projectData, projectPath } = get();
     if (!projectData || !projectPath) return;
@@ -102,7 +105,10 @@ export const createProjectSlice: StateCreator<
       const isBackground = obj.Path.toLowerCase().includes("backgrounds");
       const isPal = existingType === "Pal";
       const { isSprite: _isSprite, ...cleanObj } = obj;
-      return { ...cleanObj, Type: isPal ? "Pal" : (isBackground ? "Bin" : "Ico") };
+      return {
+        ...cleanObj,
+        Type: isPal ? "Pal" : isBackground ? "Bin" : "Ico",
+      };
     }).sort((a: any, b: any) => {
       const getOrder = (obj: any) => {
         if (obj.Path.toLowerCase().includes("backgrounds")) return 0;
@@ -113,7 +119,10 @@ export const createProjectSlice: StateCreator<
     });
 
     // Нормализуем все пути перед сохранением (конвертируем \ в /)
-    const sortedData = normalizeProjectPaths({ ...projectData, Objects: updatedObjects });
+    const sortedData = normalizeProjectPaths({
+      ...projectData,
+      Objects: updatedObjects,
+    });
 
     try {
       await invoke("save_text_file", {

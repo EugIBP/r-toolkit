@@ -1,258 +1,259 @@
-import { useState } from "react";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import { useAppStore } from "@/store/useAppStore";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-    FileCode,
-    HardDrive,
-    Info,
-    Trash2,
-    Edit3,
-    Image,
-    RefreshCcw,
-    Plus,
-    Film,
-    Lock,
-} from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { AddInstanceModal } from "../modals/AddInstanceModal";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  Box,
+  Film,
+  Image as BgIcon,
+  Plus,
+  Trash2,
+  ArrowRightLeft,
+  MonitorUp,
+  FileImage,
+  CheckCircle2,
+} from "lucide-react";
 
 export function InspectorAsset() {
-    const {
-        projectData,
-        projectPath,
-        updateProjectObject,
-        deleteProjectObject,
-        convertAssetType,
-    } = useProjectStore();
-    const {
-        selectedAssetPath,
-        setSelectedAssetPath,
-        canvasMode,
-        activeScreenIdx,
-    } = useCanvasStore();
-    const { confirm } = useAppStore();
+  // Достаем scannedFiles и registerAsset из стора
+  const {
+    projectData,
+    baseDir,
+    scannedFiles,
+    addInstance,
+    updateScreen,
+    deleteProjectObject,
+    convertAssetType,
+    registerAsset,
+  } = useProjectStore();
+  const {
+    selectedAssetPath,
+    setSelectedAssetPath,
+    activeScreenIdx,
+    canvasMode,
+  } = useCanvasStore();
+  const { confirm } = useAppStore();
 
-    const isEditMode = canvasMode === "edit";
-    const [showAddInstanceModal, setShowAddInstanceModal] = useState(false);
+  if (!projectData || !selectedAssetPath || !baseDir) return null;
 
-    const asset = projectData?.Objects.find(
-        (o: any) => o.Path === selectedAssetPath,
+  let asset: any = null;
+  let isUnregistered = false;
+
+  // 1. Сначала ищем среди зарегистрированных
+  const matchingAssets = projectData.Objects.filter(
+    (o: any) => o.Path === selectedAssetPath,
+  );
+  if (matchingAssets.length > 0) {
+    asset = matchingAssets.reduce((prev: any, curr: any) =>
+      curr.Name.length < prev.Name.length ? curr : prev,
     );
+  } else {
+    // 2. Если не нашли, ищем среди отсканированных (новых)
+    const scanned = scannedFiles?.find((f) => f.path === selectedAssetPath);
+    if (scanned) {
+      isUnregistered = true;
+      const name =
+        scanned.path
+          .split(/[\\/]/)
+          .pop()
+          ?.replace(/\.[^/.]+$/, "") || scanned.path;
+      const type =
+        scanned.asset_type === "bin"
+          ? "Bin"
+          : scanned.asset_type === "pal"
+            ? "Pal"
+            : "Ico";
+      asset = {
+        Name: name,
+        Path: scanned.path,
+        Type: type,
+        isSprite: false,
+      };
+    }
+  }
 
-    const isBackground = asset?.Path?.toLowerCase().includes("backgrounds");
-    const isSprite =
-        asset?.isSprite || asset?.Path?.toLowerCase().includes("sprites");
+  // Если и там нет, значит ничего не показываем
+  if (!asset) return null;
 
-    // Build preview URL
-    const lastIdx = Math.max(
-        projectPath?.lastIndexOf("/") || 0,
-        projectPath?.lastIndexOf("\\") || 0,
-    );
-    const baseDir = projectPath
-        ? projectPath.substring(0, lastIdx).replace(/\\/g, "/")
-        : "";
-    const assetPath = asset ? asset.Path.replace(/\\/g, "/") : "";
-    const previewSrc =
-        asset && projectPath ? convertFileSrc(`${baseDir}/${assetPath}`) : "";
+  const isEditMode = canvasMode === "edit";
+  const isBG = asset.Type === "Bin";
+  const isSprite = asset.isSprite;
 
-    if (!asset)
-        return (
-            <div className="p-8 text-center text-muted-foreground italic text-xs">
-                Select an asset from the explorer to see details
+  const activeScreen = projectData.Screens[activeScreenIdx];
+  const isCurrentBg = activeScreen?.Background === asset.Name;
+
+  const fullPath = `${baseDir}/${asset.Path}`.replace(/\\/g, "/");
+  const imgSrc = convertFileSrc(fullPath);
+
+  const getUniqueInstanceName = (baseName: string, screenIndex: number) => {
+    const screen = projectData.Screens[screenIndex];
+    if (!screen) return baseName;
+    let uniqueName = baseName;
+    let counter = 1;
+    while (screen.Icons.some((icon: any) => icon.Name === uniqueName)) {
+      uniqueName = `${baseName}_${counter}`;
+      counter++;
+    }
+    return uniqueName;
+  };
+
+  const handleQuickAdd = () => {
+    const uniqueName = getUniqueInstanceName(asset.Name, activeScreenIdx);
+    addInstance(activeScreenIdx, asset.Name, {
+      name: uniqueName,
+      x: 0,
+      y: 0,
+      states: [{ Name: "OFF", Color: "PURE_WHITE" }],
+    });
+  };
+
+  const handleSetBackground = () => {
+    updateScreen(activeScreenIdx, {
+      Background: isCurrentBg ? "" : asset.Name,
+    });
+  };
+
+  const handleDelete = async () => {
+    if (
+      await confirm(
+        "Delete Asset?",
+        `Are you sure you want to remove "${asset.Name}" from this project?`,
+      )
+    ) {
+      deleteProjectObject(asset.Name);
+      setSelectedAssetPath(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right-2 duration-200">
+      <div className="flex flex-col gap-2">
+        <div className="relative aspect-square w-full rounded-xl border border-border bg-muted/20 overflow-hidden flex items-center justify-center shadow-inner group">
+          <div
+            className="absolute inset-0 opacity-10 pointer-events-none -z-10"
+            style={{
+              backgroundImage:
+                "linear-gradient(45deg, #888 25%, transparent 25%), linear-gradient(-45deg, #888 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #888 75%), linear-gradient(-45deg, transparent 75%, #888 75%)",
+              backgroundSize: "16px 16px",
+              backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
+            }}
+          />
+          <img
+            src={imgSrc}
+            alt={asset.Name}
+            className="max-w-[90%] max-h-[90%] object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+              e.currentTarget.parentElement
+                ?.querySelector(".fallback-icon")
+                ?.classList.remove("hidden");
+            }}
+          />
+          <FileImage className="fallback-icon hidden w-12 h-12 text-muted-foreground opacity-20" />
+
+          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-background/80 backdrop-blur-md rounded-md border border-border shadow-sm">
+            {isBG ? (
+              <BgIcon className="w-3 h-3 text-emerald-500" />
+            ) : isSprite ? (
+              <Film className="w-3 h-3 text-orange-500" />
+            ) : (
+              <Box className="w-3 h-3 text-blue-500" />
+            )}
+            <span className="text-[9px] uppercase font-bold tracking-wider text-foreground">
+              {isBG ? "Background" : isSprite ? "Sprite" : "Icon"}
+            </span>
+          </div>
+
+          {isUnregistered && (
+            <div className="absolute bottom-2 right-2 px-2 py-1 bg-amber-500/20 backdrop-blur-md rounded-md border border-amber-500/50 shadow-sm">
+              <span className="text-[9px] uppercase font-bold tracking-wider text-amber-500">
+                Unregistered
+              </span>
             </div>
-        );
+          )}
+        </div>
 
-    const handleDelete = async () => {
-        if (
-            await confirm(
-                "Delete Asset?",
-                `This will remove "${asset.Name}" from description.json. Files on disk will remain.`,
-            )
-        ) {
-            deleteProjectObject(asset.Name);
-            setSelectedAssetPath(null);
-        }
-    };
+        <div className="space-y-0.5 px-1">
+          <h3
+            className="text-sm font-bold text-foreground truncate"
+            title={asset.Name}
+          >
+            {asset.Name}
+          </h3>
+          <p
+            className="text-[10px] text-muted-foreground font-mono truncate"
+            title={asset.Path}
+          >
+            {asset.Path}
+          </p>
+        </div>
+      </div>
 
-    const handleConvert = async (targetType: "icon" | "sprite") => {
-        await convertAssetType(asset.Name, targetType);
-    };
+      <Separator className="bg-border/50" />
 
-    return (
-        <ScrollArea className="h-full">
-            <div className="flex flex-col w-full pb-10">
-                {/* 1. PREVIEW */}
-                <div className="w-full border-b border-white/5 bg-white/[0.01]">
-                    <div className="aspect-square w-full bg-bg-elevated flex items-center justify-center relative overflow-hidden shadow-inner">
-                        <div
-                            className="absolute inset-0 opacity-10"
-                            style={{
-                                backgroundImage:
-                                    "linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%)",
-                                backgroundSize: "16px 16px",
-                            }}
-                        />
-                        {previewSrc && (
-                            <img
-                                src={previewSrc}
-                                className="max-w-full max-h-full object-contain relative z-10 p-8"
-                            />
-                        )}
-                        {!isEditMode && (
-                            <div className="absolute top-3 right-3 p-1.5 bg-black/60 rounded-md backdrop-blur-sm border border-white/5">
-                                <Lock className="w-3 h-3 text-white/40" />
-                            </div>
-                        )}
-                    </div>
-                    <div className="px-5 py-3 bg-white/[0.02] border-t border-white/5 flex items-center gap-2">
-                        {isBackground ? (
-                            <Image className="w-3 h-3 text-emerald-400 shrink-0" />
-                        ) : isSprite ? (
-                            <Film className="w-3 h-3 text-orange-400 shrink-0" />
-                        ) : (
-                            <FileCode className="w-3 h-3 text-blue-400 shrink-0" />
-                        )}
-                        <span className="text-xs font-mono text-muted-foreground truncate select-all">
-                            {asset.Name}
-                        </span>
-                        <span className="text-xs text-muted-foreground/50 ml-auto">
-                            {isBackground
-                                ? "Background"
-                                : isSprite
-                                  ? "Sprite"
-                                  : "Icon"}
-                        </span>
-                    </div>
-                </div>
-
-                {/* 2. DETAILS & ACTIONS */}
-                <div className="p-5 space-y-6 w-full">
-                    {/* Name — editable for icons/sprites, read-only for backgrounds (edit via modal) */}
-                    {!isBackground && (
-                        <div className="space-y-2">
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-                                Registry Name
-                            </label>
-                            <div className="relative group">
-                                <Edit3 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                                <input
-                                    value={asset.Name}
-                                    disabled={!isEditMode}
-                                    onChange={(e) =>
-                                        updateProjectObject(asset.Name, {
-                                            Name: e.target.value,
-                                        })
-                                    }
-                                    className="w-full bg-bg-surface border border-white/5 rounded-lg py-2.5 pl-9 pr-3 text-xs font-bold text-white focus:border-primary/40 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Path Info */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-                            Internal Path
-                        </label>
-                        <div className="flex items-start gap-2 bg-black/20 border border-white/5 rounded-lg p-3">
-                            <HardDrive className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                            <span className="text-xs font-mono text-muted-foreground leading-relaxed break-all select-all">
-                                {asset.Path}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Background hint */}
-                    {isBackground && (
-                        <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex gap-3">
-                            <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                            <p className="text-xs text-emerald-300/80 leading-relaxed">
-                                Click a background in the <b>Objects</b> panel
-                                to preview it on canvas. Press <b>Esc</b> or
-                                click empty canvas to dismiss. In edit mode use{" "}
-                                <b>⋮</b> to set, edit or remove.
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Asset Type Conversion */}
-                    {isEditMode && !isBackground && (
-                        <div className="pt-4 border-t border-white/5 space-y-3">
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-                                Asset Type
-                            </label>
-                            <div className="flex gap-2">
-                                {isSprite ? (
-                                    <button
-                                        onClick={() => handleConvert("icon")}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
-                                    >
-                                        <RefreshCcw className="w-3.5 h-3.5" />{" "}
-                                        To Icon
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={() => handleConvert("sprite")}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
-                                    >
-                                        <Film className="w-3.5 h-3.5" /> To
-                                        Sprite
-                                    </button>
-                                )}
-                            </div>
-                            <p className="text-xs text-muted-foreground/60 text-center">
-                                {isSprite
-                                    ? "Move to icons/ folder"
-                                    : "Move to sprites/ folder"}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Add Instance - только для icons/sprites в Edit режиме */}
-                    {isEditMode && !isBackground && (
-                        <div className="pt-4 border-t border-white/5 space-y-3">
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 ml-1">
-                                Actions
-                            </label>
-                            <Button
-                                variant="default"
-                                className="w-full"
-                                onClick={() => setShowAddInstanceModal(true)}
-                            >
-                                <Plus className="w-3.5 h-3.5" /> Add Instance
-                            </Button>
-                        </div>
-                    )}
-
-                    {/* Danger Zone — только для не-background ассетов в Edit Mode */}
-                    {isEditMode && !isBackground && (
-                        <div className="pt-4 border-t border-white/5 space-y-3">
-                            <label className="text-xs font-black uppercase tracking-widest text-red-500/50 ml-1">
-                                Danger Zone
-                            </label>
-                            <Button
-                                variant="destructive"
-                                className="w-full"
-                                onClick={handleDelete}
-                            >
-                                <Trash2 className="w-3.5 h-3.5" /> Remove from
-                                description.json
-                            </Button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Add Instance Modal */}
-                <AddInstanceModal
-                    isOpen={showAddInstanceModal}
-                    onClose={() => setShowAddInstanceModal(false)}
-                    assetName={asset?.Name || ""}
-                    screenIdx={activeScreenIdx}
-                />
-            </div>
-        </ScrollArea>
-    );
+      {isUnregistered ? (
+        <div
+          className={`flex flex-col gap-2 ${!isEditMode ? "opacity-50 pointer-events-none" : ""}`}
+        >
+          <label className="text-[10px] uppercase text-amber-500 font-medium tracking-wider mb-1">
+            New Asset
+          </label>
+          <Button
+            onClick={() => registerAsset(asset.Path)}
+            className="w-full justify-start gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
+          >
+            <CheckCircle2 className="w-4 h-4" /> Register Asset
+          </Button>
+        </div>
+      ) : (
+        <div
+          className={`flex flex-col gap-2 ${!isEditMode ? "opacity-50 pointer-events-none" : ""}`}
+        >
+          <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider mb-1">
+            Quick Actions
+          </label>
+          {!isBG && (
+            <Button
+              onClick={handleQuickAdd}
+              className="w-full justify-start gap-2 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
+            >
+              <Plus className="w-4 h-4" /> Add to Canvas
+            </Button>
+          )}
+          {isBG && (
+            <Button
+              onClick={handleSetBackground}
+              variant={isCurrentBg ? "outline" : "default"}
+              className={`w-full justify-start gap-2 ${isCurrentBg ? "border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10" : "bg-emerald-500 hover:bg-emerald-600 text-white"}`}
+            >
+              <MonitorUp className="w-4 h-4" />{" "}
+              {isCurrentBg ? "Remove Background" : "Set as Background"}
+            </Button>
+          )}
+          {!isBG && (
+            <Button
+              onClick={() =>
+                convertAssetType(asset.Name, isSprite ? "icon" : "sprite")
+              }
+              variant="outline"
+              className="w-full justify-start gap-2 text-muted-foreground"
+            >
+              <ArrowRightLeft className="w-4 h-4" /> Convert to{" "}
+              {isSprite ? "Static Icon" : "Sprite"}
+            </Button>
+          )}
+          <Separator className="bg-border/50 my-2" />
+          <Button
+            onClick={handleDelete}
+            variant="ghost"
+            className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="w-4 h-4" /> Remove from Project
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 }

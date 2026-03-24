@@ -18,6 +18,10 @@ export const createObjectsSlice: StateCreator<
     | "convertAssetType"
     | "isNameUnique"
     | "getAssetInstances"
+    | "deleteProjectObjects"
+    | "registerAsset"
+    | "registerAssets"
+    | "getUniqueInstanceName"
   >
 > = (set, get) => ({
   updateProjectObject: (oldName, updates) => {
@@ -50,6 +54,32 @@ export const createObjectsSlice: StateCreator<
       };
     });
     useHistoryStore.getState().push(`Deleted asset "${name}"`);
+  },
+
+  deleteProjectObjects: (names: string[]) => {
+    set((state) => {
+      if (!state.projectData) return state;
+      const nameSet = new Set(names);
+
+      const newObjects = state.projectData.Objects.filter(
+        (obj: any) => !nameSet.has(obj.Name),
+      );
+
+      const newScreens = state.projectData.Screens.map((screen: any) => ({
+        ...screen,
+        Icons: screen.Icons.filter((icon: any) => !nameSet.has(icon.Name)),
+        Background: nameSet.has(screen.Background) ? "" : screen.Background,
+      }));
+
+      return {
+        projectData: {
+          ...state.projectData,
+          Objects: newObjects,
+          Screens: newScreens,
+        },
+      };
+    });
+    useHistoryStore.getState().push(`Deleted ${names.length} assets`);
   },
 
   addProjectObject: (newObj) => {
@@ -104,6 +134,75 @@ export const createObjectsSlice: StateCreator<
         scannedFiles: [],
       };
     });
+  },
+
+  registerAsset: (path: string) => {
+    set((state) => {
+      if (!state.projectData) return state;
+      const file = state.scannedFiles.find((f) => f.path === path);
+      if (!file) return state;
+
+      const name =
+        file.path
+          .split(/[\\/]/)
+          .pop()
+          ?.replace(/\.[^/.]+$/, "") || file.path;
+      const type =
+        file.asset_type === "bin"
+          ? "Bin"
+          : file.asset_type === "pal"
+            ? "Pal"
+            : "Ico";
+
+      const newObjects = [
+        ...state.projectData.Objects,
+        { Name: name, Path: file.path, Type: type as "Bin" | "Pal" | "Ico" },
+      ];
+      const newScanned = state.scannedFiles.filter((f) => f.path !== path);
+
+      return {
+        projectData: { ...state.projectData, Objects: newObjects },
+        scannedFiles: newScanned,
+      };
+    });
+    toast.success("Asset registered successfully");
+  },
+
+  registerAssets: (paths: string[]) => {
+    set((state) => {
+      if (!state.projectData || !state.scannedFiles.length) return state;
+      const pathsSet = new Set(paths);
+      const newObjects = [...state.projectData.Objects];
+
+      const filesToRegister = state.scannedFiles.filter((f) =>
+        pathsSet.has(f.path),
+      );
+
+      filesToRegister.forEach((file) => {
+        const name =
+          file.path
+            .split(/[\\/]/)
+            .pop()
+            ?.replace(/\.[^/.]+$/, "") || file.path;
+        const type =
+          file.asset_type === "bin"
+            ? "Bin"
+            : file.asset_type === "pal"
+              ? "Pal"
+              : "Ico";
+        newObjects.push({ Name: name, Path: file.path, Type: type });
+      });
+
+      const newScanned = state.scannedFiles.filter(
+        (f) => !pathsSet.has(f.path),
+      );
+
+      return {
+        projectData: { ...state.projectData, Objects: newObjects },
+        scannedFiles: newScanned,
+      };
+    });
+    toast.success(`${paths.length} asset(s) registered`);
   },
 
   registerAndAddInstances: async (screenIdx: number) => {
@@ -207,13 +306,37 @@ export const createObjectsSlice: StateCreator<
     return true;
   },
 
-  isNameUnique: (name: string) => {
+  isNameUnique: (name: string, targetPath?: string) => {
     const { projectData } = get();
     if (!projectData) return true;
-    for (const screen of projectData.Screens) {
-      if (screen.Icons?.some((icon: any) => icon.Name === name)) return false;
+
+    // 1. Проверяем, занято ли имя на каком-либо экране (как иконка или фон)
+    const usedOnScreen = projectData.Screens.some(
+      (s: any) =>
+        s.Background === name || s.Icons?.some((i: any) => i.Name === name),
+    );
+    if (usedOnScreen) return false;
+
+    // 2. Проверяем, не занято ли это имя другим файлом-исходником
+    if (targetPath) {
+      const existingObj = projectData.Objects.find((o: any) => o.Name === name);
+      if (existingObj && existingObj.Path !== targetPath) {
+        return false; // Имя занято другой картинкой!
+      }
     }
+
     return true;
+  },
+
+  getUniqueInstanceName: (baseName: string, targetPath: string) => {
+    let uniqueName = baseName;
+    let counter = 1;
+    // Умно инкрементируем, пока не найдем свободное
+    while (!get().isNameUnique(uniqueName, targetPath)) {
+      uniqueName = `${baseName}_${counter}`;
+      counter++;
+    }
+    return uniqueName;
   },
 
   getAssetInstances: (assetName: string) => {

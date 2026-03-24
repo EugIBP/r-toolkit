@@ -18,6 +18,7 @@ export const createUISlice: StateCreator<
     | "screenListMode"
     | "previewBgPath"
     | "setZoom"
+    | "resetZoom"
     | "setSearchQuery"
     | "setActiveTab"
     | "setActiveScreenIdx"
@@ -39,6 +40,7 @@ export const createUISlice: StateCreator<
   previewBgPath: null,
 
   setZoom: (value) => set({ zoom: value }),
+  resetZoom: () => set({ zoom: 0.85 }),
   setSearchQuery: (val) => set({ searchQuery: val }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   setActiveScreenIdx: (idx) => set({ activeScreenIdx: idx }),

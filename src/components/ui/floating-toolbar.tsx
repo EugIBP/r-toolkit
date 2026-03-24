@@ -1,10 +1,19 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
-export interface FloatingToolbarProps
-  extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode
-  position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-right"
+export interface FloatingToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  position?:
+    | "top-left"
+    | "top-center"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
+}
+
+export function ToolbarDivider() {
+  return <Separator orientation="vertical" className="h-6 mx-0.5 bg-white/10" />;
 }
 
 const FloatingToolbar = React.forwardRef<HTMLDivElement, FloatingToolbarProps>(
@@ -15,40 +24,23 @@ const FloatingToolbar = React.forwardRef<HTMLDivElement, FloatingToolbarProps>(
       "top-right": "top-6 right-8",
       "bottom-left": "bottom-6 left-8",
       "bottom-right": "bottom-6 right-8",
-    }
+    };
 
     return (
       <div
         ref={ref}
         className={cn(
-          "absolute z-50 flex items-center p-1.5 bg-bg-elevated/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl gap-2",
+          "absolute z-50 flex items-center p-1.5 bg-background/90 backdrop-blur-xl border border-border rounded-2xl shadow-xl gap-2",
           positionClasses[position],
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
-    )
-  }
-)
-FloatingToolbar.displayName = "FloatingToolbar"
+    );
+  },
+);
+FloatingToolbar.displayName = "FloatingToolbar";
 
-// Toolbar Divider component
-interface ToolbarDividerProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
-
-const ToolbarDivider = React.forwardRef<HTMLDivElement, ToolbarDividerProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn("w-px h-6 bg-white/10 mx-0.5", className)}
-        {...props}
-      />
-    )
-  }
-)
-ToolbarDivider.displayName = "ToolbarDivider"
-
-export { FloatingToolbar, ToolbarDivider }
+export { FloatingToolbar };

@@ -13,9 +13,9 @@ import {
   ZoomOut,
   RotateCcw,
 } from "lucide-react";
-import { ToolbarDivider } from "@/components/ui/floating-toolbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export function ComposerTopBar({
   searchInputRef,
@@ -28,8 +28,6 @@ export function ComposerTopBar({
     assetFilter,
     setAssetFilter,
     setActiveTab,
-    stackThreshold,
-    setStackThreshold,
     canvasMode,
     setCanvasMode,
     allowDnd,
@@ -43,22 +41,25 @@ export function ComposerTopBar({
   const handleZoomReset = () => setZoom(0.85);
 
   return (
-    <div className="h-[80px] shrink-0 flex items-center border-b border-white/10 bg-white/[0.02] px-10">
-      {/* ЛЕВАЯ СЕКЦИЯ: Фильтр ассетов + Поиск + Stack Threshold */}
+    <div className="h-[80px] shrink-0 flex items-center border-b border-border bg-muted/30 px-10 relative">
+      {/* ЛЕВАЯ СЕКЦИЯ: Поиск + Фильтры ассетов */}
       <div className="flex items-center gap-4">
-        <Input
-          variant="dark"
-          icon={<Search className="w-3.5 h-3.5" />}
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            if (e.target.value) setActiveTab("objects");
-          }}
-          placeholder="Find asset..."
-          className="w-56"
-          ref={searchInputRef}
-        />
-        <ToolbarDivider className="h-8" />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (e.target.value) setActiveTab("objects");
+            }}
+            placeholder="Find asset (Ctrl+K)..."
+            className="w-56 pl-9 h-9 bg-muted/50 border-border text-xs focus-visible:ring-1 focus-visible:ring-primary/50"
+            ref={searchInputRef}
+          />
+        </div>
+
+        <Separator orientation="vertical" className="h-5 mx-1" />
+
         <div className="flex items-center gap-1">
           <FilterBtn
             active={assetFilter === "all"}
@@ -106,78 +107,68 @@ export function ComposerTopBar({
             title="Stacked"
           />
         </div>
-        <ToolbarDivider className="h-8" />
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
-            Stack threshold (px)
-          </span>
-          <input
-            type="number"
-            min={1}
-            max={100}
-            value={stackThreshold}
-            onChange={(e) => setStackThreshold(parseInt(e.target.value) || 5)}
-            className="w-16 h-8 bg-white/5 border border-white/10 rounded-md px-2 text-xs font-medium text-white text-center outline-none focus:border-primary/50 [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          />
-        </div>
       </div>
 
-      {/* ЦЕНТРАЛЬНАЯ СЕКЦИЯ: Переключатель режимов - абсолютно по центру */}
+      {/* ЦЕНТРАЛЬНАЯ СЕКЦИЯ: Переключатель режимов (Стилизовано под Tabs shadcn) */}
       <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-        <div className="flex items-center gap-1 p-1.5 bg-white/5 rounded-xl border border-white/10">
+        {/* Контейнер имитирует TabsList (rounded-lg) */}
+        <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted/50 border border-border p-1">
           <ModeBtn
             active={canvasMode === "view"}
             onClick={() => setCanvasMode("view")}
-            icon={<Hand className="w-4 h-4" />}
+            icon={<Hand className="w-3.5 h-3.5" />}
             label="View"
-            activeClass="bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+            activeClass="bg-emerald-500/20 text-emerald-400"
           />
-          <ToolbarDivider className="h-5" />
           <ModeBtn
             active={canvasMode === "edit"}
             onClick={() => setCanvasMode("edit")}
-            icon={<MousePointer2 className="w-4 h-4" />}
+            icon={<MousePointer2 className="w-3.5 h-3.5" />}
             label="Edit"
-            activeClass="bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/30"
+            activeClass="bg-amber-500/20 text-amber-400"
           />
-          <ToolbarDivider className="h-5" />
+          <Separator orientation="vertical" className="h-4 mx-1.5 opacity-50" />
           <ModeBtn
             active={allowDnd}
             onClick={() => setAllowDnd(!allowDnd)}
-            icon={<Move className="w-4 h-4" />}
+            icon={<Move className="w-3.5 h-3.5" />}
             label="D&D"
-            activeClass="bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
+            activeClass="bg-blue-500/20 text-blue-400"
           />
         </div>
       </div>
 
-      {/* ПРАВАЯ СЕКЦИЯ: Zoom - прижат вправо */}
+      {/* ПРАВАЯ СЕКЦИЯ: Zoom */}
       <div className="absolute right-10 flex items-center gap-3">
         <span className="text-xs text-muted-foreground font-medium">Zoom</span>
-        <div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl border border-white/10">
+        {/* Контейнер зума тоже rounded-lg, кнопки rounded-md */}
+        <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border">
           <Button
-            variant="ghost-dark"
-            size="icon-xs"
+            variant="ghost"
+            size="icon"
+            className="w-7 h-7 rounded-md"
             onClick={handleZoomOut}
             title="Zoom Out"
           >
             <ZoomOut className="w-4 h-4" />
           </Button>
-          <span className="px-3 py-1 text-xs font-mono text-white min-w-[60px] text-center whitespace-nowrap">
+          <span className="px-2 py-1 text-xs font-mono min-w-[60px] text-center whitespace-nowrap text-foreground">
             {Math.round(zoom * 100)}%
           </span>
           <Button
-            variant="ghost-dark"
-            size="icon-xs"
+            variant="ghost"
+            size="icon"
+            className="w-7 h-7 rounded-md"
             onClick={handleZoomIn}
             title="Zoom In"
           >
             <ZoomIn className="w-4 h-4" />
           </Button>
-          <ToolbarDivider className="h-5" />
+          <Separator orientation="vertical" className="h-4 mx-1 opacity-50" />
           <Button
-            variant="ghost-dark"
-            size="icon-xs"
+            variant="ghost"
+            size="icon"
+            className="w-7 h-7 rounded-md"
             onClick={handleZoomReset}
             title="Reset View"
           >
@@ -207,10 +198,10 @@ function FilterBtn({
         onClick();
       }}
       title={title}
-      className={`p-1.5 rounded-lg transition-all ${
+      className={`p-1.5 rounded-md transition-all ${
         active
           ? "bg-primary/20 text-primary shadow-sm ring-1 ring-primary/30"
-          : "text-muted-foreground hover:text-white hover:bg-white/10"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
       }`}
     >
       {icon}
@@ -237,14 +228,17 @@ function ModeBtn({
         e.stopPropagation();
         onClick();
       }}
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+      // Имитируем поведение TabsTrigger из shadcn (rounded-md)
+      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 ${
         active
-          ? activeClass
-          : "text-muted-foreground hover:text-white hover:bg-white/5"
+          ? `${activeClass} shadow-sm`
+          : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
       }`}
     >
-      {icon}
-      {label}
+      <div className="flex items-center gap-2">
+        {icon}
+        {label}
+      </div>
     </button>
   );
 }

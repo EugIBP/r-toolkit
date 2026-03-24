@@ -27,21 +27,26 @@ export interface ProjectStore {
   ) => void;
   saveProject: () => Promise<void>;
   scanDirectory: () => Promise<void>;
+  clearScannedFiles: () => void;
 
   // objectsSlice
   updateProjectObject: (oldName: string, updates: Partial<AssetObject>) => void;
   deleteProjectObject: (name: string) => void;
   addProjectObject: (newObj: AssetObject) => void;
   registerAllAssets: () => void;
+  registerAsset: (path: string) => void;
+  registerAssets: (paths: string[]) => void;
   registerAndAddInstances: (screenIdx: number) => Promise<void>;
   convertAssetType: (
     assetName: string,
     targetType: "icon" | "sprite" | "pal",
   ) => Promise<boolean>;
-  isNameUnique: (name: string) => boolean;
+  isNameUnique: (name: string, targetPath?: string) => boolean;
+  getUniqueInstanceName: (baseName: string, targetPath: string) => string;
   getAssetInstances: (
     assetName: string,
   ) => Array<{ screenIdx: number; iconIdx: number; icon: IconInstance }>;
+  deleteProjectObjects: (names: string[]) => void;
 
   // iconsSlice
   updateScreen: (screenIdx: number, updates: Partial<ScreenData>) => void;
@@ -86,4 +91,9 @@ export interface ProjectStore {
   ) => boolean;
   duplicateIcon: (screenIdx: number, iconIdx: number) => boolean;
   deleteIcon: (screenIdx: number, iconIdx: number) => void;
+
+  deleteColors: (names: string[]) => void;
+  deleteScreens: (indices: number[]) => void;
+  duplicateScreens: (indices: number[]) => void;
+  deleteIcons: (screenIdx: number, iconIndices: number[]) => void;
 }

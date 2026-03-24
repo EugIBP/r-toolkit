@@ -5,7 +5,6 @@ import { useCanvasStore } from "@/store/useCanvasStore";
 import { ExplorerScreens } from "./explorer/ExplorerScreens";
 import { ExplorerAssets } from "./explorer/ExplorerAssets";
 import { ExplorerColors } from "./explorer/ExplorerColors";
-import { SectionLabel } from "@/components/ui/typography";
 
 export function Explorer({
   onScreenChange,
@@ -23,7 +22,6 @@ export function Explorer({
       ? activeScreen?.Icons[selectedIconIndex]?.Name
       : null;
 
-  // Auto-scroll to selected element
   useEffect(() => {
     if (selectedIconName && activeTab === "objects") {
       const timer = setTimeout(() => {
@@ -36,27 +34,35 @@ export function Explorer({
   }, [selectedIconName, activeTab]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden font-sans">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden font-sans border-r border-white/10 bg-[#121212] z-10">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
         className="flex-1 flex flex-col min-h-0 overflow-hidden"
       >
-        <div className="p-4 border-b border-white/10 bg-white/[0.02]">
-          <SectionLabel className="mb-3 block">Explorer</SectionLabel>
-          <TabsList variant="pill" className="w-full grid grid-cols-3 h-11">
-            <TabsTrigger value="screens">Screens</TabsTrigger>
-            <TabsTrigger value="objects">Objects</TabsTrigger>
-            <TabsTrigger value="colors">Colors</TabsTrigger>
+        {/* ОРИГИНАЛЬНЫЙ ВАШ СТИЛЬ ТАБОВ ИЗ ПРЕДЫДУЩИХ ВЕРСИЙ */}
+        <div className="px-3 pt-3 pb-2 border-b border-white/5 bg-white/[0.02] shrink-0">
+          <TabsList className="w-full grid grid-cols-3 h-9 bg-black/40 border border-white/5">
+            <TabsTrigger
+              value="objects"
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-white/10 data-[state=active]:text-white text-muted-foreground"
+            >
+              Objects
+            </TabsTrigger>
+            <TabsTrigger
+              value="colors"
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-white/10 data-[state=active]:text-white text-muted-foreground"
+            >
+              Colors
+            </TabsTrigger>
+            <TabsTrigger
+              value="screens"
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-white/10 data-[state=active]:text-white text-muted-foreground"
+            >
+              Screens
+            </TabsTrigger>
           </TabsList>
         </div>
-
-        <TabsContent
-          value="screens"
-          className="flex-1 m-0 data-[state=active]:flex flex-col min-h-0 overflow-hidden outline-none"
-        >
-          <ExplorerScreens onScreenChange={onScreenChange} />
-        </TabsContent>
 
         <TabsContent
           value="objects"
@@ -67,9 +73,16 @@ export function Explorer({
 
         <TabsContent
           value="colors"
-          className="flex-1 m-0 data-[state=active]:flex flex-col min-h-0 overflow-hidden outline-none bg-bg-panel"
+          className="flex-1 m-0 data-[state=active]:flex flex-col min-h-0 overflow-hidden outline-none"
         >
           <ExplorerColors />
+        </TabsContent>
+
+        <TabsContent
+          value="screens"
+          className="flex-1 m-0 data-[state=active]:flex flex-col min-h-0 overflow-hidden outline-none"
+        >
+          <ExplorerScreens onScreenChange={onScreenChange} />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { useAppStore } from "@/store/useAppStore";
-import { UpdateInfo, downloadAndInstall, scheduleUpdate, clearScheduledUpdate } from "@/lib/updater";
+import {
+  UpdateInfo,
+  downloadAndInstall,
+  scheduleUpdate,
+  clearScheduledUpdate,
+} from "@/lib/updater";
 import { X, Download } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -21,6 +26,73 @@ function formatDate(dateStr: string): string {
     return dateStr;
   }
 }
+
+// --- ЛЕГКОВЕСНЫЙ ПАРСЕР MARKDOWN ---
+function renderInlineMarkdown(text: string): ReactNode[] {
+  // Разбиваем текст, вылавливая **жирный текст** и `моноширинный код`
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
+
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="text-white font-bold">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code
+          key={i}
+          className="bg-white/10 px-1.5 py-0.5 rounded-md text-[11px] font-mono text-emerald-400"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
+function renderMarkdownLine(line: string, index: number) {
+  const trimmed = line.trim();
+
+  // Пустые строки превращаем в отступы
+  if (!trimmed) return <div key={index} className="h-2" />;
+
+  // Обработка заголовков (## Заголовок)
+  const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)/);
+  if (headingMatch) {
+    const level = headingMatch[1].length;
+    const content = headingMatch[2];
+    const isMain = level <= 2;
+    return (
+      <div
+        key={index}
+        className={`font-semibold text-white ${isMain ? "text-base mt-4 mb-2" : "text-sm mt-3 mb-1"}`}
+      >
+        {renderInlineMarkdown(content)}
+      </div>
+    );
+  }
+
+  // Обработка списков (- пункт или * пункт)
+  const isBullet = /^[-*•]\s+/.test(trimmed);
+  const cleanLine = trimmed.replace(/^[-*•]\s+/, "");
+
+  return (
+    <div
+      key={index}
+      className={`text-sm text-white/80 leading-relaxed flex gap-2.5 ${isBullet ? "ml-2 mt-1" : "mt-1"}`}
+    >
+      {isBullet && (
+        <span className="text-white/30 select-none text-[10px] mt-1">●</span>
+      )}
+      <div className="flex-1">{renderInlineMarkdown(cleanLine)}</div>
+    </div>
+  );
+}
+// -----------------------------------
 
 export function UpdateDialog({ updateInfo }: UpdateDialogProps) {
   const { setPendingUpdate } = useAppStore();
@@ -60,9 +132,7 @@ export function UpdateDialog({ updateInfo }: UpdateDialogProps) {
           <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
             <Download className="w-4 h-4 text-green-400" />
           </div>
-          <h2 className="text-sm font-semibold text-white">
-            Update Available
-          </h2>
+          <h2 className="text-sm font-semibold text-white">Update Available</h2>
           <button
             onClick={handleClose}
             disabled={isDownloading}
@@ -87,22 +157,18 @@ export function UpdateDialog({ updateInfo }: UpdateDialogProps) {
           </div>
 
           {updateInfo.body && (
-            <ScrollArea className="h-[160px]">
-              <div className="space-y-2 pr-4">
-                {updateInfo.body.split("\n").filter(Boolean).map((line, index) => {
-                  const text = line.replace(/^[-•]\s*/, "").trim();
-                  return (
-                    <div key={index} className="text-sm text-white/80">
-                      <span>{text}</span>
-                    </div>
-                  );
-                })}
+            <ScrollArea className="h-[180px] bg-white/[0.02] border border-white/5 rounded-xl p-4">
+              <div className="pr-4 pb-2">
+                {/* Рендерим Markdown построчно */}
+                {updateInfo.body
+                  .split("\n")
+                  .map((line, index) => renderMarkdownLine(line, index))}
               </div>
             </ScrollArea>
           )}
 
           {isDownloading && (
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-white/70">Downloading...</span>
                 <span className="text-white/70">{progress}%</span>

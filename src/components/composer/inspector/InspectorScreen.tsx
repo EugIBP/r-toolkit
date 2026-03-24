@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Monitor, Grid3X3, Save, FileJson, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Monitor, Grid3X3, Save, FileJson, Clock, Layers } from "lucide-react";
 
 export function InspectorScreen() {
   const { projectData, updateScreen, saveProject } = useProjectStore();
@@ -20,6 +22,9 @@ export function InspectorScreen() {
     hasUnsavedChanges,
     activeScreenIdx,
     canvasMode,
+    stackThreshold,
+    setStackThreshold,
+    assetFilter, // Достаем текущий фильтр
   } = useCanvasStore();
 
   const currentScreen = projectData?.Screens?.[activeScreenIdx];
@@ -32,184 +37,224 @@ export function InspectorScreen() {
   if (!projectData) return null;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      {/* Scrollable Content */}
+    <div className="flex flex-col flex-1 min-h-0 h-full animate-in fade-in slide-in-from-right-2 duration-200">
+      {/* Скроллируемая область настроек */}
       <ScrollArea className="flex-1 min-h-0">
-      <div className="px-5 py-6 space-y-8">
-        {/* SECTION: CANVAS INFO */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-widest text-primary/70 flex items-center gap-2">
-            <Monitor className="w-3 h-3" /> Canvas Info
-          </h3>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-3">
-            <div className="text-[8px] uppercase text-muted-foreground font-bold mb-2">
-              Screen Name
-            </div>
-            {canvasMode === "edit" ? (
-              <input
-                type="text"
-                value={nameValue}
-                onChange={(e) => setNameValue(e.target.value)}
-                onBlur={() => {
-                  const trimmed = nameValue.trim();
-                  if (trimmed && trimmed !== currentScreen?.Name) {
-                    updateScreen(activeScreenIdx, { Name: trimmed });
-                  } else {
-                    setNameValue(currentScreen?.Name ?? "");
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  if (e.key === "Escape") {
-                    setNameValue(currentScreen?.Name ?? "");
-                    (e.target as HTMLInputElement).blur();
-                  }
-                }}
-                className="w-full bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all"
-              />
-            ) : (
-              <div className="text-xs font-mono text-white/80">
-                {currentScreen?.Name ?? "—"}
-              </div>
-            )}
-          </div>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-3">
-            <div className="text-[8px] uppercase text-muted-foreground font-bold mb-2">
-              Display Size
-            </div>
-            <div className="text-xs font-mono text-white/80">
-              {projectData.DisplayWidth}×{projectData.DisplayHeight}
-            </div>
-          </div>
-        </div>
+        <div className="flex flex-col gap-4 pb-6">
+          {/* SECTION: SCREEN INFO */}
+          <div className="flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+              <Monitor className="w-4 h-4 text-primary opacity-80" /> Screen
+              Info
+            </h3>
 
-        {/* SECTION: GRID - Always visible, disabled when DnD is off */}
-        <div className={`space-y-4 pt-4 border-t border-white/5 ${!allowDnd ? "pointer-events-none opacity-50 cursor-not-allowed" : ""}`}>
-            <h3 className="text-xs font-black uppercase tracking-widest text-primary/70 flex items-center gap-2">
-              <Grid3X3 className="w-3 h-3" /> Grid System
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                Screen Name
+              </label>
+              {canvasMode === "edit" ? (
+                <Input
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  onBlur={() => {
+                    const trimmed = nameValue.trim();
+                    if (trimmed && trimmed !== currentScreen?.Name) {
+                      updateScreen(activeScreenIdx, { Name: trimmed });
+                    } else {
+                      setNameValue(currentScreen?.Name ?? "");
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === "Escape") {
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  className="h-8 bg-muted/50 border-border text-xs font-medium" // Убрали font-mono
+                />
+              ) : (
+                <div className="h-8 flex items-center px-3 bg-muted/30 border border-border rounded-md text-xs font-medium text-foreground/80">
+                  {currentScreen?.Name ?? "—"}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5 mt-1">
+              <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                Display Size
+              </label>
+              <div className="text-xs font-medium text-foreground/80">
+                {projectData.DisplayWidth} × {projectData.DisplayHeight}
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION: CANVAS SETTINGS (Stack Threshold) - Показываем только при фильтре Stacked */}
+          {assetFilter === "stacked" && (
+            <div className="flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border animate-in fade-in slide-in-from-top-2">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-amber-400 opacity-80" /> Canvas
+                Settings
+              </h3>
+
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase text-foreground font-medium tracking-wider">
+                  Stack Threshold (px)
+                </label>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  Icons placed closer than this distance will be visually
+                  grouped into a stack on the canvas.
+                </p>
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={stackThreshold}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) =>
+                    setStackThreshold(parseInt(e.target.value) || 5)
+                  }
+                  className="h-8 bg-muted/50 border-border text-xs font-medium [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* SECTION: GRID SYSTEM */}
+          <div
+            className={`flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border transition-opacity ${!allowDnd ? "opacity-50 pointer-events-none" : ""}`}
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+              <Grid3X3 className="w-4 h-4 text-blue-400 opacity-80" /> Grid
+              System
             </h3>
 
             <div
               onClick={() => setSnapToGrid(!snapToGrid)}
-              className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                 snapToGrid
                   ? "bg-blue-500/10 border-blue-500/30"
-                  : "bg-white/5 border-white/5"
+                  : "bg-muted/50 border-border"
               }`}
             >
               <div className="flex flex-col">
-                <span className="text-[11px] font-bold text-white">
+                <span
+                  className={`text-xs font-bold ${snapToGrid ? "text-blue-400" : "text-foreground"}`}
+                >
                   Snap to Grid
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[10px] text-muted-foreground">
                   Lock to pixel grid
                 </span>
               </div>
+
               <div
-                className={`w-8 h-4 rounded-full relative transition-colors ${snapToGrid ? "bg-blue-500" : "bg-white/10"}`}
+                className={`w-8 h-4 rounded-full relative transition-colors ${snapToGrid ? "bg-blue-500" : "bg-muted"}`}
               >
                 <div
-                  className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${snapToGrid ? "left-5" : "left-1"}`}
+                  className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${snapToGrid ? "left-4" : "left-0.5"}`}
                 />
               </div>
             </div>
 
             {snapToGrid && (
-              <div className="space-y-2">
-                <label className="text-[8px] uppercase text-muted-foreground font-bold ml-1">
+              <div className="space-y-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
+                <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
                   Grid Step Size
                 </label>
-                <input
+                <Input
                   type="number"
                   value={gridSize}
                   onFocus={(e) => e.target.select()}
                   onChange={(e) => setGridSize(Number(e.target.value))}
-                  className="w-full bg-black/40 border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-primary/40 transition-all [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="h-8 bg-muted/50 border-border text-xs font-medium [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" // Убрали font-mono
                 />
               </div>
             )}
           </div>
 
-        {/* SECTION: AUTO-SAVE */}
-        <div className="space-y-4 pt-4 border-t border-white/5">
-          <h3 className="text-xs font-black uppercase tracking-widest text-primary/70 flex items-center gap-2">
-            <Clock className="w-3 h-3" /> Auto-Save
-          </h3>
+          {/* SECTION: AUTO-SAVE */}
+          <div className="flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-purple-400 opacity-80" /> Auto-Save
+            </h3>
 
-          {/* Enable/Disable Toggle */}
-          <div
-            onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
-            className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-              autoSaveEnabled
-                ? "bg-purple-500/20 border-purple-500/40 shadow-sm"
-                : "bg-white/5 border-white/5"
-            }`}
-          >
-            <div className="flex flex-col">
-              <span className={`text-[11px] font-bold ${autoSaveEnabled ? "text-purple-400" : "text-white"}`}>
-                Auto-Save
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {autoSaveEnabled ? "Enabled - settings will be saved automatically" : "Click to enable auto-save"}
-              </span>
-            </div>
             <div
-              className={`w-8 h-4 rounded-full relative transition-colors ${autoSaveEnabled ? "bg-purple-500" : "bg-white/10"}`}
+              onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
+              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
+                autoSaveEnabled
+                  ? "bg-purple-500/10 border-purple-500/30"
+                  : "bg-muted/50 border-border"
+              }`}
             >
+              <div className="flex flex-col">
+                <span
+                  className={`text-xs font-bold ${autoSaveEnabled ? "text-purple-400" : "text-foreground"}`}
+                >
+                  Auto-Save
+                </span>
+                <span className="text-[10px] text-muted-foreground">
+                  {autoSaveEnabled
+                    ? "Settings save automatically"
+                    : "Click to enable"}
+                </span>
+              </div>
+
               <div
-                className={`absolute top-1 w-2 h-2 bg-white rounded-full transition-all ${autoSaveEnabled ? "left-5" : "left-1"}`}
-              />
+                className={`w-8 h-4 rounded-full relative transition-colors ${autoSaveEnabled ? "bg-purple-500" : "bg-muted"}`}
+              >
+                <div
+                  className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${autoSaveEnabled ? "left-4" : "left-0.5"}`}
+                />
+              </div>
             </div>
+
+            {autoSaveEnabled && (
+              <div className="space-y-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
+                <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                  Save Interval (seconds)
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={autoSaveInterval / 1000}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) =>
+                    setAutoSaveInterval(Number(e.target.value) * 1000)
+                  }
+                  className="h-8 bg-muted/50 border-border text-xs font-medium [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" // Убрали font-mono
+                />
+              </div>
+            )}
           </div>
-
-          {/* Interval Input - Only visible when auto-save is enabled */}
-          {autoSaveEnabled && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <label className="text-[8px] uppercase text-muted-foreground font-bold ml-1">
-                Save Interval (seconds)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="60"
-                value={autoSaveInterval / 1000}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setAutoSaveInterval(Number(e.target.value) * 1000)}
-                className="w-full bg-black/40 border border-white/5 rounded-lg py-2.5 px-3 text-xs font-mono text-white outline-none focus:border-purple-500/40 transition-all [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
-          )}
         </div>
-
-      </div>
       </ScrollArea>
 
-      {/* FOOTER PANELS - Fixed at bottom */}
-      <div className="border-t border-white/5 bg-bg-panel">
-        {/* Divider */}
-        <div className="h-px bg-white/5 mx-5" />
+      {/* FOOTER PANELS: Save Buttons */}
+      <div className="border-t border-border bg-muted/30 p-4 space-y-3 shrink-0">
+        <Button
+          onClick={saveWorkspace}
+          variant={hasUnsavedChanges ? "default" : "secondary"}
+          className={`w-full gap-2 ${
+            hasUnsavedChanges
+              ? "bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-900/20"
+              : "text-muted-foreground"
+          }`}
+        >
+          <Save className="w-4 h-4" />
+          Save Workspace
+          {hasUnsavedChanges && (
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse ml-1" />
+          )}
+        </Button>
 
-        {/* Panel 2: Save Buttons */}
-        <div className="p-5 py-6 space-y-3">
-          <button
-            onClick={saveWorkspace}
-            className={`w-full flex items-center justify-center gap-2 py-3.5 border rounded-xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${
-              hasUnsavedChanges
-                ? "bg-purple-500/20 border-purple-500/40 text-purple-400 hover:bg-purple-500/30 ring-1 ring-purple-500/30"
-                : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-            }`}
-          >
-            <Save className="w-3.5 h-3.5" /> 
-            Save Workspace
-            {hasUnsavedChanges && <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse ml-1" />}
-          </button>
-          <button
-            onClick={saveProject}
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-xl text-xs font-bold uppercase tracking-widest text-amber-400 transition-all active:scale-95"
-          >
-            <FileJson className="w-3.5 h-3.5" /> Save Project
-          </button>
-        </div>
+        <Button
+          onClick={saveProject}
+          variant="outline"
+          className="w-full gap-2 text-amber-500 border-amber-500/20 hover:bg-amber-500/10 hover:text-amber-600"
+        >
+          <FileJson className="w-4 h-4" /> Save Project
+        </Button>
       </div>
     </div>
   );

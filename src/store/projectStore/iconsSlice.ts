@@ -24,6 +24,10 @@ export const createIconsSlice: StateCreator<
     | "renameInstance"
     | "duplicateIcon"
     | "deleteIcon"
+    | "deleteColors"
+    | "deleteScreens"
+    | "duplicateScreens"
+    | "deleteIcons"
   >
 > = (set, get) => ({
   updateScreen: (screenIdx, updates) => {
@@ -196,12 +200,18 @@ export const createIconsSlice: StateCreator<
   },
 
   addInstance: (screenIdx, assetName, options) => {
-    const { projectData } = get();
+    const { projectData, isNameUnique, getUniqueInstanceName } = get();
     if (!projectData) return false;
 
-    const instanceName = options?.name || assetName;
+    const asset = projectData.Objects.find(
+      (obj: any) => obj.Name === assetName,
+    );
+    if (!asset) return false;
 
-    if (!get().isNameUnique(instanceName)) {
+    let instanceName = options?.name;
+    if (!instanceName) {
+      instanceName = getUniqueInstanceName(assetName, asset.Path);
+    } else if (!isNameUnique(instanceName, asset.Path)) {
       toast.error(`Name "${instanceName}" already exists`, {
         id: "name-exists-error",
       });
@@ -221,32 +231,26 @@ export const createIconsSlice: StateCreator<
       const screen = { ...screens[screenIdx] };
       screen.Icons = [...(screen.Icons || []), newInstance];
       screens[screenIdx] = screen;
-      return { projectData: { ...state.projectData, Screens: screens } };
-    });
 
-    if (!projectData.Objects.some((obj: any) => obj.Name === instanceName)) {
-      const asset = projectData.Objects.find(
-        (obj: any) => obj.Name === assetName,
-      );
-      if (asset) {
-        set((state) => {
-          if (!state.projectData) return state;
-          return {
-            projectData: {
-              ...state.projectData,
-              Objects: [
-                ...state.projectData.Objects,
-                { Name: instanceName, Path: asset.Path, Type: asset.Type },
-              ],
-            },
-          };
+      let newObjects = [...state.projectData.Objects];
+      if (!newObjects.some((obj: any) => obj.Name === instanceName)) {
+        newObjects.push({
+          Name: instanceName,
+          Path: asset.Path,
+          Type: asset.Type,
         });
       }
-    }
 
-    toast.success(`Instance "${instanceName}" created`, {
-      id: "instance-created",
+      return {
+        projectData: {
+          ...state.projectData,
+          Screens: screens,
+          Objects: newObjects,
+        },
+      };
     });
+
+    toast.success(`Added "${instanceName}"`, { id: "instance-created" });
     useHistoryStore.getState().push(`Added instance "${instanceName}"`);
     return true;
   },
@@ -261,7 +265,9 @@ export const createIconsSlice: StateCreator<
     const oldName = icon.Name;
     if (oldName === newName) return true;
 
-    if (!get().isNameUnique(newName)) {
+    const asset = projectData.Objects.find((obj: any) => obj.Name === oldName);
+
+    if (!get().isNameUnique(newName, asset?.Path || "")) {
       toast.error(`Name "${newName}" already exists`, {
         id: "rename-exists-error",
       });
@@ -275,14 +281,26 @@ export const createIconsSlice: StateCreator<
       screen.Icons = [...(screen.Icons || [])];
       screen.Icons[iconIdx] = { ...screen.Icons[iconIdx], Name: newName };
       screens[screenIdx] = screen;
-      const objects = state.projectData.Objects.map((obj: any) =>
-        obj.Name === oldName ? { ...obj, Name: newName } : obj,
+
+      let newObjects = [...state.projectData.Objects];
+      if (asset && !newObjects.some((o: any) => o.Name === newName)) {
+        newObjects.push({ ...asset, Name: newName });
+      }
+
+      const isOldNameUsed = screens.some(
+        (s) =>
+          s.Background === oldName ||
+          s.Icons?.some((i: any) => i.Name === oldName),
       );
+      if (!isOldNameUsed) {
+        newObjects = newObjects.filter((o: any) => o.Name !== oldName);
+      }
+
       return {
         projectData: {
           ...state.projectData,
           Screens: screens,
-          Objects: objects,
+          Objects: newObjects,
         },
       };
     });
@@ -299,11 +317,12 @@ export const createIconsSlice: StateCreator<
     const icon = projectData.Screens[screenIdx]?.Icons?.[iconIdx];
     if (!icon) return false;
 
-    let newName = `${icon.Name}_copy`;
-    let counter = 1;
-    while (!get().isNameUnique(newName)) {
-      newName = `${icon.Name}_copy${counter++}`;
-    }
+    const asset = projectData.Objects.find(
+      (obj: any) => obj.Name === icon.Name,
+    );
+
+    const baseName = icon.Name.replace(/(_copy\d*|_\d+)$/, "");
+    const newName = get().getUniqueInstanceName(baseName, asset?.Path || "");
 
     const duplicate = {
       ...icon,
@@ -315,19 +334,18 @@ export const createIconsSlice: StateCreator<
         : [{ Name: "DEFAULT", Color: "PURE_WHITE" }],
     };
 
-    const asset = projectData.Objects.find(
-      (obj: any) => obj.Name === icon.Name,
-    );
-
     set((state) => {
       if (!state.projectData) return state;
       const screens = [...state.projectData.Screens];
       const screen = { ...screens[screenIdx] };
       screen.Icons = [...(screen.Icons || []), duplicate];
       screens[screenIdx] = screen;
-      const newObjects = asset
-        ? [...state.projectData.Objects, { ...asset, Name: newName }]
-        : state.projectData.Objects;
+
+      let newObjects = [...state.projectData.Objects];
+      if (asset && !newObjects.some((o: any) => o.Name === newName)) {
+        newObjects.push({ ...asset, Name: newName });
+      }
+
       return {
         projectData: {
           ...state.projectData,
@@ -360,11 +378,11 @@ export const createIconsSlice: StateCreator<
       );
       screens[screenIdx] = screen;
 
-      const isUsedElsewhere = state.projectData.Screens.some(
-        (s: any, si: number) =>
-          si !== screenIdx && s.Icons?.some((ic: any) => ic.Name === iconName),
+      const isUsedElsewhere = screens.some(
+        (s: any) =>
+          s.Background === iconName ||
+          s.Icons?.some((ic: any) => ic.Name === iconName),
       );
-
       const newObjects = isUsedElsewhere
         ? state.projectData.Objects
         : state.projectData.Objects.filter((obj: any) => obj.Name !== iconName);
@@ -379,7 +397,69 @@ export const createIconsSlice: StateCreator<
     });
 
     useHistoryStore.getState().push(`Deleted "${iconName}"`);
-
     toast.success(`Removed "${iconName}"`, { id: "instance-removed" });
+  },
+
+  // === ВОССТАНОВЛЕННЫЕ ФУНКЦИИ МАССОВЫХ ДЕЙСТВИЙ ===
+
+  deleteColors: (names) => {
+    set((state) => {
+      if (!state.projectData) return state;
+      const newColors = { ...state.projectData.Colors };
+      names.forEach((name) => delete newColors[name]);
+      return { projectData: { ...state.projectData, Colors: newColors } };
+    });
+    useHistoryStore.getState().push(`Deleted ${names.length} colors`);
+  },
+
+  deleteScreens: (indices) => {
+    set((state) => {
+      if (!state.projectData) return state;
+      const toDelete = new Set(indices);
+      return {
+        projectData: {
+          ...state.projectData,
+          Screens: state.projectData.Screens.filter(
+            (_: any, i: number) => !toDelete.has(i),
+          ),
+        },
+      };
+    });
+    useHistoryStore.getState().push(`Deleted ${indices.length} screens`);
+  },
+
+  duplicateScreens: (indices) => {
+    set((state) => {
+      if (!state.projectData) return state;
+      const newScreens = [...state.projectData.Screens];
+      const copies = indices.map((i: number) => ({
+        ...state.projectData!.Screens[i],
+        Name: `${state.projectData!.Screens[i].Name} Copy`,
+      }));
+      return {
+        projectData: {
+          ...state.projectData,
+          Screens: [...newScreens, ...copies],
+        },
+      };
+    });
+    useHistoryStore.getState().push(`Duplicated ${indices.length} screens`);
+  },
+
+  deleteIcons: (screenIdx, iconIndices) => {
+    set((state) => {
+      if (!state.projectData) return state;
+      const screens = [...state.projectData.Screens];
+      const screen = { ...screens[screenIdx] };
+      const toDelete = new Set(iconIndices);
+
+      screen.Icons = (screen.Icons || []).filter(
+        (_: any, i: number) => !toDelete.has(i),
+      );
+      screens[screenIdx] = screen;
+
+      return { projectData: { ...state.projectData, Screens: screens } };
+    });
+    useHistoryStore.getState().push(`Deleted ${iconIndices.length} instances`);
   },
 });

@@ -65,6 +65,30 @@ fn copy_asset_file(source: String, destination: String) -> Result<(), String> {
     Ok(())
 }
 
+// НОВАЯ ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ ПАПКИ В ПРОВОДНИКЕ
+#[tauri::command]
+fn open_folder(path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    std::process::Command::new("explorer")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    std::process::Command::new("open")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    #[cfg(target_os = "linux")]
+    std::process::Command::new("xdg-open")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 #[derive(serde::Serialize)]
 struct ScannedAsset {
     path: String,
@@ -93,7 +117,6 @@ fn scan_project_assets(base_dir: String) -> Result<Vec<ScannedAsset>, String> {
             if let Ok(ft) = entry.file_type() {
                 if ft.is_dir() {
                     if let Some(dir_name) = entry.file_name().to_str() {
-                        // Skip hidden directories and .rtoolkit
                         if dir_name.starts_with('.') || dir_name.starts_with('_') {
                             continue;
                         }
@@ -108,7 +131,6 @@ fn scan_project_assets(base_dir: String) -> Result<Vec<ScannedAsset>, String> {
                                                 || file_name.ends_with(".jpg")
                                             {
                                                 let asset_type = get_asset_type(dir_name);
-                                                // Используем обратный слэш для совместимости с форматом description.json
                                                 assets.push(ScannedAsset {
                                                     path: format!("{}\\{}", dir_name, file_name),
                                                     dir: dir_name.to_string(),
@@ -142,18 +164,15 @@ fn create_project(
 ) -> Result<String, String> {
     let project_path = Path::new(&base_path);
 
-    // Создаём папку проекта
     std::fs::create_dir_all(&project_path)
         .map_err(|e| format!("Failed to create project folder: {}", e))?;
 
-    // Создаём указанные папки
     for folder in &folders {
         let folder_path = project_path.join(folder);
         std::fs::create_dir_all(&folder_path)
             .map_err(|e| format!("Failed to create folder {}: {}", folder, e))?;
     }
 
-    // Создаём .rtoolkit/canvas.json
     let rtoolkit_path = project_path.join(".rtoolkit");
     std::fs::create_dir_all(&rtoolkit_path)
         .map_err(|e| format!("Failed to create .rtoolkit: {}", e))?;
@@ -162,7 +181,6 @@ fn create_project(
     std::fs::write(&canvas_json, r#"{"spriteAssets":{}}"#)
         .map_err(|e| format!("Failed to write canvas.json: {}", e))?;
 
-    // Создаём description.json
     let description_json = project_path.join("description.json");
     let content = format!(
         r###"{{
@@ -211,7 +229,6 @@ fn create_project(
     std::fs::write(&description_json, content)
         .map_err(|e| format!("Failed to write description.json: {}", e))?;
 
-    // Возвращаем путь к description.json
     description_json
         .to_str()
         .map(|s| s.to_string())
@@ -321,7 +338,8 @@ fn main() {
             scan_project_assets,
             delete_project_file,
             process_images,
-            create_project
+            create_project,
+            open_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -23,6 +23,7 @@ interface AppStore {
   recentProjects: RecentProject[];
   isSettingsOpen: boolean;
   editingWorkspaceId: string | null;
+  isNewImport: boolean;
   pendingUpdate: UpdateInfo | null;
   availableUpdate: string | null;
 
@@ -47,7 +48,7 @@ interface AppStore {
   setViewMode: (mode: "grid" | "list") => void;
   setWorkspaceTab: (tab: "workspace" | "tools") => void;
   setSettingsOpen: (isOpen: boolean) => void;
-  setEditingWorkspaceId: (id: string | null) => void;
+  setEditingWorkspaceId: (id: string | null, isNew?: boolean) => void;
   setPendingUpdate: (update: UpdateInfo | null) => void;
   setAvailableUpdate: (version: string | null) => void;
 
@@ -82,12 +83,22 @@ interface AppStore {
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
-  currentView: (typeof window !== 'undefined' && sessionStorage.getItem('currentView') as 'dashboard' | 'composer' | 'dither') || 'dashboard',
+  currentView:
+    (typeof window !== "undefined" &&
+      (sessionStorage.getItem("currentView") as
+        | "dashboard"
+        | "composer"
+        | "dither")) ||
+    "dashboard",
   viewMode: "grid",
-  workspaceTab: (typeof window !== 'undefined' && sessionStorage.getItem('workspaceTab') as 'workspace' | 'tools') || 'workspace',
+  workspaceTab:
+    (typeof window !== "undefined" &&
+      (sessionStorage.getItem("workspaceTab") as "workspace" | "tools")) ||
+    "workspace",
   recentProjects: [],
   isSettingsOpen: false,
   editingWorkspaceId: null,
+  isNewImport: false,
   pendingUpdate: null,
   availableUpdate: null,
   confirmDialog: null,
@@ -100,18 +111,19 @@ export const useAppStore = create<AppStore>((set, get) => ({
   selectedProjectIds: new Set(),
 
   setCurrentView: (view) => {
-    sessionStorage.setItem('currentView', view);
+    sessionStorage.setItem("currentView", view);
     set({ currentView: view });
   },
   setViewMode: (mode) => set({ viewMode: mode }),
   setWorkspaceTab: (tab: "workspace" | "tools") => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('workspaceTab', tab);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("workspaceTab", tab);
     }
     set({ workspaceTab: tab });
   },
   setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
-  setEditingWorkspaceId: (id) => set({ editingWorkspaceId: id }),
+  setEditingWorkspaceId: (id, isNew = false) =>
+    set({ editingWorkspaceId: id, isNewImport: isNew }),
   setPendingUpdate: (update) => set({ pendingUpdate: update }),
   setAvailableUpdate: (version) => set({ availableUpdate: version }),
 
@@ -225,7 +237,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   updateProjectMeta: async (id, newName, newDesc) => {
     const updated = get().recentProjects.map((p) =>
-      p.id === id ? { ...p, displayName: newName, description: newDesc, lastModified: Date.now() } : p,
+      p.id === id
+        ? {
+            ...p,
+            displayName: newName,
+            description: newDesc,
+            lastModified: Date.now(),
+          }
+        : p,
     );
     set({ recentProjects: updated });
     await persistentStore.set("recent_projects_v3", updated);
