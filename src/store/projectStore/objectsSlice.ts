@@ -279,7 +279,7 @@ export const createObjectsSlice: StateCreator<
       if (!state.projectData) return state;
       const newObjects = state.projectData.Objects.map((obj: AssetObject) =>
         obj.Name === assetName
-          ? { ...obj, isSprite, Type: isPal ? "Pal" : "Ico" }
+          ? { ...obj, isSprite, Type: (isPal ? "Pal" : "Ico") as "Ico" | "Bin" | "Pal" }
           : obj,
       );
       return { projectData: { ...state.projectData, Objects: newObjects } };

@@ -283,7 +283,7 @@ export function ExplorerAssets() {
                 </div>
 
                 <div className="space-y-1">
-                  {items.map((obj) => (
+                  {items.map((obj: any) => (
                     <AssetRow
                       key={obj.Path}
                       obj={obj}

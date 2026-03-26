@@ -21,28 +21,39 @@ export default defineConfig(async () => ({
     cssMinify: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-framer": ["framer-motion"],
-          "vendor-radix": [
-            "radix-ui",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-scroll-area",
-            "@radix-ui/react-label",
-            "@radix-ui/react-progress",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-popover",
-            "@radix-ui/react-checkbox",
-          ],
-          "vendor-utils": [
-            "lucide-react",
-            "sonner",
-            "zustand",
-            "clsx",
-            "tailwind-merge",
-            "class-variance-authority",
-          ],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            // Tauri
+            if (id.includes("@tauri-apps")) return "vendor-tauri";
+            // Framer Motion
+            if (id.includes("framer-motion")) return "vendor-framer";
+            // Radix UI - explicit list for better splitting
+            if (
+              id.includes("radix-ui") ||
+              id.includes("@radix-ui/react-dropdown-menu") ||
+              id.includes("@radix-ui/react-select") ||
+              id.includes("@radix-ui/react-tabs") ||
+              id.includes("@radix-ui/react-scroll-area") ||
+              id.includes("@radix-ui/react-label") ||
+              id.includes("@radix-ui/react-progress") ||
+              id.includes("@radix-ui/react-dialog") ||
+              id.includes("@radix-ui/react-popover") ||
+              id.includes("@radix-ui/react-checkbox")
+            )
+              return "vendor-radix";
+            // Utils - explicit list
+            if (
+              id.includes("lucide-react") ||
+              id.includes("sonner") ||
+              id.includes("zustand") ||
+              id.includes("clsx") ||
+              id.includes("tailwind-merge") ||
+              id.includes("class-variance-authority")
+            )
+              return "vendor-utils";
+            // Everything else (Tailwind, fonts, etc.)
+            return "vendor";
+          }
         },
       },
     },

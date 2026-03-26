@@ -2,7 +2,6 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import { useAppStore } from "@/store/useAppStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion } from "framer-motion";
 import {
   ChevronLeft,
   Layout,

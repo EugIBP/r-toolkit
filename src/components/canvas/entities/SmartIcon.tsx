@@ -19,6 +19,8 @@ type SnapTarget = {
   type: "canvas" | "icon" | "layout";
   span?: [number, number];
   color?: string;
+  axis?: "x" | "y";
+  lineSpan?: [number, number];
 };
 
 export function SmartIcon({
@@ -48,8 +50,6 @@ export function SmartIcon({
     gridSize,
     canvasMode,
     allowDnd,
-    setActiveGuides,
-    screenLayouts,
   } = useCanvasStore();
 
   const isSelected = selectedIconIndex === iconIndex;
@@ -275,37 +275,39 @@ export function SmartIcon({
 
       if (bestTargetX) {
         let lineSpan: [number, number] | undefined;
-        if (bestTargetX.type === "icon" && bestTargetX.span) {
+        const targetX = bestTargetX as SnapTarget;
+        if (targetX.type === "icon" && targetX.span) {
           lineSpan = [
-            Math.min(bestTargetX.span[0], snappedY),
-            Math.max(bestTargetX.span[1], snappedY + dragH),
+            Math.min(targetX.span[0], snappedY),
+            Math.max(targetX.span[1], snappedY + dragH),
           ];
         }
         guides.push({
           axis: "x",
-          pos: bestTargetX.pos,
-          type: bestTargetX.type,
-          span: bestTargetX.span,
+          pos: targetX.pos,
+          type: targetX.type,
+          span: targetX.span,
           lineSpan,
-          color: bestTargetX.color,
+          color: targetX.color,
         });
       }
 
       if (bestTargetY) {
         let lineSpan: [number, number] | undefined;
-        if (bestTargetY.type === "icon" && bestTargetY.span) {
+        const targetY = bestTargetY as SnapTarget;
+        if (targetY.type === "icon" && targetY.span) {
           lineSpan = [
-            Math.min(bestTargetY.span[0], snappedX),
-            Math.max(bestTargetY.span[1], snappedX + dragW),
+            Math.min(targetY.span[0], snappedX),
+            Math.max(targetY.span[1], snappedX + dragW),
           ];
         }
         guides.push({
           axis: "y",
-          pos: bestTargetY.pos,
-          type: bestTargetY.type,
-          span: bestTargetY.span,
+          pos: targetY.pos,
+          type: targetY.type,
+          span: targetY.span,
           lineSpan,
-          color: bestTargetY.color,
+          color: targetY.color,
         });
       }
 
@@ -528,7 +530,7 @@ export function SmartIcon({
         <div
           onMouseDown={handleMouseDown}
           onClick={handleClick}
-          onContextMenu={(e) => {
+          onContextMenu={() => {
             if (!isSelected) {
               if (assetObj) setSelectedAssetPath(assetObj.Path);
               setSelectedIcon(iconIndex);

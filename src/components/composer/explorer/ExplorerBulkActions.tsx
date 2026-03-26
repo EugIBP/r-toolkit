@@ -70,7 +70,7 @@ export function ExplorerBulkActions({
           />
         )}
 
-        {(onDelete || onDuplicate || extraActions) && onCancel && (
+        {(onDelete || onDuplicate || extraActions) && (
           <div className="h-4 w-px bg-border mx-0.5" />
         )}
         {onCancel && (

@@ -38,10 +38,8 @@ export function ProjectCard({ project }: { project: RecentProject }) {
     const baseDir = project.path.substring(0, lastIndex);
     const fullPath = `${baseDir}/.rtoolkit/thumb.png`.replace(/\\/g, "/");
     // Добавляем timestamp для обхода кэша
-    return (
-      convertFileSrc(fullPath) + `?t=${project.lastModified || Date.now()}`
-    );
-  }, [project.path, project.lastModified]);
+    return convertFileSrc(fullPath) + `?t=${Date.now()}`;
+  }, [project.path]);
 
   const handleOpen = async () => {
     try {
@@ -116,7 +114,7 @@ export function ProjectCard({ project }: { project: RecentProject }) {
       {/* ИНФО */}
       <div className="p-4 space-y-1">
         <h3 className="font-bold text-white text-sm truncate">
-          {project.displayName || project.name}
+          {project.displayName}
         </h3>
         <p className="text-xs text-muted-foreground opacity-50">
           {formatRelativeTime(project.lastOpened)}
