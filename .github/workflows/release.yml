@@ -55,41 +55,37 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Resource Toolkit v0.3.21
+            ## Resource Toolkit v0.4.0
 
             ✨ **What's New**
 
-            **Composer — Completely Redesigned**
-            - Brand new interface with floating toolbars for quick access
-            - Improved asset explorer with tabs and smart filtering
-            - Enhanced inspector for editing screens, icons, and colors
-            - Better drag-and-drop experience
+            **Layout System (Composer)**
+            - Visual grid overlays for precise alignment
+            - Multiple layout types: mesh, islands, columns, rows
+            - Configurable gaps, offsets, and colors
 
-            **New Features**
-            - Open folder in system explorer directly from the app
-            - Quick search for assets with type filtering
-            - Context menus for common operations
-            - Improved keyboard shortcuts
+            **Bulk Actions**
+            - Select multiple assets at once
+            - Quick duplicate and delete operations
+            - Context menus for faster workflows
+
+            **Dashboard Fixes**
+            - Scrolling now works smoothly for large project lists
+            - Bulk workspace management
+            - Improved pagination
 
             🎨 **Improvements**
-
-            **UI/UX**
-            - Unified design across all views
-            - New modern components (dialogs, badges, tooltips)
-            - Better hover states and animations
-            - Optimized icons and visuals
-
-            **Performance**
+            - Better keyboard shortcuts
+            - Toast notifications instead of popups
             - Faster canvas rendering
-            - Improved asset loading
-            - Reduced memory usage
+            - Optimized memory usage
 
             🐛 **Bug Fixes**
-
-            - Fixed path handling for cross-platform compatibility
-            - Fixed selection and focus issues
-            - Fixed z-index problems with floating panels
-            - Various stability improvements
+            - Cross-platform path handling
+            - Z-index issues with floating panels
+            - Selection state persistence
+            - Undo/redo reliability
+            - General stability improvements
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

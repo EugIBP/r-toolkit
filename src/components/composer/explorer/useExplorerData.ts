@@ -1,7 +1,7 @@
-import { useMemo } from "react";
-import type { AssetObject, ScreenData, IconInstance } from "@/types/project";
-import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import type { AssetObject, IconInstance, ScreenData } from "@/types/project";
+import { useMemo } from "react";
 
 export function useExplorerData() {
   const { projectData, scannedFiles } = useProjectStore();
@@ -96,14 +96,12 @@ export function useExplorerData() {
         if (bgAsset) {
           if (!groupedInstances.has(bgAsset.Path))
             groupedInstances.set(bgAsset.Path, []);
-          groupedInstances
-            .get(bgAsset.Path)!
-            .push({
-              iconIdx: -1,
-              icon: { Name: bgAsset.Name, X: 0, Y: 0 },
-              isBackground: true,
-              screenIdx,
-            });
+          groupedInstances.get(bgAsset.Path)!.push({
+            iconIdx: -1,
+            icon: { Name: bgAsset.Name, X: 0, Y: 0 },
+            isBackground: true,
+            screenIdx,
+          });
         }
       }
       screen.Icons?.forEach((icon: IconInstance, iconIdx: number) => {

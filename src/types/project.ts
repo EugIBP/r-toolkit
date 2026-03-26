@@ -10,6 +10,20 @@ export interface IconInstance {
   States?: ColorState[];
 }
 
+export interface LayoutGrid {
+  id: string;
+  name: string;
+  color: string;
+  visible: boolean;
+  type: "columns" | "rows" | "mesh" | "islands";
+  count: number;
+  rows?: number;
+  offset: number;
+  offsetY?: number;
+  size: number;
+  gaps: string;
+}
+
 export interface ScreenData {
   Name: string;
   Background: string;
@@ -21,8 +35,8 @@ export interface AssetObject {
   Path: string;
   Type: "Ico" | "Bin" | "Pal";
   isSprite?: boolean;
-  dir?: string; // Используется при сканировании
-  isRegistered?: boolean; // Флаг для новых ассетов
+  dir?: string;
+  isRegistered?: boolean;
 }
 
 export interface ProjectData {

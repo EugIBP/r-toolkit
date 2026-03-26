@@ -19,8 +19,8 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import { checkForUpdates } from "@/lib/updater";
 import { toast } from "sonner";
-import { WorkspaceMetaModal } from "@/components/dashboard/WorkspaceMetaModal";
-import { CreateProjectModal } from "@/components/dashboard/CreateProjectModal";
+import { WorkspaceMetaModal } from "@/components/modals/WorkspaceMetaModal";
+import { CreateProjectModal } from "@/components/modals/CreateProjectModal";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,12 +31,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { ProjectData } from "@/types/project"; // <--- ДОБАВЛЕНО
 
 export function DashboardView() {
   const { setProject } = useProjectStore();
   const { resetCanvas, loadWorkspace } = useCanvasStore();
 
-  // ИСПРАВЛЕНИЕ: Добавили recentProjects и setCurrentView в деструктуризацию
   const {
     addRecent,
     setEditingWorkspaceId,
@@ -71,7 +71,8 @@ export function DashboardView() {
     }
   };
 
-  const setupAndShowModal = async (filePath: string, data: any) => {
+  // ИСПРАВЛЕНИЕ: строгий тип ProjectData
+  const setupAndShowModal = async (filePath: string, data: ProjectData) => {
     if (!filePath || typeof filePath !== "string") return;
 
     const pathParts = filePath.split(/[\\/]/);
@@ -104,12 +105,11 @@ export function DashboardView() {
         multiple: false,
         filters: [{ name: "JSON", extensions: ["json"] }],
       });
-
       if (!selected) return;
 
       const filePath = Array.isArray(selected) ? selected[0] : selected;
       const content = await invoke<string>("load_project", { filePath });
-      const data = JSON.parse(content);
+      const data = JSON.parse(content) as ProjectData;
 
       await setupAndShowModal(filePath, data);
     } catch (err) {
@@ -120,11 +120,8 @@ export function DashboardView() {
 
   return (
     <div className="h-full w-full bg-background flex flex-col items-center relative overflow-hidden">
-      {/* Декоративное свечение */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-primary/5 blur-[120px] pointer-events-none" />
-
       <div className="flex-1 w-full max-w-7xl px-10 flex flex-col min-h-0 animate-in fade-in duration-1000 z-10">
-        {/* Шапка (Заголовок и Кнопка добавления) */}
         <div className="flex items-end justify-between mb-8 pt-10 shrink-0">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-3">
@@ -159,8 +156,7 @@ export function DashboardView() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="default" size="sm" className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Workspace
+                  <Plus className="w-4 h-4" /> Workspace
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -176,9 +172,7 @@ export function DashboardView() {
                     </span>
                   </div>
                 </DropdownMenuItem>
-
                 <div className="h-px bg-border my-1" />
-
                 <DropdownMenuItem
                   onClick={handleOpenProject}
                   className="gap-3 py-3 cursor-pointer"
@@ -196,7 +190,6 @@ export function DashboardView() {
           )}
         </div>
 
-        {/* Панель управления (Поиск, Табы, Вид) */}
         <div className="flex items-center justify-between mb-8 shrink-0">
           <div className="relative group">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -212,7 +205,6 @@ export function DashboardView() {
             />
           </div>
 
-          {/* Стандартные Табы shadcn */}
           <Tabs
             value={workspaceTab}
             onValueChange={(v) => setWorkspaceTab(v as "workspace" | "tools")}
@@ -227,7 +219,6 @@ export function DashboardView() {
             </TabsList>
           </Tabs>
 
-          {/* Стандартный ToggleGroup shadcn */}
           <ToggleGroup
             type="single"
             value={viewMode}
@@ -277,7 +268,6 @@ export function DashboardView() {
           )}
         </AnimatePresence>
       </div>
-
       <WorkspaceMetaModal />
       <CreateProjectModal
         isOpen={isCreateModalOpen}

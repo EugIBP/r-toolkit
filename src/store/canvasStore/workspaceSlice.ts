@@ -45,6 +45,7 @@ export const createWorkspaceSlice: StateCreator<
       hasUnsavedChanges: false,
       expandedStackIndices: null,
       previewBgPath: null,
+      screenLayouts: {}, // Очищаем сетки при смене проекта
     });
   },
 
@@ -64,11 +65,11 @@ export const createWorkspaceSlice: StateCreator<
       autoSaveEnabled,
       autoSaveInterval,
       stackThreshold,
+      screenLayouts, // Берем сетки
     } = get();
 
     const historyMaxSteps = useHistoryStore.getState().maxSteps;
 
-    // Build spriteAssets map from current projectData
     const spriteAssets: Record<string, boolean> = {};
     if (projectData?.Objects) {
       for (const obj of projectData.Objects) {
@@ -83,7 +84,12 @@ export const createWorkspaceSlice: StateCreator<
           content: JSON.stringify(
             {
               spriteAssets,
-              screens: { iconFrames, iconFrameCounts, iconOrientations },
+              screens: {
+                iconFrames,
+                iconFrameCounts,
+                iconOrientations,
+                screenLayouts,
+              }, // Сохраняем сетки
               selectedStates,
             },
             null,
@@ -129,6 +135,7 @@ export const createWorkspaceSlice: StateCreator<
         iconFrameCounts: canvas.screens?.iconFrameCounts || {},
         iconOrientations: canvas.screens?.iconOrientations || {},
         selectedStates: canvas.selectedStates || {},
+        screenLayouts: canvas.screens?.screenLayouts || {}, // Загружаем сетки
       });
     } catch {
       // No canvas.json yet
@@ -165,21 +172,12 @@ export const createWorkspaceSlice: StateCreator<
       (await appSettings.get<number>("autoSaveInterval")) ??
       projectAutoSaveInterval;
 
-    const finalAutoSaveEnabled =
-      projectAutoSaveEnabled !== undefined
-        ? projectAutoSaveEnabled
-        : globalAutoSaveEnabled;
-    const finalAutoSaveInterval =
-      projectAutoSaveInterval !== undefined
-        ? projectAutoSaveInterval
-        : globalAutoSaveInterval;
-
     set({
       snapToGrid: projectSnapToGrid,
       gridSize: projectGridSize,
       allowDnd: projectAllowDnd,
-      autoSaveEnabled: finalAutoSaveEnabled,
-      autoSaveInterval: finalAutoSaveInterval,
+      autoSaveEnabled: globalAutoSaveEnabled,
+      autoSaveInterval: globalAutoSaveInterval,
       stackThreshold: projectStackThreshold,
       hasUnsavedChanges: false,
     });

@@ -3,6 +3,7 @@ import { useCanvasStore } from "../useCanvasStore";
 import { useHistoryStore } from "../useHistory";
 import type { ProjectStore } from "./types";
 import type { StateCreator } from "zustand";
+import type { AssetObject, ScreenData, IconInstance } from "@/types/project";
 
 export const createObjectsSlice: StateCreator<
   ProjectStore,
@@ -27,7 +28,7 @@ export const createObjectsSlice: StateCreator<
   updateProjectObject: (oldName, updates) => {
     set((state) => {
       if (!state.projectData) return state;
-      const newObjects = state.projectData.Objects.map((obj: any) =>
+      const newObjects = state.projectData.Objects.map((obj: AssetObject) =>
         obj.Name === oldName ? { ...obj, ...updates } : obj,
       );
       return { projectData: { ...state.projectData, Objects: newObjects } };
@@ -38,13 +39,17 @@ export const createObjectsSlice: StateCreator<
     set((state) => {
       if (!state.projectData) return state;
       const newObjects = state.projectData.Objects.filter(
-        (obj: any) => obj.Name !== name,
+        (obj: AssetObject) => obj.Name !== name,
       );
-      const newScreens = state.projectData.Screens.map((screen: any) => ({
-        ...screen,
-        Icons: screen.Icons.filter((icon: any) => icon.Name !== name),
-        Background: screen.Background === name ? "" : screen.Background,
-      }));
+      const newScreens = state.projectData.Screens.map(
+        (screen: ScreenData) => ({
+          ...screen,
+          Icons: screen.Icons.filter(
+            (icon: IconInstance) => icon.Name !== name,
+          ),
+          Background: screen.Background === name ? "" : screen.Background,
+        }),
+      );
       return {
         projectData: {
           ...state.projectData,
@@ -60,17 +65,18 @@ export const createObjectsSlice: StateCreator<
     set((state) => {
       if (!state.projectData) return state;
       const nameSet = new Set(names);
-
       const newObjects = state.projectData.Objects.filter(
-        (obj: any) => !nameSet.has(obj.Name),
+        (obj: AssetObject) => !nameSet.has(obj.Name),
       );
-
-      const newScreens = state.projectData.Screens.map((screen: any) => ({
-        ...screen,
-        Icons: screen.Icons.filter((icon: any) => !nameSet.has(icon.Name)),
-        Background: nameSet.has(screen.Background) ? "" : screen.Background,
-      }));
-
+      const newScreens = state.projectData.Screens.map(
+        (screen: ScreenData) => ({
+          ...screen,
+          Icons: screen.Icons.filter(
+            (icon: IconInstance) => !nameSet.has(icon.Name),
+          ),
+          Background: nameSet.has(screen.Background) ? "" : screen.Background,
+        }),
+      );
       return {
         projectData: {
           ...state.projectData,
@@ -98,11 +104,9 @@ export const createObjectsSlice: StateCreator<
     set((state) => {
       if (!state.projectData || !state.scannedFiles.length) return state;
       const existingPaths = new Set(
-        state.projectData.Objects.map((o: any) => o.Path),
+        state.projectData.Objects.map((o: AssetObject) => o.Path),
       );
       const newObjects = [...state.projectData.Objects];
-
-      console.log("[registerAllAssets] scannedFiles:", state.scannedFiles);
 
       state.scannedFiles.forEach((file) => {
         if (!existingPaths.has(file.path)) {
@@ -117,14 +121,6 @@ export const createObjectsSlice: StateCreator<
               : file.asset_type === "pal"
                 ? "Pal"
                 : "Ico";
-          console.log(
-            "[registerAllAssets] file:",
-            file.path,
-            "assetType:",
-            file.asset_type,
-            "-> Type:",
-            type,
-          );
           newObjects.push({ Name: name, Path: file.path, Type: type });
         }
       });
@@ -153,10 +149,9 @@ export const createObjectsSlice: StateCreator<
           : file.asset_type === "pal"
             ? "Pal"
             : "Ico";
-
-      const newObjects = [
+      const newObjects: AssetObject[] = [
         ...state.projectData.Objects,
-        { Name: name, Path: file.path, Type: type as "Bin" | "Pal" | "Ico" },
+        { Name: name, Path: file.path, Type: type },
       ];
       const newScanned = state.scannedFiles.filter((f) => f.path !== path);
 
@@ -177,7 +172,6 @@ export const createObjectsSlice: StateCreator<
       const filesToRegister = state.scannedFiles.filter((f) =>
         pathsSet.has(f.path),
       );
-
       filesToRegister.forEach((file) => {
         const name =
           file.path
@@ -196,7 +190,6 @@ export const createObjectsSlice: StateCreator<
       const newScanned = state.scannedFiles.filter(
         (f) => !pathsSet.has(f.path),
       );
-
       return {
         projectData: { ...state.projectData, Objects: newObjects },
         scannedFiles: newScanned,
@@ -211,7 +204,9 @@ export const createObjectsSlice: StateCreator<
 
     const newInstances: Array<{ name: string; path: string }> = [];
     const newObjects = [...projectData.Objects];
-    const existingPaths = new Set(projectData.Objects.map((o: any) => o.Path));
+    const existingPaths = new Set(
+      projectData.Objects.map((o: AssetObject) => o.Path),
+    );
 
     scannedFiles.forEach((file) => {
       if (!existingPaths.has(file.path)) {
@@ -227,21 +222,13 @@ export const createObjectsSlice: StateCreator<
             ? "Pal"
             : "Ico";
 
-        newObjects.push({
-          Name: name,
-          Path: file.path,
-          Type: type,
-        });
-
-        if (!isBackground) {
-          newInstances.push({ name, path: file.path });
-        }
+        newObjects.push({ Name: name, Path: file.path, Type: type });
+        if (!isBackground) newInstances.push({ name, path: file.path });
       }
     });
 
     set((state) => {
       if (!state.projectData) return state;
-
       const screens = [...state.projectData.Screens];
       const screen = { ...screens[screenIdx] };
       const existingIcons = screen.Icons || [];
@@ -257,7 +244,6 @@ export const createObjectsSlice: StateCreator<
 
       screen.Icons = existingIcons;
       screens[screenIdx] = screen;
-
       return {
         projectData: {
           ...state.projectData,
@@ -281,7 +267,9 @@ export const createObjectsSlice: StateCreator<
     const { projectData } = get();
     if (!projectData) return false;
 
-    const asset = projectData.Objects.find((o: any) => o.Name === assetName);
+    const asset = projectData.Objects.find(
+      (o: AssetObject) => o.Name === assetName,
+    );
     if (!asset) return false;
 
     const isSprite = targetType === "sprite";
@@ -289,7 +277,7 @@ export const createObjectsSlice: StateCreator<
 
     set((state) => {
       if (!state.projectData) return state;
-      const newObjects = state.projectData.Objects.map((obj: any) =>
+      const newObjects = state.projectData.Objects.map((obj: AssetObject) =>
         obj.Name === assetName
           ? { ...obj, isSprite, Type: isPal ? "Pal" : "Ico" }
           : obj,
@@ -298,7 +286,6 @@ export const createObjectsSlice: StateCreator<
     });
 
     useCanvasStore.getState().setHasUnsavedChanges(true);
-
     toast.success(`Converted to ${targetType}`, { id: "asset-converted" });
     useHistoryStore
       .getState()
@@ -310,28 +297,25 @@ export const createObjectsSlice: StateCreator<
     const { projectData } = get();
     if (!projectData) return true;
 
-    // 1. Проверяем, занято ли имя на каком-либо экране (как иконка или фон)
     const usedOnScreen = projectData.Screens.some(
-      (s: any) =>
-        s.Background === name || s.Icons?.some((i: any) => i.Name === name),
+      (s: ScreenData) =>
+        s.Background === name ||
+        s.Icons?.some((i: IconInstance) => i.Name === name),
     );
     if (usedOnScreen) return false;
 
-    // 2. Проверяем, не занято ли это имя другим файлом-исходником
     if (targetPath) {
-      const existingObj = projectData.Objects.find((o: any) => o.Name === name);
-      if (existingObj && existingObj.Path !== targetPath) {
-        return false; // Имя занято другой картинкой!
-      }
+      const existingObj = projectData.Objects.find(
+        (o: AssetObject) => o.Name === name,
+      );
+      if (existingObj && existingObj.Path !== targetPath) return false;
     }
-
     return true;
   },
 
   getUniqueInstanceName: (baseName: string, targetPath: string) => {
     let uniqueName = baseName;
     let counter = 1;
-    // Умно инкрементируем, пока не найдем свободное
     while (!get().isNameUnique(uniqueName, targetPath)) {
       uniqueName = `${baseName}_${counter}`;
       counter++;
@@ -343,10 +327,13 @@ export const createObjectsSlice: StateCreator<
     const { projectData } = get();
     if (!projectData) return [];
 
-    const instances: Array<{ screenIdx: number; iconIdx: number; icon: any }> =
-      [];
-    projectData.Screens.forEach((screen: any, screenIdx: number) => {
-      screen.Icons?.forEach((icon: any, iconIdx: number) => {
+    const instances: Array<{
+      screenIdx: number;
+      iconIdx: number;
+      icon: IconInstance;
+    }> = [];
+    projectData.Screens.forEach((screen: ScreenData, screenIdx: number) => {
+      screen.Icons?.forEach((icon: IconInstance, iconIdx: number) => {
         if (icon.Name === assetName)
           instances.push({ screenIdx, iconIdx, icon });
       });

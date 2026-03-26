@@ -1,6 +1,6 @@
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
-import { useAppStore } from "@/store/useAppStore";
+import { useAppStore, type RecentProject } from "@/store/useAppStore";
 import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ import {
 import { ProjectActions } from "./ProjectActions";
 import { formatRelativeTime } from "@/lib/utils";
 
-export function ProjectCard({ project }: { project: any }) {
+export function ProjectCard({ project }: { project: RecentProject }) {
   const { setProject } = useProjectStore();
   const { loadWorkspace, resetCanvas } = useCanvasStore();
   const {
@@ -89,13 +89,10 @@ export function ProjectCard({ project }: { project: any }) {
           isHovered || isSelected
             ? "opacity-100 visible"
             : "opacity-0 invisible"
-          }`}
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={handleCheckboxClick}
-        />
+        <Checkbox checked={isSelected} onCheckedChange={handleCheckboxClick} />
       </div>
       {/* ПРЕВЬЮ ПРОЕКТА */}
       <div className="aspect-video w-full bg-black/40 relative flex items-center justify-center overflow-hidden">

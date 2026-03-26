@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import type { ProjectStore, ScannedFile } from "./types";
 import type { StateCreator } from "zustand";
 import { normalizeProjectPaths } from "@/lib/utils";
+import type { ProjectData, AssetObject } from "@/types/project";
 
 export const createProjectSlice: StateCreator<
   ProjectStore,
@@ -26,14 +27,14 @@ export const createProjectSlice: StateCreator<
   scannedFiles: [],
 
   setProject: async (arg1, arg2) => {
-    let data: any;
+    let data: ProjectData;
     let path: string;
 
     if (typeof arg1 === "string") {
       path = arg1;
-      data = arg2;
+      data = arg2 as ProjectData;
     } else {
-      data = arg1;
+      data = arg1 as ProjectData;
       path = arg2 as string;
     }
 
@@ -53,7 +54,6 @@ export const createProjectSlice: StateCreator<
     );
     const baseDir = lastIdx !== -1 ? cleanPath.substring(0, lastIdx) : "";
 
-    // Load spriteAssets from .rtoolkit/canvas.json
     let spriteAssets: Record<string, boolean> = {};
     try {
       const canvasContent = await invoke<string>("load_project", {
@@ -61,23 +61,18 @@ export const createProjectSlice: StateCreator<
       });
       const canvasConfig = JSON.parse(canvasContent);
       spriteAssets = canvasConfig.spriteAssets || {};
-    } catch {
-      // No canvas.json yet — spriteAssets stays empty
-    }
+    } catch {}
 
     if (data.Objects) {
-      data.Objects = data.Objects.map((obj: any) => ({
+      data.Objects = data.Objects.map((obj: AssetObject) => ({
         ...obj,
         isSprite: spriteAssets[obj.Name] ?? false,
       }));
     }
 
     set({ projectData: data, projectPath: cleanPath, baseDir });
-
-    // Сохраняем путь к проекту в sessionStorage для восстановления при обновлении
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined")
       sessionStorage.setItem("projectPath", cleanPath);
-    }
   },
 
   scanDirectory: async () => {
@@ -100,7 +95,7 @@ export const createProjectSlice: StateCreator<
     const { projectData, projectPath } = get();
     if (!projectData || !projectPath) return;
 
-    const updatedObjects = projectData.Objects.map((obj: any) => {
+    const updatedObjects = projectData.Objects.map((obj: AssetObject) => {
       const existingType = obj.Type;
       const isBackground = obj.Path.toLowerCase().includes("backgrounds");
       const isPal = existingType === "Pal";
@@ -108,9 +103,9 @@ export const createProjectSlice: StateCreator<
       return {
         ...cleanObj,
         Type: isPal ? "Pal" : isBackground ? "Bin" : "Ico",
-      };
-    }).sort((a: any, b: any) => {
-      const getOrder = (obj: any) => {
+      } as AssetObject;
+    }).sort((a: AssetObject, b: AssetObject) => {
+      const getOrder = (obj: AssetObject) => {
         if (obj.Path.toLowerCase().includes("backgrounds")) return 0;
         if (obj.Path.toLowerCase().includes("sprites")) return 2;
         return 1;
@@ -118,7 +113,6 @@ export const createProjectSlice: StateCreator<
       return getOrder(a) - getOrder(b);
     });
 
-    // Нормализуем все пути перед сохранением (конвертируем \ в /)
     const sortedData = normalizeProjectPaths({
       ...projectData,
       Objects: updatedObjects,

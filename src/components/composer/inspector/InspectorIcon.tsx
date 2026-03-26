@@ -66,7 +66,6 @@ export function InspectorIcon() {
               backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
             }}
           />
-
           {asset && (
             <img
               src={previewSrc}
@@ -80,7 +79,6 @@ export function InspectorIcon() {
             />
           )}
           <FileImage className="fallback-icon hidden w-12 h-12 text-muted-foreground opacity-20" />
-
           {isViewMode && (
             <div className="absolute top-2 right-2 p-1.5 bg-background/80 rounded-md backdrop-blur-sm border border-border shadow-sm">
               <Lock className="w-3.5 h-3.5 text-muted-foreground" />
@@ -117,11 +115,13 @@ export function InspectorIcon() {
       {/* СКРОЛЛ НАСТРОЕК */}
       <ScrollArea className="flex-1 min-h-0 mt-4">
         <div className="space-y-6 pb-6 pr-4">
-          <IconTransform
-            screenIdx={activeScreenIdx}
-            iconIdx={selectedIconIndex}
-            isViewMode={isViewMode}
-          />
+          <div>
+            <IconTransform
+              screenIdx={activeScreenIdx}
+              iconIdx={selectedIconIndex}
+              isViewMode={isViewMode}
+            />
+          </div>
           <IconAssetInfo assetName={icon.Name} isViewMode={isViewMode} />
           {isSprite && (
             <IconSpriteFrames

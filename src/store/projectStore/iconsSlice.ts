@@ -2,6 +2,12 @@ import { toast } from "sonner";
 import type { ProjectStore } from "./types";
 import type { StateCreator } from "zustand";
 import { useHistoryStore } from "../useHistory";
+import type {
+  ScreenData,
+  IconInstance,
+  ColorState,
+  AssetObject,
+} from "@/types/project";
 
 export const createIconsSlice: StateCreator<
   ProjectStore,
@@ -79,7 +85,7 @@ export const createIconsSlice: StateCreator<
         projectData: {
           ...state.projectData,
           Screens: state.projectData.Screens.filter(
-            (_: any, i: number) => i !== index,
+            (_: ScreenData, i: number) => i !== index,
           ),
         },
       };
@@ -146,13 +152,13 @@ export const createIconsSlice: StateCreator<
       if (!state.projectData) return state;
       const newScreens = [...state.projectData.Screens];
       const icon = newScreens[screenIdx].Icons[iconIdx];
-      const newStates = [
+      const newStates: ColorState[] = [
         ...(icon.States || []),
         { Name: "NEW_STATE", Color: "WHITE" },
       ];
       newScreens[screenIdx] = {
         ...newScreens[screenIdx],
-        Icons: newScreens[screenIdx].Icons.map((ic: any, i: number) =>
+        Icons: newScreens[screenIdx].Icons.map((ic: IconInstance, i: number) =>
           i === iconIdx ? { ...ic, States: newStates } : ic,
         ),
       };
@@ -166,12 +172,12 @@ export const createIconsSlice: StateCreator<
       if (!state.projectData) return state;
       const newScreens = [...state.projectData.Screens];
       const icon = newScreens[screenIdx].Icons[iconIdx];
-      const newStates = (icon.States || []).map((s: any, i: number) =>
+      const newStates = (icon.States || []).map((s: ColorState, i: number) =>
         i === stateIdx ? { ...s, ...updates } : s,
       );
       newScreens[screenIdx] = {
         ...newScreens[screenIdx],
-        Icons: newScreens[screenIdx].Icons.map((ic: any, i: number) =>
+        Icons: newScreens[screenIdx].Icons.map((ic: IconInstance, i: number) =>
           i === iconIdx ? { ...ic, States: newStates } : ic,
         ),
       };
@@ -186,11 +192,11 @@ export const createIconsSlice: StateCreator<
       const newScreens = [...state.projectData.Screens];
       const icon = newScreens[screenIdx].Icons[iconIdx];
       const newStates = (icon.States || []).filter(
-        (_: any, i: number) => i !== stateIdx,
+        (_: ColorState, i: number) => i !== stateIdx,
       );
       newScreens[screenIdx] = {
         ...newScreens[screenIdx],
-        Icons: newScreens[screenIdx].Icons.map((ic: any, i: number) =>
+        Icons: newScreens[screenIdx].Icons.map((ic: IconInstance, i: number) =>
           i === iconIdx ? { ...ic, States: newStates } : ic,
         ),
       };
@@ -204,7 +210,7 @@ export const createIconsSlice: StateCreator<
     if (!projectData) return false;
 
     const asset = projectData.Objects.find(
-      (obj: any) => obj.Name === assetName,
+      (obj: AssetObject) => obj.Name === assetName,
     );
     if (!asset) return false;
 
@@ -218,7 +224,7 @@ export const createIconsSlice: StateCreator<
       return false;
     }
 
-    const newInstance = {
+    const newInstance: IconInstance = {
       Name: instanceName,
       X: options?.x ?? 0,
       Y: options?.y ?? 0,
@@ -232,8 +238,8 @@ export const createIconsSlice: StateCreator<
       screen.Icons = [...(screen.Icons || []), newInstance];
       screens[screenIdx] = screen;
 
-      let newObjects = [...state.projectData.Objects];
-      if (!newObjects.some((obj: any) => obj.Name === instanceName)) {
+      const newObjects = [...state.projectData.Objects];
+      if (!newObjects.some((obj: AssetObject) => obj.Name === instanceName)) {
         newObjects.push({
           Name: instanceName,
           Path: asset.Path,
@@ -265,7 +271,9 @@ export const createIconsSlice: StateCreator<
     const oldName = icon.Name;
     if (oldName === newName) return true;
 
-    const asset = projectData.Objects.find((obj: any) => obj.Name === oldName);
+    const asset = projectData.Objects.find(
+      (obj: AssetObject) => obj.Name === oldName,
+    );
 
     if (!get().isNameUnique(newName, asset?.Path || "")) {
       toast.error(`Name "${newName}" already exists`, {
@@ -283,17 +291,17 @@ export const createIconsSlice: StateCreator<
       screens[screenIdx] = screen;
 
       let newObjects = [...state.projectData.Objects];
-      if (asset && !newObjects.some((o: any) => o.Name === newName)) {
+      if (asset && !newObjects.some((o: AssetObject) => o.Name === newName)) {
         newObjects.push({ ...asset, Name: newName });
       }
 
       const isOldNameUsed = screens.some(
         (s) =>
           s.Background === oldName ||
-          s.Icons?.some((i: any) => i.Name === oldName),
+          s.Icons?.some((i: IconInstance) => i.Name === oldName),
       );
       if (!isOldNameUsed) {
-        newObjects = newObjects.filter((o: any) => o.Name !== oldName);
+        newObjects = newObjects.filter((o: AssetObject) => o.Name !== oldName);
       }
 
       return {
@@ -318,13 +326,12 @@ export const createIconsSlice: StateCreator<
     if (!icon) return false;
 
     const asset = projectData.Objects.find(
-      (obj: any) => obj.Name === icon.Name,
+      (obj: AssetObject) => obj.Name === icon.Name,
     );
-
     const baseName = icon.Name.replace(/(_copy\d*|_\d+)$/, "");
     const newName = get().getUniqueInstanceName(baseName, asset?.Path || "");
 
-    const duplicate = {
+    const duplicate: IconInstance = {
       ...icon,
       Name: newName,
       X: icon.X + 20,
@@ -341,8 +348,8 @@ export const createIconsSlice: StateCreator<
       screen.Icons = [...(screen.Icons || []), duplicate];
       screens[screenIdx] = screen;
 
-      let newObjects = [...state.projectData.Objects];
-      if (asset && !newObjects.some((o: any) => o.Name === newName)) {
+      const newObjects = [...state.projectData.Objects];
+      if (asset && !newObjects.some((o: AssetObject) => o.Name === newName)) {
         newObjects.push({ ...asset, Name: newName });
       }
 
@@ -374,18 +381,20 @@ export const createIconsSlice: StateCreator<
       const screens = [...state.projectData.Screens];
       const screen = { ...screens[screenIdx] };
       screen.Icons = (screen.Icons || []).filter(
-        (_: any, i: number) => i !== iconIdx,
+        (_: IconInstance, i: number) => i !== iconIdx,
       );
       screens[screenIdx] = screen;
 
       const isUsedElsewhere = screens.some(
-        (s: any) =>
+        (s) =>
           s.Background === iconName ||
-          s.Icons?.some((ic: any) => ic.Name === iconName),
+          s.Icons?.some((ic: IconInstance) => ic.Name === iconName),
       );
       const newObjects = isUsedElsewhere
         ? state.projectData.Objects
-        : state.projectData.Objects.filter((obj: any) => obj.Name !== iconName);
+        : state.projectData.Objects.filter(
+            (obj: AssetObject) => obj.Name !== iconName,
+          );
 
       return {
         projectData: {
@@ -399,8 +408,6 @@ export const createIconsSlice: StateCreator<
     useHistoryStore.getState().push(`Deleted "${iconName}"`);
     toast.success(`Removed "${iconName}"`, { id: "instance-removed" });
   },
-
-  // === ВОССТАНОВЛЕННЫЕ ФУНКЦИИ МАССОВЫХ ДЕЙСТВИЙ ===
 
   deleteColors: (names) => {
     set((state) => {
@@ -420,7 +427,7 @@ export const createIconsSlice: StateCreator<
         projectData: {
           ...state.projectData,
           Screens: state.projectData.Screens.filter(
-            (_: any, i: number) => !toDelete.has(i),
+            (_: ScreenData, i: number) => !toDelete.has(i),
           ),
         },
       };
@@ -454,7 +461,7 @@ export const createIconsSlice: StateCreator<
       const toDelete = new Set(iconIndices);
 
       screen.Icons = (screen.Icons || []).filter(
-        (_: any, i: number) => !toDelete.has(i),
+        (_: IconInstance, i: number) => !toDelete.has(i),
       );
       screens[screenIdx] = screen;
 

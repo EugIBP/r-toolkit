@@ -1,16 +1,22 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Trash2, CheckSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAppStore } from "@/store/useAppStore";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckSquare, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { type RecentProject, useAppStore } from "@/store/useAppStore";
+
 interface BulkActionsBarProps {
-  visibleProjects: any[];
+  visibleProjects: RecentProject[];
 }
 
 export function BulkActionsBar({ visibleProjects }: BulkActionsBarProps) {
-  const { selectedProjectIds, clearSelection, removeRecent, selectAll, confirm } =
-    useAppStore();
+  const {
+    selectedProjectIds,
+    clearSelection,
+    removeRecent,
+    selectAll,
+    confirm,
+  } = useAppStore();
 
   const selectedCount = selectedProjectIds.size;
 
@@ -30,7 +36,7 @@ export function BulkActionsBar({ visibleProjects }: BulkActionsBarProps) {
         id: "bulk-delete-success",
       });
       clearSelection();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete workspaces", {
         id: "bulk-delete-error",
       });
@@ -44,7 +50,9 @@ export function BulkActionsBar({ visibleProjects }: BulkActionsBarProps) {
     if (allSelected) {
       // Deselect all visible
       const newSelected = new Set(selectedProjectIds);
-      visibleIds.forEach((id) => newSelected.delete(id));
+      visibleIds.forEach((id) => {
+        newSelected.delete(id);
+      });
       useAppStore.getState().selectedProjectIds = newSelected;
       useAppStore.getState().clearSelection();
     } else {
@@ -98,12 +106,14 @@ export function BulkActionsBar({ visibleProjects }: BulkActionsBarProps) {
 
             <div className="h-4 w-px bg-white/10" />
 
-            <button
+            <Button
+              variant="ghost-dark"
+              size="icon-sm"
               onClick={clearSelection}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+              className="rounded-lg"
             >
               <X className="w-4 h-4 text-muted-foreground" />
-            </button>
+            </Button>
           </div>
         </motion.div>
       )}

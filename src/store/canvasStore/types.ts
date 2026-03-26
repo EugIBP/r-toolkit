@@ -1,4 +1,13 @@
-// src/store/canvasStore/types.ts
+import type { LayoutGrid } from "@/types/project";
+
+export interface GuideLine {
+  axis: "x" | "y";
+  pos: number;
+  type: "canvas" | "icon" | "layout";
+  span?: [number, number];
+  lineSpan?: [number, number];
+  color?: string;
+}
 
 export interface CanvasStore {
   // --- UI Store ---
@@ -11,6 +20,8 @@ export interface CanvasStore {
   showScreenSettings: boolean;
   screenListMode: "list" | "detail";
   previewBgPath: string | null;
+  activeGuides: GuideLine[];
+  screenLayouts: Record<number, LayoutGrid[]>;
 
   setZoom: (value: number) => void;
   resetZoom: () => void;
@@ -24,6 +35,18 @@ export interface CanvasStore {
   setShowScreenSettings: (show: boolean) => void;
   setScreenListMode: (mode: "list" | "detail") => void;
   setPreviewBgPath: (path: string | null) => void;
+  setActiveGuides: (guides: GuideLine[]) => void;
+
+  // --- Grids Layout ---
+  addLayout: (screenIdx: number) => string;
+  updateLayout: (
+    screenIdx: number,
+    layoutId: string,
+    updates: Partial<LayoutGrid>,
+  ) => void;
+  deleteLayout: (screenIdx: number, layoutId: string) => void;
+  duplicateLayout: (screenIdx: number, layoutId: string) => string | undefined;
+  setScreenLayouts: (screenIdx: number, layouts: LayoutGrid[]) => void;
 
   // --- Selection Store ---
   selectedIconIndex: number | null;

@@ -1,12 +1,12 @@
 import { useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SettingsModal } from "@/components/layout/SettingsModal";
+import { LayoutManagerModal } from "@/components/modals/LayoutManagerModal";
 import { useAppStore } from "@/store/useAppStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import { invoke } from "@tauri-apps/api/core";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { UpdateDialog } from "@/components/ui/UpdateDialog";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
+import { UpdateDialog } from "@/components/modals/UpdateDialog";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
 import {
@@ -61,10 +61,18 @@ export default function App() {
   // Восстановление проекта при обновлении страницы
   useEffect(() => {
     const restoreProject = async () => {
-      const savedPath = sessionStorage.getItem('projectPath');
-      const savedView = sessionStorage.getItem('currentView') as 'dashboard' | 'composer' | 'dither' | null;
-      
-      if (savedPath && savedView && (savedView === 'composer' || savedView === 'dither')) {
+      const savedPath = sessionStorage.getItem("projectPath");
+      const savedView = sessionStorage.getItem("currentView") as
+        | "dashboard"
+        | "composer"
+        | "dither"
+        | null;
+
+      if (
+        savedPath &&
+        savedView &&
+        (savedView === "composer" || savedView === "dither")
+      ) {
         try {
           const content = await invoke<string>("load_project", {
             filePath: savedPath,
@@ -75,30 +83,29 @@ export default function App() {
             savedPath.lastIndexOf("\\"),
           );
           const baseDir = savedPath.substring(0, lastIdx);
-          
+
           setProject(data, savedPath);
           await resetCanvas();
           await loadWorkspace(baseDir);
         } catch (err) {
-          console.error('Failed to restore project:', err);
-          sessionStorage.removeItem('currentView');
-          sessionStorage.removeItem('projectPath');
-          setCurrentView('dashboard');
+          console.error("Failed to restore project:", err);
+          sessionStorage.removeItem("currentView");
+          sessionStorage.removeItem("projectPath");
+          setCurrentView("dashboard");
         }
       }
     };
-    
+
     restoreProject();
   }, []);
 
   // Если currentView = composer, но проект не загружен после монтирования, сбрасываем на dashboard
   useEffect(() => {
-    // Даем больше времени на загрузку проекта (если пользователь только что открыл его)
     const timer = setTimeout(() => {
-      if (currentView === 'composer' && !projectPath) {
-        console.log('No project path found, redirecting to dashboard');
-        sessionStorage.removeItem('currentView');
-        setCurrentView('dashboard');
+      if (currentView === "composer" && !projectPath) {
+        console.log("No project path found, redirecting to dashboard");
+        sessionStorage.removeItem("currentView");
+        setCurrentView("dashboard");
       }
     }, 1500);
 
@@ -184,7 +191,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <SettingsModal />
+      <LayoutManagerModal />
       <ConfirmModal />
       {pendingUpdate && <UpdateDialog updateInfo={pendingUpdate} />}
 

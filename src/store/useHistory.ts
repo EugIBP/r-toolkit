@@ -2,12 +2,13 @@ import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { useProjectStore } from "./useProjectStore";
 import { useCanvasStore } from "./useCanvasStore";
+import type { ProjectData } from "@/types/project";
 
 export interface HistoryEntry {
   id: string;
   description: string;
   timestamp: number;
-  projectData: any;
+  projectData: ProjectData;
   canvasData: {
     iconFrames: Record<number, Record<string, number>>;
     iconFrameCounts: Record<number, Record<string, number>>;
@@ -22,7 +23,10 @@ interface HistoryStore {
   maxSteps: number;
   isInitialized: boolean;
 
-  initialize: (baseDir: string | null, historyMaxSteps?: number) => Promise<void>;
+  initialize: (
+    baseDir: string | null,
+    historyMaxSteps?: number,
+  ) => Promise<void>;
   closeProject: () => void;
   push: (description: string) => void;
   undo: () => void;
@@ -40,7 +44,6 @@ const MAX_DEFAULT_STEPS = 50;
 const saveSettings = async (baseDir: string, maxSteps: number) => {
   const base = baseDir.replace(/[\\/]$/, "");
   const settingsPath = `${base}/.rtoolkit/settings.json`;
-
   const canvasStore = useCanvasStore.getState();
 
   const settingsToSave = {
@@ -52,25 +55,22 @@ const saveSettings = async (baseDir: string, maxSteps: number) => {
     autoSaveInterval: canvasStore.autoSaveInterval,
   };
 
-  console.log("saveSettings:", { baseDir, base, settingsPath, settingsToSave });
-
   try {
-    const content = await invoke<string>("load_project", { filePath: settingsPath });
+    const content = await invoke<string>("load_project", {
+      filePath: settingsPath,
+    });
     const settings = JSON.parse(content);
     const updatedSettings = { ...settings, ...settingsToSave };
     await invoke("save_text_file", {
       path: settingsPath,
       content: JSON.stringify(updatedSettings, null, 2),
     });
-    console.log("Settings updated successfully");
   } catch (e) {
-    console.error("Failed to update settings:", e);
     try {
       await invoke("save_text_file", {
         path: settingsPath,
         content: JSON.stringify(settingsToSave, null, 2),
       });
-      console.log("Settings created successfully");
     } catch (e2) {
       console.error("Failed to create settings:", e2);
     }
@@ -85,17 +85,19 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
   initialize: async (baseDir: string | null, historyMaxSteps?: number) => {
     if (!baseDir) {
-      set({ entries: [], currentIndex: -1, maxSteps: MAX_DEFAULT_STEPS, isInitialized: true });
+      set({
+        entries: [],
+        currentIndex: -1,
+        maxSteps: MAX_DEFAULT_STEPS,
+        isInitialized: true,
+      });
       return;
     }
 
     const maxSteps = historyMaxSteps ?? MAX_DEFAULT_STEPS;
-    console.log("History init:", { baseDir, historyMaxSteps, maxSteps });
-    
-    // Сохраняем начальное состояние проекта как первую запись в истории
     const projectData = useProjectStore.getState().projectData;
     const canvasStore = useCanvasStore.getState();
-    
+
     if (projectData) {
       const canvasData = {
         iconFrames: canvasStore.iconFrames,
@@ -103,7 +105,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         iconOrientations: canvasStore.iconOrientations,
         selectedStates: canvasStore.selectedStates,
       };
-      
+
       const initialEntry: HistoryEntry = {
         id: generateId(),
         description: "Initial state",
@@ -111,16 +113,19 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         projectData: JSON.parse(JSON.stringify(projectData)),
         canvasData: JSON.parse(JSON.stringify(canvasData)),
       };
-      
-      set({ entries: [initialEntry], currentIndex: 0, maxSteps, isInitialized: true });
+
+      set({
+        entries: [initialEntry],
+        currentIndex: 0,
+        maxSteps,
+        isInitialized: true,
+      });
     } else {
       set({ entries: [], currentIndex: -1, maxSteps, isInitialized: true });
     }
   },
 
-  closeProject: () => {
-    set({ entries: [], currentIndex: -1 });
-  },
+  closeProject: () => set({ entries: [], currentIndex: -1 }),
 
   push: (description: string) => {
     const { currentIndex, entries, maxSteps } = get();
@@ -146,93 +151,51 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
     const newEntries = entries.slice(0, currentIndex + 1);
     newEntries.push(newEntry);
+    while (newEntries.length > maxSteps) newEntries.shift();
 
-    while (newEntries.length > maxSteps) {
-      newEntries.shift();
-    }
-
-    set({
-      entries: newEntries,
-      currentIndex: newEntries.length - 1,
-    });
+    set({ entries: newEntries, currentIndex: newEntries.length - 1 });
   },
 
   undo: () => {
     const { currentIndex, entries } = get();
-    if (currentIndex < 0) return;
-
+    if (currentIndex <= 0) return;
     const newIndex = currentIndex - 1;
-    if (newIndex < 0) return;
-    
     const entry = entries[newIndex];
 
     useProjectStore.setState({ projectData: entry.projectData });
-    useCanvasStore.setState({
-      iconFrames: entry.canvasData.iconFrames,
-      iconFrameCounts: entry.canvasData.iconFrameCounts,
-      iconOrientations: entry.canvasData.iconOrientations,
-      selectedStates: entry.canvasData.selectedStates,
-    });
-
+    useCanvasStore.setState(entry.canvasData);
     set({ currentIndex: newIndex });
   },
 
   redo: () => {
     const { currentIndex, entries } = get();
     if (currentIndex >= entries.length - 1) return;
-
     const newIndex = currentIndex + 1;
     const entry = entries[newIndex];
 
     useProjectStore.setState({ projectData: entry.projectData });
-    useCanvasStore.setState({
-      iconFrames: entry.canvasData.iconFrames,
-      iconFrameCounts: entry.canvasData.iconFrameCounts,
-      iconOrientations: entry.canvasData.iconOrientations,
-      selectedStates: entry.canvasData.selectedStates,
-    });
-
+    useCanvasStore.setState(entry.canvasData);
     set({ currentIndex: newIndex });
   },
 
-  clear: () => {
-    set({ entries: [], currentIndex: -1 });
-  },
+  clear: () => set({ entries: [], currentIndex: -1 }),
 
   setMaxSteps: async (steps: number) => {
     const clamped = Math.max(1, Math.min(100, steps));
     const baseDir = useProjectStore.getState().baseDir;
-    console.log("setMaxSteps:", { steps, clamped, baseDir });
     set({ maxSteps: clamped });
-
-    if (baseDir) {
-      await saveSettings(baseDir, clamped);
-      console.log("Settings saved!");
-    } else {
-      console.log("No baseDir, settings not saved!");
-    }
+    if (baseDir) await saveSettings(baseDir, clamped);
   },
 
   canUndo: () => get().currentIndex > 0,
-
-  canRedo: () => {
-    const { currentIndex, entries } = get();
-    return currentIndex < entries.length - 1;
-  },
+  canRedo: () => get().currentIndex < get().entries.length - 1,
 
   jumpTo: (index: number) => {
     const { entries } = get();
     if (index < 0 || index >= entries.length) return;
-
     const entry = entries[index];
     useProjectStore.setState({ projectData: entry.projectData });
-    useCanvasStore.setState({
-      iconFrames: entry.canvasData.iconFrames,
-      iconFrameCounts: entry.canvasData.iconFrameCounts,
-      iconOrientations: entry.canvasData.iconOrientations,
-      selectedStates: entry.canvasData.selectedStates,
-    });
-
+    useCanvasStore.setState(entry.canvasData);
     set({ currentIndex: index });
   },
 }));

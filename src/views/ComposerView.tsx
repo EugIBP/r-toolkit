@@ -1,23 +1,28 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { convertFileSrc } from "@tauri-apps/api/core";
+
+import { LayoutRenderer } from "@/components/layout/LayoutRenderer";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
 import { useAppStore } from "@/store/useAppStore";
 import { useHistoryStore } from "@/store/useHistory";
+import { useCanvasInteraction } from "./hooks/useCanvasInteraction";
+
 import { SmartIcon } from "@/components/canvas/entities/SmartIcon";
 import { Explorer } from "@/components/composer/Explorer";
 import { Inspector } from "@/components/composer/Inspector";
 import { ComposerTopBar } from "@/components/composer/ComposerTopBar";
 import { HotkeysPanel } from "@/components/composer/HotkeysPanel";
 import { HistoryPanel } from "@/components/composer/HistoryPanel";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { BackButton } from "@/components/ui/back-button";
-import { useCanvasInteraction } from "./hooks/useCanvasInteraction";
 import { Separator } from "@/components/ui/separator";
+
 import {
   requestIdleCallbackCompat,
   cancelIdleCallbackCompat,
 } from "@/lib/utils";
+import type { IconInstance, AssetObject } from "@/types/project";
 
 export function ComposerView() {
   const { projectData, projectPath, saveProject } = useProjectStore();
@@ -26,6 +31,7 @@ export function ComposerView() {
   const { setCurrentView, recentProjects } = useAppStore();
   const {
     zoom,
+    snapToGrid,
     setSelectedIcon,
     setSelectedColorKey,
     setSelectedAssetPath,
@@ -42,6 +48,9 @@ export function ComposerView() {
     previewBgPath,
     setPreviewBgPath,
     stackThreshold,
+    canvasMode,
+    selectedIconIndex,
+    activeGuides,
   } = useCanvasStore();
 
   const { containerRef, offset, isMiddlePanning, handleMouseDown } =
@@ -73,10 +82,16 @@ export function ComposerView() {
     ],
   );
 
-  // ESC сбрасывает выделение или очищает поиск, Ctrl+Z undo, Ctrl+Shift+Z redo, Ctrl+S save workspace, Ctrl+Shift+S save project, Ctrl+K search
   const { undo, redo, canUndo, canRedo } = useHistoryStore();
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Игнорируем хоткеи, если пользователь печатает текст в инспекторе
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+
       if (e.code === "Escape") {
         e.preventDefault();
         if (searchQuery) {
@@ -89,6 +104,25 @@ export function ComposerView() {
           setPreviewBgPath(null);
         }
       }
+
+      if (canvasMode === "edit" && selectedIconIndex !== null) {
+        if (e.key === "Delete" || e.key === "Backspace") {
+          e.preventDefault();
+          useProjectStore
+            .getState()
+            .deleteIcon(activeScreenIdx, selectedIconIndex);
+          setSelectedIcon(null);
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.code === "KeyD") {
+          e.preventDefault();
+          useProjectStore
+            .getState()
+            .duplicateIcon(activeScreenIdx, selectedIconIndex);
+          return;
+        }
+      }
+
       if ((e.ctrlKey || e.metaKey) && e.code === "KeyZ" && !e.shiftKey) {
         e.preventDefault();
         if (canUndo()) undo();
@@ -122,13 +156,16 @@ export function ComposerView() {
     setSelectedColorKey,
     setSelectedAssetPath,
     setExpandedStackIndices,
+    setPreviewBgPath,
     undo,
     redo,
     canUndo,
     canRedo,
     saveWorkspace,
     saveProject,
-    searchInputRef,
+    canvasMode,
+    selectedIconIndex,
+    activeScreenIdx,
   ]);
 
   const stackedIcons = useMemo(() => {
@@ -136,7 +173,7 @@ export function ComposerView() {
       return new Map<string, number[]>();
     const icons = projectData.Screens[activeScreenIdx].Icons;
     const stackMap = new Map<string, number[]>();
-    icons.forEach((icon: any, idx: number) => {
+    icons.forEach((icon: IconInstance, idx: number) => {
       const key = `${Math.round(icon.X / stackThreshold)}_${Math.round(icon.Y / stackThreshold)}`;
       if (!stackMap.has(key)) stackMap.set(key, []);
       stackMap.get(key)!.push(idx);
@@ -148,8 +185,6 @@ export function ComposerView() {
     return result;
   }, [projectData, activeScreenIdx, stackThreshold]);
 
-  // Батчинг рендера иконок: показываем по BATCH_SIZE штук за раз,
-  // чтобы не блокировать UI при открытии экрана с большим количеством ассетов.
   const BATCH_SIZE = 20;
   const totalIcons =
     projectData?.Screens?.[activeScreenIdx]?.Icons?.length ?? 0;
@@ -187,7 +222,7 @@ export function ComposerView() {
   const currentBg = (() => {
     if (!activeScreen.Background || !projectPath) return null;
     const bgAsset = projectData.Objects.find(
-      (o: any) => o.Name === activeScreen.Background,
+      (o: AssetObject) => o.Name === activeScreen.Background,
     );
     if (!bgAsset) return null;
     const lastIdx = Math.max(
@@ -275,9 +310,7 @@ export function ComposerView() {
                 height: canvasHeight,
               }}
             >
-              {/* Границы рабочей области с мягким свечением */}
               <div className="absolute inset-0 border border-white/40 pointer-events-none z-[1000] shadow-[0_0_15px_rgba(0,0,0,0.3)]" />
-              {/* Размеры области */}
               <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-mono text-white/60 bg-black/40 px-2 py-0.5 rounded whitespace-nowrap z-[1001]">
                 {projectData.DisplayWidth || 1920} ×{" "}
                 {projectData.DisplayHeight || 1080}
@@ -318,18 +351,9 @@ export function ComposerView() {
                     assetFilter !== "sprites" &&
                     assetFilter !== "stacked" && (
                       <motion.img
-                        initial={{
-                          opacity: 0,
-                          scale: 1.1,
-                        }}
-                        animate={{
-                          opacity: searchQuery ? 0.15 : 1,
-                          scale: 1,
-                        }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.1,
-                        }}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: searchQuery ? 0.15 : 1, scale: 1 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
                         src={currentBg}
                         alt=""
                         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
@@ -349,6 +373,8 @@ export function ComposerView() {
                     />
                   )}
 
+                  <LayoutRenderer />
+
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -358,9 +384,9 @@ export function ComposerView() {
                     }}
                   >
                     {activeScreen.Icons?.slice(0, visibleCount).map(
-                      (icon: any, idx: number) => {
+                      (icon: IconInstance, idx: number) => {
                         const asset = projectData.Objects.find(
-                          (o: any) => o.Name === icon.Name,
+                          (o: AssetObject) => o.Name === icon.Name,
                         );
                         const isSprite =
                           asset?.isSprite ||
@@ -386,10 +412,9 @@ export function ComposerView() {
                             searchQuery.toLowerCase(),
                           );
                         const selectedAsset = projectData.Objects.find(
-                          (o: any) => o.Path === selectedAssetPath,
+                          (o: AssetObject) => o.Path === selectedAssetPath,
                         );
 
-                        // Проверяем, выбрана ли эта иконка ИЛИ стек раскрыт и эта иконка в нём
                         const isSelectedAsset =
                           asset && asset.Path === selectedAsset?.Path;
                         const isInExpandedStack =
@@ -406,7 +431,7 @@ export function ComposerView() {
                         const centerIndex = isStackExpanded
                           ? (expandedStackIndices.length - 1) / 2
                           : 0;
-                        // Шаг = реальная ширина иконки (из naturalSize) + зазор 16px
+
                         const naturalW = asset
                           ? (iconNaturalSizes[asset.Path]?.width ?? 64)
                           : 64;
@@ -428,7 +453,6 @@ export function ComposerView() {
 
                           if (isStacked) {
                             if (!expandedStackIndices) {
-                              // Стек закрыт — раскрыть
                               const key = Array.from(stackedIcons.keys()).find(
                                 (k) => stackedIcons.get(k)?.includes(idx),
                               );
@@ -436,10 +460,8 @@ export function ComposerView() {
                                 stackedIcons.get(key || "") || [],
                               );
                             } else if (isInExpandedStack) {
-                              // Клик по иконке из раскрытого стека — выбрать, стек остаётся открытым
                               setSelectedIcon(idx);
                             } else {
-                              // Клик по иконке из другого стека — переключить на него
                               const key = Array.from(stackedIcons.keys()).find(
                                 (k) => stackedIcons.get(k)?.includes(idx),
                               );
@@ -500,6 +522,79 @@ export function ComposerView() {
                   </motion.div>
                 </motion.div>
               </AnimatePresence>
+
+              {/* РЕНДЕР УМНЫХ НАПРАВЛЯЮЩИХ (SMART GUIDES) */}
+              {activeGuides?.map((guide, i) => {
+                const isCanvas = guide.type === "canvas";
+                const isLayout = guide.type === "layout";
+
+                // Определяем базовый цвет (классом или инлайн-стилем)
+                let colorClass = "";
+                if (isCanvas) colorClass = "bg-fuchsia-500";
+                else if (!isLayout) {
+                  colorClass = snapToGrid ? "bg-blue-500" : "bg-amber-400";
+                }
+
+                // Тень (свечение) для линий
+                const shadowColor = isCanvas
+                  ? "rgba(217,70,239,0.8)"
+                  : isLayout
+                    ? guide.color // Свечение цветом самой сетки
+                    : snapToGrid
+                      ? "rgba(59,130,246,0.8)"
+                      : "rgba(251,191,36,0.8)";
+
+                const isX = guide.axis === "x";
+
+                const lineStyle: React.CSSProperties = {
+                  ...(isLayout ? { backgroundColor: guide.color } : {}),
+                };
+
+                if (isCanvas || isLayout) {
+                  // Для канваса и сеток рисуем линию через весь экран
+                  lineStyle[isX ? "left" : "top"] = guide.pos * zoom;
+                } else {
+                  // Для магнита к иконкам рисуем только короткий отрезок
+                  lineStyle[isX ? "left" : "top"] = guide.pos * zoom - 0.5;
+                  lineStyle[isX ? "top" : "left"] =
+                    (guide.lineSpan?.[0] || 0) * zoom;
+                  lineStyle[isX ? "height" : "width"] =
+                    ((guide.lineSpan?.[1] || 0) - (guide.lineSpan?.[0] || 0)) *
+                    zoom;
+                }
+
+                const lineClasses =
+                  isCanvas || isLayout
+                    ? `absolute ${isX ? "top-0 bottom-0 w-[2px]" : "left-0 right-0 h-[2px]"} ${colorClass} z-[2000] pointer-events-none opacity-50`
+                    : `absolute ${isX ? "w-[2px]" : "h-[2px]"} ${colorClass} z-[2000] pointer-events-none opacity-80`;
+
+                const spanStyle: React.CSSProperties | undefined = guide.span
+                  ? {
+                      ...(isLayout ? { backgroundColor: guide.color } : {}),
+                      [isX ? "left" : "top"]: guide.pos * zoom - 1.5,
+                      [isX ? "width" : "height"]: 4,
+                      [isX ? "top" : "left"]: guide.span[0] * zoom,
+                      [isX ? "height" : "width"]:
+                        (guide.span[1] - guide.span[0]) * zoom,
+                      boxShadow: `0 0 8px ${shadowColor}, 0 0 2px ${shadowColor}`,
+                    }
+                  : undefined;
+
+                return (
+                  <div key={`${guide.axis}_${i}`}>
+                    {/* Линия (через весь экран или только между объектами) */}
+                    <div className={lineClasses} style={lineStyle} />
+
+                    {/* Толстый светящийся край целевой иконки (показываем только для иконок) */}
+                    {guide.type === "icon" && guide.span && (
+                      <div
+                        className={`absolute ${colorClass} z-[2001] pointer-events-none rounded-full`}
+                        style={spanStyle}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

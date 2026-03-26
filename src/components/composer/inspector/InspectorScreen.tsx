@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
+import { useAppStore } from "@/store/useAppStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,11 +9,8 @@ import { Monitor, Grid3X3, Save, FileJson, Clock, Layers } from "lucide-react";
 
 export function InspectorScreen() {
   const { projectData, updateScreen, saveProject } = useProjectStore();
+  const { setSettingsOpen } = useAppStore(); // <-- Используем для открытия модалки сеток
   const {
-    snapToGrid,
-    setSnapToGrid,
-    gridSize,
-    setGridSize,
     allowDnd,
     saveWorkspace,
     autoSaveEnabled,
@@ -24,7 +22,7 @@ export function InspectorScreen() {
     canvasMode,
     stackThreshold,
     setStackThreshold,
-    assetFilter, // Достаем текущий фильтр
+    assetFilter,
   } = useCanvasStore();
 
   const currentScreen = projectData?.Screens?.[activeScreenIdx];
@@ -38,7 +36,6 @@ export function InspectorScreen() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full animate-in fade-in slide-in-from-right-2 duration-200">
-      {/* Скроллируемая область настроек */}
       <ScrollArea className="flex-1 min-h-0">
         <div className="flex flex-col gap-4 pb-6">
           {/* SECTION: SCREEN INFO */}
@@ -47,7 +44,6 @@ export function InspectorScreen() {
               <Monitor className="w-4 h-4 text-primary opacity-80" /> Screen
               Info
             </h3>
-
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
                 Screen Name
@@ -69,7 +65,7 @@ export function InspectorScreen() {
                       (e.target as HTMLInputElement).blur();
                     }
                   }}
-                  className="h-8 bg-muted/50 border-border text-xs font-medium" // Убрали font-mono
+                  className="h-8 bg-muted/50 border-border text-xs font-medium"
                 />
               ) : (
                 <div className="h-8 flex items-center px-3 bg-muted/30 border border-border rounded-md text-xs font-medium text-foreground/80">
@@ -77,7 +73,6 @@ export function InspectorScreen() {
                 </div>
               )}
             </div>
-
             <div className="space-y-1.5 mt-1">
               <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
                 Display Size
@@ -88,14 +83,34 @@ export function InspectorScreen() {
             </div>
           </div>
 
-          {/* SECTION: CANVAS SETTINGS (Stack Threshold) - Показываем только при фильтре Stacked */}
+          {/* НОВАЯ СЕКЦИЯ: LAYOUT GRIDS */}
+          <div
+            className={`flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border transition-opacity ${!allowDnd ? "opacity-50 pointer-events-none" : ""}`}
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+              <Grid3X3 className="w-4 h-4 text-blue-400 opacity-80" /> Layout
+              Grids
+            </h3>
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              Create and manage magnetic columns and rows for precise element
+              positioning.
+            </p>
+            <Button
+              onClick={() => setSettingsOpen(true)}
+              variant="secondary"
+              className="w-full text-xs font-bold gap-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20"
+            >
+              <Grid3X3 className="w-3.5 h-3.5" /> Manage Layouts
+            </Button>
+          </div>
+
+          {/* SECTION: CANVAS SETTINGS (Stack Threshold) */}
           {assetFilter === "stacked" && (
             <div className="flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border animate-in fade-in slide-in-from-top-2">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-amber-400 opacity-80" /> Canvas
                 Settings
               </h3>
-
               <div className="space-y-2">
                 <label className="text-[10px] uppercase text-foreground font-medium tracking-wider">
                   Stack Threshold (px)
@@ -119,65 +134,11 @@ export function InspectorScreen() {
             </div>
           )}
 
-          {/* SECTION: GRID SYSTEM */}
-          <div
-            className={`flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border transition-opacity ${!allowDnd ? "opacity-50 pointer-events-none" : ""}`}
-          >
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
-              <Grid3X3 className="w-4 h-4 text-blue-400 opacity-80" /> Grid
-              System
-            </h3>
-
-            <div
-              onClick={() => setSnapToGrid(!snapToGrid)}
-              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
-                snapToGrid
-                  ? "bg-blue-500/10 border-blue-500/30"
-                  : "bg-muted/50 border-border"
-              }`}
-            >
-              <div className="flex flex-col">
-                <span
-                  className={`text-xs font-bold ${snapToGrid ? "text-blue-400" : "text-foreground"}`}
-                >
-                  Snap to Grid
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  Lock to pixel grid
-                </span>
-              </div>
-
-              <div
-                className={`w-8 h-4 rounded-full relative transition-colors ${snapToGrid ? "bg-blue-500" : "bg-muted"}`}
-              >
-                <div
-                  className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${snapToGrid ? "left-4" : "left-0.5"}`}
-                />
-              </div>
-            </div>
-
-            {snapToGrid && (
-              <div className="space-y-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
-                <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
-                  Grid Step Size
-                </label>
-                <Input
-                  type="number"
-                  value={gridSize}
-                  onFocus={(e) => e.target.select()}
-                  onChange={(e) => setGridSize(Number(e.target.value))}
-                  className="h-8 bg-muted/50 border-border text-xs font-medium [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" // Убрали font-mono
-                />
-              </div>
-            )}
-          </div>
-
           {/* SECTION: AUTO-SAVE */}
           <div className="flex flex-col gap-3 bg-muted/10 p-4 rounded-xl border border-border">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
               <Clock className="w-4 h-4 text-purple-400 opacity-80" /> Auto-Save
             </h3>
-
             <div
               onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
               className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
@@ -198,7 +159,6 @@ export function InspectorScreen() {
                     : "Click to enable"}
                 </span>
               </div>
-
               <div
                 className={`w-8 h-4 rounded-full relative transition-colors ${autoSaveEnabled ? "bg-purple-500" : "bg-muted"}`}
               >
@@ -207,7 +167,6 @@ export function InspectorScreen() {
                 />
               </div>
             </div>
-
             {autoSaveEnabled && (
               <div className="space-y-1.5 mt-1 animate-in fade-in slide-in-from-top-1">
                 <label className="text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
@@ -222,7 +181,7 @@ export function InspectorScreen() {
                   onChange={(e) =>
                     setAutoSaveInterval(Number(e.target.value) * 1000)
                   }
-                  className="h-8 bg-muted/50 border-border text-xs font-medium [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" // Убрали font-mono
+                  className="h-8 bg-muted/50 border-border text-xs font-medium [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             )}
@@ -247,7 +206,6 @@ export function InspectorScreen() {
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse ml-1" />
           )}
         </Button>
-
         <Button
           onClick={saveProject}
           variant="outline"

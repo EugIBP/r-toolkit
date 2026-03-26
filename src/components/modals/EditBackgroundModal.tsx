@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { useProjectStore } from "@/store/useProjectStore";
-import { useCanvasStore } from "@/store/useCanvasStore";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { convertFileSrc } from "@tauri-apps/api/core";
-import { Edit3, HardDrive, Image as ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCanvasStore } from "@/store/useCanvasStore";
+import { useProjectStore } from "@/store/useProjectStore";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { Edit3, HardDrive, Image as ImageIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface EditBackgroundModalProps {
   isOpen: boolean;
