@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssetRow } from "./AssetRow";
-import { RefreshCw, FolderTree } from "lucide-react";
+import {
+  RefreshCw,
+  FolderTree,
+  ChevronRight,
+  Folder as FolderIcon,
+} from "lucide-react";
 import { EditBackgroundModal } from "@/components/modals/EditBackgroundModal";
-import { useExplorerData } from "./useExplorerData";
+import { useExplorerData, type FolderNode } from "./useExplorerData";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useAppStore } from "@/store/useAppStore";
 import { useCanvasStore } from "@/store/useCanvasStore";
@@ -13,9 +18,148 @@ import { ExplorerBulkActions } from "./ExplorerBulkActions";
 import { useSelection } from "@/hooks/useSelection";
 import { useExplorerHotkeys } from "@/hooks/useExplorerHotkeys";
 
+interface FolderNodeViewProps {
+  node: FolderNode;
+  level?: number;
+  groupedInstances: Map<string, any[]>;
+  expandedAssets: Set<string>;
+  setExpandedAssets: (
+    val: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => void;
+  setEditingBg: (val: string | null) => void;
+  selAssets: Set<string>;
+  toggleAsset: (val: string) => void;
+  hasAssetSel: boolean;
+  isInboxMode: boolean;
+  assetCount: number;
+  handleSmartDeleteAsset: (val: string) => void;
+  selInstances: Set<string>;
+  toggleInstance: (val: string) => void;
+  clearAssets: () => void;
+  clearInstances: () => void;
+  hasInstSel: boolean;
+  instCount: number;
+  handleSmartDeleteInstance: (
+    screenIdx: number,
+    iconIdx: number | string,
+  ) => void;
+  handleSmartDuplicateInstance: (screenIdx: number, iconIdx: number) => void;
+}
+
+function FolderNodeView(props: FolderNodeViewProps) {
+  const { node, level = 0 } = props;
+  const [expanded, setExpanded] = useState(level <= 1); // Раскрываем папки 1-го уровня по умолчанию
+
+  const hasChildren = Object.keys(node.children).length > 0;
+  const hasAssets = node.assets.length > 0;
+
+  if (!hasChildren && !hasAssets) return null;
+
+  const childFolders = Object.values(node.children).sort((a, b) => {
+    const priorityOrder = [
+      "backgrounds",
+      "sprites",
+      "icons",
+      "assets",
+      "pales",
+      "palettes",
+    ];
+    const idxA = priorityOrder.indexOf(a.name.toLowerCase());
+    const idxB = priorityOrder.indexOf(b.name.toLowerCase());
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const sortedAssets = [...node.assets].sort((a, b) =>
+    a.Name.localeCompare(b.Name),
+  );
+
+  return (
+    <div className="flex flex-col w-full">
+      {/* Заголовок папки (не рендерим для виртуального корня level 0) */}
+      {level > 0 && (
+        <div
+          onClick={() => setExpanded(!expanded)}
+          className="group flex items-center gap-2 py-1.5 px-2 cursor-pointer hover:bg-muted/30 rounded-md select-none transition-colors"
+        >
+          <ChevronRight
+            className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${expanded ? "rotate-90" : ""}`}
+          />
+          <FolderIcon className="w-3.5 h-3.5 text-blue-400 opacity-80" />
+          <span className="text-[11px] font-bold tracking-wide text-foreground group-hover:text-primary transition-colors">
+            {node.name}
+          </span>
+          <span className="text-[9px] font-bold text-muted-foreground/50 bg-muted/50 px-1.5 py-0.5 rounded-sm ml-auto">
+            {node.assets.length + Object.keys(node.children).length}
+          </span>
+        </div>
+      )}
+
+      {/* Внутренности папки */}
+      {(expanded || level === 0) && (
+        <div
+          className={`flex flex-col ${level > 0 ? "ml-3 border-l border-border/30 pl-2 mt-1 space-y-1 mb-2" : "space-y-2"}`}
+        >
+          {/* Рекурсивно рендерим дочерние папки */}
+          {childFolders.map((child) => (
+            <FolderNodeView
+              key={child.fullPath}
+              {...props}
+              node={child}
+              level={level + 1}
+            />
+          ))}
+
+          {/* Рендерим файлы (ассеты) в текущей папке */}
+          {sortedAssets.length > 0 && (
+            <div className="space-y-1 mt-1">
+              {sortedAssets.map((obj: any) => (
+                <AssetRow
+                  key={obj.Path}
+                  obj={obj}
+                  instances={props.groupedInstances.get(obj.Path) || []}
+                  isExpanded={props.expandedAssets.has(obj.Name)}
+                  onToggleGroup={() => {
+                    props.setExpandedAssets((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(obj.Name)) next.delete(obj.Name);
+                      else next.add(obj.Name);
+                      return next;
+                    });
+                  }}
+                  onEditBg={() => props.setEditingBg(obj.Name)}
+                  isCheckboxSelected={props.selAssets.has(obj.Path)}
+                  onToggleCheckbox={() => {
+                    props.clearInstances();
+                    props.toggleAsset(obj.Path);
+                  }}
+                  isSelectionMode={props.hasAssetSel || props.isInboxMode}
+                  assetBulkCount={props.assetCount}
+                  onDeleteAsset={props.handleSmartDeleteAsset}
+                  selectedInstances={props.selInstances}
+                  onToggleInstance={(id) => {
+                    props.clearAssets();
+                    props.toggleInstance(id);
+                  }}
+                  isInstanceSelectionMode={props.hasInstSel}
+                  instanceBulkCount={props.instCount}
+                  onDeleteInstance={props.handleSmartDeleteInstance}
+                  onDuplicateInstance={props.handleSmartDuplicateInstance}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ExplorerAssets() {
   const [editingBg, setEditingBg] = useState<string | null>(null);
-  const { assetsByDir, sortedDirs, groupedInstances, newCount, mergedAssets } =
+  const { folderTree, groupedInstances, newCount, mergedAssets } =
     useExplorerData();
   const [expandedAssets, setExpandedAssets] = useState<Set<string>>(new Set());
   const [isScanning, setIsScanning] = useState(false);
@@ -188,6 +332,27 @@ export function ExplorerAssets() {
   const isAllAssetsSelected =
     mergedAssets.length > 0 && mergedAssets.every((a) => selAssets.has(a.Path));
 
+  const sharedProps = {
+    groupedInstances,
+    expandedAssets,
+    setExpandedAssets,
+    setEditingBg,
+    selAssets,
+    toggleAsset,
+    hasAssetSel,
+    isInboxMode,
+    assetCount,
+    handleSmartDeleteAsset,
+    selInstances,
+    toggleInstance,
+    clearAssets,
+    clearInstances,
+    hasInstSel,
+    instCount,
+    handleSmartDeleteInstance,
+    handleSmartDuplicateInstance,
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-200">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/10 shrink-0 min-h-[52px]">
@@ -265,62 +430,11 @@ export function ExplorerAssets() {
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
-        <div className="p-3 space-y-1 pb-10">
-          {sortedDirs.map((dir) => {
-            const items = assetsByDir.get(dir) || [];
-            if (items.length === 0) return null;
-
-            return (
-              <div key={dir} className="mb-4 last:mb-0">
-                <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 px-1 mb-2 mt-4 first:mt-0 flex items-center gap-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    {dir}
-                  </span>
-                  <div className="h-px flex-1 bg-border/50" />
-                  <span className="text-[9px] font-bold text-muted-foreground/50 bg-muted/50 px-1.5 py-0.5 rounded-sm">
-                    {items.length}
-                  </span>
-                </div>
-
-                <div className="space-y-1">
-                  {items.map((obj: any) => (
-                    <AssetRow
-                      key={obj.Path}
-                      obj={obj}
-                      instances={groupedInstances.get(obj.Path) || []}
-                      isExpanded={expandedAssets.has(obj.Name)}
-                      onToggleGroup={() => {
-                        const next = new Set(expandedAssets);
-                        if (next.has(obj.Name)) next.delete(obj.Name);
-                        else next.add(obj.Name);
-                        setExpandedAssets(next);
-                      }}
-                      onEditBg={() => setEditingBg(obj.Name)}
-                      isCheckboxSelected={selAssets.has(obj.Path)}
-                      onToggleCheckbox={() => {
-                        clearInstances();
-                        toggleAsset(obj.Path);
-                      }}
-                      isSelectionMode={hasAssetSel || isInboxMode}
-                      assetBulkCount={assetCount}
-                      onDeleteAsset={handleSmartDeleteAsset}
-                      selectedInstances={selInstances}
-                      onToggleInstance={(id) => {
-                        clearAssets();
-                        toggleInstance(id);
-                      }}
-                      isInstanceSelectionMode={hasInstSel}
-                      instanceBulkCount={instCount}
-                      onDeleteInstance={handleSmartDeleteInstance}
-                      onDuplicateInstance={handleSmartDuplicateInstance}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-
-          {sortedDirs.length === 0 && !isScanning && (
+        <div className="p-3 pb-10">
+          {Object.keys(folderTree.children).length > 0 ||
+          folderTree.assets.length > 0 ? (
+            <FolderNodeView node={folderTree} level={0} {...sharedProps} />
+          ) : !isScanning ? (
             <div className="py-10 flex flex-col items-center justify-center text-center opacity-50">
               <span className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-2">
                 No Objects
@@ -329,7 +443,7 @@ export function ExplorerAssets() {
                 Drop images into your project folder and click Scan.
               </span>
             </div>
-          )}
+          ) : null}
         </div>
       </ScrollArea>
 

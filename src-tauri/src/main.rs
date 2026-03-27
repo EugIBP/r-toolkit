@@ -110,43 +110,45 @@ fn get_asset_type(dir_name: &str) -> String {
 #[tauri::command]
 fn scan_project_assets(base_dir: String) -> Result<Vec<ScannedAsset>, String> {
     let mut assets = Vec::new();
-
     let base_path = std::path::Path::new(&base_dir);
-    if let Ok(entries) = std::fs::read_dir(base_path) {
-        for entry in entries.flatten() {
-            if let Ok(ft) = entry.file_type() {
-                if ft.is_dir() {
-                    if let Some(dir_name) = entry.file_name().to_str() {
-                        if dir_name.starts_with('.') || dir_name.starts_with('_') {
-                            continue;
-                        }
 
-                        let dir_path = base_path.join(dir_name);
-                        if let Ok(file_entries) = std::fs::read_dir(dir_path) {
-                            for file_entry in file_entries.flatten() {
-                                if let Ok(file_ft) = file_entry.file_type() {
-                                    if file_ft.is_file() {
-                                        if let Some(file_name) = file_entry.file_name().to_str() {
-                                            if file_name.ends_with(".png")
-                                                || file_name.ends_with(".jpg")
-                                            {
-                                                let asset_type = get_asset_type(dir_name);
-                                                assets.push(ScannedAsset {
-                                                    path: format!("{}\\{}", dir_name, file_name),
-                                                    dir: dir_name.to_string(),
-                                                    asset_type,
-                                                });
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+    if !base_path.exists() {
+        return Ok(assets);
+    }
+
+    let walker = WalkDir::new(base_path).into_iter().filter_entry(|e| {
+        let name = e.file_name().to_string_lossy();
+        !name.starts_with('.') && !name.starts_with('_')
+    });
+
+    for entry in walker.flatten() {
+        if entry.file_type().is_file() {
+            let path = entry.path();
+            let path_str = path.to_string_lossy().to_lowercase();
+
+            if path_str.ends_with(".png") || path_str.ends_with(".jpg") {
+                if let Ok(rel_path) = path.strip_prefix(base_path) {
+                    let dir_name = rel_path
+                        .parent()
+                        .map(|p| p.to_string_lossy().to_string())
+                        .unwrap_or_default();
+
+                    if dir_name.is_empty() {
+                        continue;
                     }
+
+                    let asset_type = get_asset_type(&dir_name);
+
+                    assets.push(ScannedAsset {
+                        path: rel_path.to_string_lossy().replace("/", "\\"),
+                        dir: dir_name.replace("/", "\\"),
+                        asset_type,
+                    });
                 }
             }
         }
     }
+
     Ok(assets)
 }
 

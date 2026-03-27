@@ -3,6 +3,13 @@ import { useProjectStore } from "@/store/useProjectStore";
 import type { AssetObject, IconInstance, ScreenData } from "@/types/project";
 import { useMemo } from "react";
 
+export interface FolderNode {
+  name: string;
+  fullPath: string;
+  assets: Array<AssetObject & { dir?: string; isRegistered?: boolean }>;
+  children: Record<string, FolderNode>;
+}
+
 export function useExplorerData() {
   const { projectData, scannedFiles } = useProjectStore();
   const { searchQuery, assetFilter, activeScreenIdx, stackThreshold } =
@@ -33,8 +40,12 @@ export function useExplorerData() {
         newCount: 0,
         mergedAssets: [],
         groupedInstances: new Map(),
-        assetsByDir: new Map(),
-        sortedDirs: [],
+        folderTree: {
+          name: "root",
+          fullPath: "",
+          assets: [],
+          children: {},
+        } as FolderNode,
       };
 
     const allFilesMap = new Map<
@@ -118,10 +129,8 @@ export function useExplorerData() {
 
     let mergedAssets = Array.from(allFilesMap.values());
 
-    // Шаг 1: Если мы в режиме сканирования, берем ТОЛЬКО новые файлы
-    if (newCount > 0) {
+    if (newCount > 0)
       mergedAssets = mergedAssets.filter((obj) => !obj.isRegistered);
-    }
 
     if (searchQuery) {
       mergedAssets = mergedAssets.filter((obj) =>
@@ -129,7 +138,6 @@ export function useExplorerData() {
       );
     }
 
-    // Шаг 2 (ИСПРАВЛЕНИЕ): Всегда применяем глобальный фильтр типов ассетов поверх новых файлов!
     if (assetFilter !== "all") {
       mergedAssets = mergedAssets.filter((obj) => {
         const isSprite = obj.isSprite;
@@ -142,37 +150,48 @@ export function useExplorerData() {
       });
     }
 
-    type AssetWithDir = AssetObject & { dir?: string; isRegistered?: boolean };
-    const assetsByDir = new Map<string, AssetWithDir[]>();
-    mergedAssets.forEach((obj: AssetWithDir) => {
-      const dir = obj.dir || obj.Path.split(/[\\/]/)[0] || "other";
-      if (!assetsByDir.has(dir)) assetsByDir.set(dir, []);
-      assetsByDir.get(dir)!.push(obj);
-    });
+    // ПОСТРОЕНИЕ ДЕРЕВА
+    const rootNode: FolderNode = {
+      name: "root",
+      fullPath: "",
+      assets: [],
+      children: {},
+    };
 
-    const priorityOrder = [
-      "backgrounds",
-      "sprites",
-      "icons",
-      "assets",
-      "pales",
-      "palettes",
-    ];
-    const sortedDirs = Array.from(assetsByDir.keys()).sort((a, b) => {
-      const idxA = priorityOrder.indexOf(a.toLowerCase());
-      const idxB = priorityOrder.indexOf(b.toLowerCase());
-      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-      if (idxA !== -1) return -1;
-      if (idxB !== -1) return 1;
-      return a.localeCompare(b);
+    mergedAssets.forEach((obj) => {
+      let dirStr = (
+        obj.dir || obj.Path.split(/[\\/]/).slice(0, -1).join("\\")
+      ).replace(/\//g, "\\");
+      dirStr = dirStr.replace(/^[\.\\]+/, ""); // Убираем ведущие слеши или точки
+
+      if (!dirStr || dirStr === "") {
+        rootNode.assets.push(obj);
+      } else {
+        const parts = dirStr.split("\\").filter(Boolean);
+        let current = rootNode;
+        let currentPath = "";
+
+        for (const part of parts) {
+          currentPath = currentPath ? `${currentPath}\\${part}` : part;
+          if (!current.children[part]) {
+            current.children[part] = {
+              name: part,
+              fullPath: currentPath,
+              assets: [],
+              children: {},
+            };
+          }
+          current = current.children[part];
+        }
+        current.assets.push(obj);
+      }
     });
 
     return {
       newCount,
       mergedAssets,
       groupedInstances,
-      assetsByDir,
-      sortedDirs,
+      folderTree: rootNode,
     };
   }, [
     projectData,

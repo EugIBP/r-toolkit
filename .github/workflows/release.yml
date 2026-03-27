@@ -55,37 +55,26 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Resource Toolkit v0.4.0
-
-            ✨ **What's New**
-
-            **Layout System (Composer)**
-            - Visual grid overlays for precise alignment
-            - Multiple layout types: mesh, islands, columns, rows
-            - Configurable gaps, offsets, and colors
-
-            **Bulk Actions**
-            - Select multiple assets at once
-            - Quick duplicate and delete operations
-            - Context menus for faster workflows
-
-            **Dashboard Fixes**
-            - Scrolling now works smoothly for large project lists
-            - Bulk workspace management
-            - Improved pagination
-
-            🎨 **Improvements**
-            - Better keyboard shortcuts
-            - Toast notifications instead of popups
-            - Faster canvas rendering
-            - Optimized memory usage
+            ## Resource Toolkit v0.4.1
 
             🐛 **Bug Fixes**
-            - Cross-platform path handling
-            - Z-index issues with floating panels
-            - Selection state persistence
-            - Undo/redo reliability
-            - General stability improvements
+
+            - Fixed path handling in project asset scanner for better cross-platform compatibility
+            - Resolved LF/CRLF line ending warnings in working copy
+
+            ✨ **Improvements**
+
+            - Explorer Tree View: Replaced flat directory list with hierarchical folder tree structure
+              - Nested folder support with expand/collapse functionality
+              - Priority sorting for common asset folders (backgrounds, sprites, icons, assets, palettes)
+              - Visual folder count badges
+              - Recursive rendering for deep folder structures
+
+            - Asset Scanning: Improved file system traversal
+              - Uses walkdir for efficient recursive scanning
+              - Better handling of nested directory structures
+              - Automatic filtering of hidden folders (starting with . or _)
+              - Normalized path separators for Windows compatibility
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
