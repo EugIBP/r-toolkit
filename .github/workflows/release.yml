@@ -55,26 +55,42 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'Resource Toolkit v__VERSION__'
           releaseBody: |
-            ## Resource Toolkit v0.4.1
+            ## Resource Toolkit v0.5.0
+
+            🎯 **New Features**
+
+            - **Widget Generator** — Rust-based backend for generating gauge widgets:
+              - Arrow widgets: Multi-threaded frame generation with rotation transforms
+              - Arc widgets: 4x MSAA anti-aliased mask generation for smooth curves
+              - Slider widgets: Dual-mask system for directional rendering
+              - Parallel processing with Rayon for faster batch generation
+
+            - **Gauge Composer** — New view for designing and previewing gauge widgets
+
+            🌲 **Explorer Tree View**
+
+            - Replaced flat directory list with hierarchical folder tree structure
+            - Nested folder support with expand/collapse functionality
+            - Priority sorting for common asset folders (backgrounds, sprites, icons, assets, palettes)
+            - Visual folder count badges
+            - Recursive rendering for deep folder structures
+
+            ⚙️ **Improvements**
+
+            - Dashboard layout: Three-section header (search, tabs, view toggle)
+            - Grid/List view mode now persists to disk settings
+            - Added `gauge_composer` view type
 
             🐛 **Bug Fixes**
 
-            - Fixed path handling in project asset scanner for better cross-platform compatibility
+            - Fixed path handling in project asset scanner for cross-platform compatibility
             - Resolved LF/CRLF line ending warnings in working copy
 
-            ✨ **Improvements**
+            📦 **Dependencies**
 
-            - Explorer Tree View: Replaced flat directory list with hierarchical folder tree structure
-              - Nested folder support with expand/collapse functionality
-              - Priority sorting for common asset folders (backgrounds, sprites, icons, assets, palettes)
-              - Visual folder count badges
-              - Recursive rendering for deep folder structures
-
-            - Asset Scanning: Improved file system traversal
-              - Uses walkdir for efficient recursive scanning
-              - Better handling of nested directory structures
-              - Automatic filtering of hidden folders (starting with . or _)
-              - Normalized path separators for Windows compatibility
+            - Updated `image` crate to v0.25.10
+            - Added `imageproc` v0.26.1 for geometric transformations
+            - Added `walkdir` for efficient recursive directory traversal
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
