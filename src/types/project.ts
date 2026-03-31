@@ -45,4 +45,6 @@ export interface ProjectData {
   Screens: ScreenData[];
   Objects: AssetObject[];
   Colors: Record<string, string>;
+  PriorityAssets?: string[];
+  Assets?: string[];
 }

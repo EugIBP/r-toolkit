@@ -191,55 +191,66 @@ export function DashboardView() {
         </div>
 
         <div className="flex items-center justify-between mb-8 shrink-0">
-          <div className="relative group">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={
-                workspaceTab === "workspace"
-                  ? "Search workspaces..."
-                  : "Search tools..."
-              }
-              className="w-80 pl-9 bg-muted/50 border-border"
-            />
+          {/* Левая часть: Поиск */}
+          <div className="flex-1 flex justify-start">
+            <div className="relative group w-max">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={
+                  workspaceTab === "workspace"
+                    ? "Search workspaces..."
+                    : "Search tools..."
+                }
+                className="w-80 pl-9 bg-muted/50 border-border focus-visible:ring-1"
+              />
+            </div>
           </div>
 
-          <Tabs
-            value={workspaceTab}
-            onValueChange={(v) => setWorkspaceTab(v as "workspace" | "tools")}
-          >
-            <TabsList className="bg-muted/50 border border-border">
-              <TabsTrigger value="workspace" className="text-xs">
-                Workspace
-              </TabsTrigger>
-              <TabsTrigger value="tools" className="text-xs">
-                Tools
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Центральная часть: Табы */}
+          <div className="flex-1 flex justify-center">
+            <Tabs
+              value={workspaceTab}
+              onValueChange={(v) => setWorkspaceTab(v as "workspace" | "tools")}
+            >
+              <TabsList className="bg-muted/50 border border-border">
+                <TabsTrigger value="workspace" className="text-xs">
+                  Workspace
+                </TabsTrigger>
+                <TabsTrigger value="tools" className="text-xs">
+                  Tools
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(v) => v && setViewMode(v as "grid" | "list")}
-            className="bg-muted/50 border border-border rounded-lg p-0.5"
-          >
-            <ToggleGroupItem
-              value="grid"
-              aria-label="Grid view"
-              className="h-8 w-8 px-0"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="list"
-              aria-label="List view"
-              className="h-8 w-8 px-0"
-            >
-              <List className="w-4 h-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
+          {/* Правая часть: Переключатель вида (только для проектов) */}
+          <div className="flex-1 flex justify-end">
+            {workspaceTab === "workspace" && (
+              <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={(v) => v && setViewMode(v as "grid" | "list")}
+                className="bg-muted/50 border border-border rounded-lg p-0.5"
+              >
+                <ToggleGroupItem
+                  value="grid"
+                  aria-label="Grid view"
+                  className="h-8 w-8 px-0"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="list"
+                  aria-label="List view"
+                  className="h-8 w-8 px-0"
+                >
+                  <List className="w-4 h-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            )}
+          </div>
         </div>
 
         <AnimatePresence mode="wait">

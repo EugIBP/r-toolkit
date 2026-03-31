@@ -26,6 +26,11 @@ const ComposerView = lazy(() =>
 const DitherView = lazy(() =>
   import("@/views/DitherView").then((m) => ({ default: m.DitherView })),
 );
+const GaugeComposerView = lazy(() =>
+  import("@/views/GaugeComposerView").then((m) => ({
+    default: m.GaugeComposerView,
+  })),
+);
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -62,16 +67,20 @@ export default function App() {
   useEffect(() => {
     const restoreProject = async () => {
       const savedPath = sessionStorage.getItem("projectPath");
+      // ИСПРАВЛЕНО: Добавлен "gauge_composer" в список валидных режимов
       const savedView = sessionStorage.getItem("currentView") as
         | "dashboard"
         | "composer"
         | "dither"
+        | "gauge_composer"
         | null;
 
       if (
         savedPath &&
         savedView &&
-        (savedView === "composer" || savedView === "dither")
+        (savedView === "composer" ||
+          savedView === "dither" ||
+          savedView === "gauge_composer")
       ) {
         try {
           const content = await invoke<string>("load_project", {
@@ -185,6 +194,21 @@ export default function App() {
             >
               <Suspense fallback={<PageLoader />}>
                 <DitherView />
+              </Suspense>
+            </motion.div>
+          )}
+          {currentView === "gauge_composer" && (
+            <motion.div
+              key="gauge_composer"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={pageTransition}
+              className="h-full w-full"
+            >
+              <Suspense fallback={<PageLoader />}>
+                <GaugeComposerView />
               </Suspense>
             </motion.div>
           )}

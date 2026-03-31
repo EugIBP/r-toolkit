@@ -1,4 +1,3 @@
-// src/store/projectStore/types.ts
 import type {
   ProjectData,
   AssetObject,
@@ -14,13 +13,11 @@ export interface ScannedFile {
 }
 
 export interface ProjectStore {
-  // Меняем any на ProjectData
   projectData: ProjectData | null;
   projectPath: string | null;
   baseDir: string | null;
   scannedFiles: ScannedFile[];
 
-  // projectSlice
   setProject: (
     data: ProjectData | string,
     pathOrData: string | ProjectData,
@@ -29,10 +26,13 @@ export interface ProjectStore {
   scanDirectory: () => Promise<void>;
   clearScannedFiles: () => void;
 
-  // objectsSlice
   updateProjectObject: (oldName: string, updates: Partial<AssetObject>) => void;
   deleteProjectObject: (name: string) => void;
   addProjectObject: (newObj: AssetObject) => void;
+
+  // ДОБАВЛЯЕМ ЭТУ СТРОКУ:
+  addProjectAsset: (path: string) => void;
+
   registerAllAssets: () => void;
   registerAsset: (path: string) => void;
   registerAssets: (paths: string[]) => void;
@@ -48,7 +48,6 @@ export interface ProjectStore {
   ) => Array<{ screenIdx: number; iconIdx: number; icon: IconInstance }>;
   deleteProjectObjects: (names: string[]) => void;
 
-  // iconsSlice
   updateScreen: (screenIdx: number, updates: Partial<ScreenData>) => void;
   addScreen: () => void;
   duplicateScreen: (index: number) => void;
@@ -57,7 +56,6 @@ export interface ProjectStore {
   updateColor: (oldName: string, newName: string, newHex: string) => void;
   deleteColor: (name: string) => void;
 
-  // Меняем Partial<any> на Partial<IconInstance>
   updateIcon: (
     screenIdx: number,
     iconIdx: number,
@@ -65,15 +63,12 @@ export interface ProjectStore {
   ) => void;
 
   addIconState: (screenIdx: number, iconIdx: number) => void;
-
-  // Меняем Partial<any> на Partial<ColorState>
   updateIconState: (
     screenIdx: number,
     iconIdx: number,
     stateIdx: number,
     updates: Partial<ColorState>,
   ) => void;
-
   deleteIconState: (
     screenIdx: number,
     iconIdx: number,

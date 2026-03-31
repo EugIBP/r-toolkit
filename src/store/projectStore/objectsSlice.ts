@@ -14,6 +14,7 @@ export const createObjectsSlice: StateCreator<
     | "updateProjectObject"
     | "deleteProjectObject"
     | "addProjectObject"
+    | "addProjectAsset"
     | "registerAllAssets"
     | "registerAndAddInstances"
     | "convertAssetType"
@@ -95,6 +96,23 @@ export const createObjectsSlice: StateCreator<
         projectData: {
           ...state.projectData,
           Objects: [...state.projectData.Objects, newObj],
+        },
+      };
+    });
+  },
+
+  // НОВАЯ ФУНКЦИЯ ДЛЯ ЗАПИСИ СТРЕЛОК ТОЛЬКО В "Assets": []
+  addProjectAsset: (path: string) => {
+    set((state) => {
+      if (!state.projectData) return state;
+      const currentAssets = state.projectData.Assets || [];
+      // Защита от дубликатов (если этот путь уже есть в массиве - игнорируем)
+      if (currentAssets.includes(path)) return state;
+
+      return {
+        projectData: {
+          ...state.projectData,
+          Assets: [...currentAssets, path],
         },
       };
     });
@@ -279,7 +297,11 @@ export const createObjectsSlice: StateCreator<
       if (!state.projectData) return state;
       const newObjects = state.projectData.Objects.map((obj: AssetObject) =>
         obj.Name === assetName
-          ? { ...obj, isSprite, Type: (isPal ? "Pal" : "Ico") as "Ico" | "Bin" | "Pal" }
+          ? {
+              ...obj,
+              isSprite,
+              Type: (isPal ? "Pal" : "Ico") as "Ico" | "Bin" | "Pal",
+            }
           : obj,
       );
       return { projectData: { ...state.projectData, Objects: newObjects } };

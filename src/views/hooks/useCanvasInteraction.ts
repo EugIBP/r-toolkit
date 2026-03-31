@@ -4,8 +4,13 @@ import { useCanvasStore } from "@/store/useCanvasStore";
 const MAX_OFFSET = 500;
 
 export function useCanvasInteraction(projectPath: string | null) {
-  const { zoom, setZoom, saveWorkspace, hasUnsavedChanges, autoSaveEnabled, autoSaveInterval } =
-    useCanvasStore();
+  const {
+    setZoom,
+    saveWorkspace,
+    hasUnsavedChanges,
+    autoSaveEnabled,
+    autoSaveInterval,
+  } = useCanvasStore();
 
   const [isMiddlePanning, setIsMiddlePanning] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -21,13 +26,19 @@ export function useCanvasInteraction(projectPath: string | null) {
   useEffect(() => {
     if (!hasUnsavedChanges || !autoSaveEnabled) return;
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => { saveWorkspace(); }, autoSaveInterval);
-    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
+    saveTimeoutRef.current = setTimeout(() => {
+      saveWorkspace();
+    }, autoSaveInterval);
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
   }, [hasUnsavedChanges, saveWorkspace, autoSaveEnabled, autoSaveInterval]);
 
   // Auto-save on unmount
   useEffect(() => {
-    return () => { if (hasUnsavedChanges) saveWorkspace(); };
+    return () => {
+      if (hasUnsavedChanges) saveWorkspace();
+    };
   }, [hasUnsavedChanges, saveWorkspace]);
 
   // Mouse move/up while panning (MMB)
@@ -39,8 +50,14 @@ export function useCanvasInteraction(projectPath: string | null) {
       const dx = e.clientX - panStart.current.x;
       const dy = e.clientY - panStart.current.y;
       setOffset({
-        x: Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, offsetStart.current.x + dx)),
-        y: Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, offsetStart.current.y + dy)),
+        x: Math.max(
+          -MAX_OFFSET,
+          Math.min(MAX_OFFSET, offsetStart.current.x + dx),
+        ),
+        y: Math.max(
+          -MAX_OFFSET,
+          Math.min(MAX_OFFSET, offsetStart.current.y + dy),
+        ),
       });
     };
 
@@ -67,13 +84,20 @@ export function useCanvasInteraction(projectPath: string | null) {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopImmediatePropagation();
+
+      // Получаем текущее значение зума прямо из стора в момент прокрутки
+      const currentZoom = useCanvasStore.getState().zoom;
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      setZoom(Math.round(Math.min(Math.max(zoom + delta, 0.25), 2) * 100) / 100);
+
+      const nextZoom =
+        Math.round(Math.min(Math.max(currentZoom + delta, 0.25), 2) * 100) /
+        100;
+      setZoom(nextZoom);
     };
 
     container.addEventListener("wheel", handleWheel, { passive: false });
     return () => container.removeEventListener("wheel", handleWheel);
-  }, [zoom, setZoom]);
+  }, [setZoom]);
 
   // Reset offset on project change
   useEffect(() => {

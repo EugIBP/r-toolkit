@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { ProjectData, AssetObject } from "@/types/project";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -120,4 +121,27 @@ export function formatRelativeTime(timestamp: number): string {
   const diffYears = pastDate.getFullYear() - today.getFullYear();
   const years = Math.abs(diffYears);
   return years === 1 ? "Last year" : `${years} years ago`;
+}
+
+export function resolveAssetPath(
+  projectPath: string | null,
+  assetName: string | undefined,
+): string | null {
+  if (!projectPath || !assetName) return null;
+
+  const lastIdx = Math.max(
+    projectPath.lastIndexOf("/"),
+    projectPath.lastIndexOf("\\"),
+  );
+  if (lastIdx === -1) return null;
+
+  const baseDir = projectPath.substring(0, lastIdx);
+
+  const cleanAssetName = assetName.replace(/^[/\\]+/, "");
+
+  const separator = projectPath.includes("\\") ? "\\" : "/";
+
+  const fullPath = `${baseDir}${separator}${cleanAssetName}`;
+
+  return convertFileSrc(fullPath);
 }

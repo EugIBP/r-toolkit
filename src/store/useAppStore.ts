@@ -16,8 +16,11 @@ type Density = "small" | "medium" | "large";
 type SortBy = "lastOpened" | "name";
 type SortOrder = "asc" | "desc";
 
+// ДОБАВЛЕНО: 'gauge_composer' в тип currentView
+export type ViewType = "dashboard" | "composer" | "dither" | "gauge_composer";
+
 interface AppStore {
-  currentView: "dashboard" | "composer" | "dither";
+  currentView: ViewType;
   viewMode: "grid" | "list";
   workspaceTab: "workspace" | "tools";
   recentProjects: RecentProject[];
@@ -44,7 +47,8 @@ interface AppStore {
     resolve: (value: boolean) => void;
   } | null;
 
-  setCurrentView: (view: "dashboard" | "composer" | "dither") => void;
+  // ДОБАВЛЕНО: 'gauge_composer' в аргумент setCurrentView
+  setCurrentView: (view: ViewType) => void;
   setViewMode: (mode: "grid" | "list") => void;
   setWorkspaceTab: (tab: "workspace" | "tools") => void;
   setSettingsOpen: (isOpen: boolean) => void;
@@ -83,12 +87,10 @@ interface AppStore {
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
+  // ДОБАВЛЕНО: 'gauge_composer' в проверку sessionStorage
   currentView:
     (typeof window !== "undefined" &&
-      (sessionStorage.getItem("currentView") as
-        | "dashboard"
-        | "composer"
-        | "dither")) ||
+      (sessionStorage.getItem("currentView") as ViewType)) ||
     "dashboard",
   viewMode: "grid",
   workspaceTab:
@@ -114,7 +116,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
     sessionStorage.setItem("currentView", view);
     set({ currentView: view });
   },
-  setViewMode: (mode) => set({ viewMode: mode }),
+
+  // ИСПРАВЛЕНО: Теперь переключение режима сохраняется на диск
+  setViewMode: (mode) => {
+    set({ viewMode: mode });
+    get().saveSettings();
+  },
+
   setWorkspaceTab: (tab: "workspace" | "tools") => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("workspaceTab", tab);
@@ -162,6 +170,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         density?: Density;
         sortBy?: SortBy;
         sortOrder?: SortOrder;
+        viewMode?: "grid" | "list"; // ИСПРАВЛЕНО: добавлено в загрузку
       }>("dashboard_settings");
 
       if (savedSettings) {
@@ -169,6 +178,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
           density: savedSettings.density || "medium",
           sortBy: savedSettings.sortBy || "lastOpened",
           sortOrder: savedSettings.sortOrder || "desc",
+          viewMode: savedSettings.viewMode || "grid", // ИСПРАВЛЕНО: инициализация сохраненного вида
         });
       }
     } catch (e) {
@@ -178,11 +188,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   saveSettings: async () => {
     try {
-      const { density, sortBy, sortOrder } = get();
+      // ИСПРАВЛЕНО: извлекаем viewMode из стейта и сохраняем
+      const { density, sortBy, sortOrder, viewMode } = get();
       await persistentStore.set("dashboard_settings", {
         density,
         sortBy,
         sortOrder,
+        viewMode,
       });
       await persistentStore.save();
     } catch (e) {
@@ -242,7 +254,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
             ...p,
             displayName: newName,
             description: newDesc,
-            lastModified: Date.now(),
+            lastOpened: p.lastOpened, // Сохраняем исходное время, либо Date.now(), если нужно обновлять
           }
         : p,
     );

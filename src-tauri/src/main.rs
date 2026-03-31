@@ -1,5 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod generator;
 
 use image::open;
 use rayon::prelude::*;
@@ -325,6 +326,104 @@ fn process_images(
     Ok(final_msg)
 }
 
+#[tauri::command]
+fn generate_widget_arrow(
+    image_path: String,
+    out_dir: String,
+    id_name: String,
+    cx: u16,
+    cy: u16,
+    r0: i16,
+    r1: i16,
+    d0: i16,
+    d1: i16,
+    min_val: i32,
+    max_val: i32,
+    frames: u16,
+) -> Result<String, String> {
+    generator::arrow::build_arrow_binaries(
+        &image_path,
+        &out_dir,
+        &id_name,
+        cx,
+        cy,
+        r0,
+        r1,
+        d0,
+        d1,
+        min_val,
+        max_val,
+        frames,
+    )?;
+    Ok(format!("Generated successfully for {}", id_name))
+}
+
+#[tauri::command]
+fn generate_widget_arc(
+    image_path: String,
+    out_dir: String,
+    id_name: String,
+    cx: u16,
+    cy: u16,
+    r0: i16,
+    r1: i16,
+    d0: i16,
+    d1: i16,
+    min_val: i32,
+    max_val: i32,
+    frames: u16,
+) -> Result<String, String> {
+    generator::arc::build_arc_binaries(
+        &image_path,
+        &out_dir,
+        &id_name,
+        cx,
+        cy,
+        r0,
+        r1,
+        d0,
+        d1,
+        min_val,
+        max_val,
+        frames,
+    )?;
+    Ok(format!("Generated successfully for {}", id_name))
+}
+
+#[tauri::command]
+fn generate_widget_slider(
+    image_path: String,
+    mask_path: String,
+    out_dir: String,
+    id_name: String,
+    cx: u16,
+    cy: u16,
+    r0: i16,
+    r1: i16,
+    d0: i16,
+    d1: i16,
+    min_val: i32,
+    max_val: i32,
+    frames: u16,
+) -> Result<String, String> {
+    generator::slider::build_slider_binaries(
+        &image_path,
+        &mask_path,
+        &out_dir,
+        &id_name,
+        cx,
+        cy,
+        r0,
+        r1,
+        d0,
+        d1,
+        min_val,
+        max_val,
+        frames,
+    )?;
+    Ok(format!("Generated successfully for {}", id_name))
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
@@ -341,7 +440,10 @@ fn main() {
             delete_project_file,
             process_images,
             create_project,
-            open_folder
+            open_folder,
+            generate_widget_arrow,
+            generate_widget_arc,
+            generate_widget_slider
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
